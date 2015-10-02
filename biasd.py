@@ -1,4 +1,10 @@
-#import matplotlib.pyplot as plt
+################# Versions#########
+# Anaconda		- 2.3.0
+## Python		- 2.7.10
+### Numpy		- 1.9.2
+### Scipy		- 0.16.0
+##################################
+
 import numpy as np
 np.set_printoptions(precision=4,linewidth=180)
 np.seterr(all='ignore')
@@ -7,13 +13,6 @@ from scipy import special
 from scipy.integrate import quad, IntegrationWarning
 from scipy.optimize import minimize
 
-################# Versions#########
-# Anaconda		- 2.3.0
-## Python		- 2.7.10
-### Numpy		- 1.9.2
-### Scipy		- 0.16.0
-##################################
-
 from os import path
 from sys import stdout
 import multiprocessing as mp
@@ -21,13 +20,20 @@ import cPickle as pickle
 import time
 
 
-def pdot(a,b)
-	# Parallel dot product
-	# -- Takes dot product along last two dimensions:
-	# -- i.e., dot((N,K,D,D),(N,K,D,D)) --> (N,K,1,1)
+def pdot(a,b):
+	""" 
+	Takes dot product along last two dimensions:
+	i.e., dot((N,K,D,D),(N,K,D,D)) --> (N,K,1,1)
+	"""
 	return np.einsum('...ij,...jk->...ik',a,b)
 
 class stats:
+	"""
+	Class containing statistical functions for:
+	Uniform, Normal, Beta, Gamma, and Wishart distributions
+	"""
+	
+	#Probability distribution functions (PDFs) with parameter support.
 	@staticmethod
 	def p_uniform(x,a,b):
 		return np.nan_to_num(1./(b-a)) * (x >= a) * (x <= b)
@@ -41,6 +47,7 @@ class stats:
 	def p_gamma(x,a,b):
 		return np.nan_to_num(np.exp(a*np.log(b) +  (a-1.)*np.log(x) + (-b * x) - special.gammaln(a))) * (x > 0)
 	
+	#Functions that calculate the expectation values E[x] of certain PDFs
 	@staticmethod
 	def mean_uniform(a,b):
 		return .5 *(a+b)
@@ -54,6 +61,7 @@ class stats:
 	def mean_gamma(a,b):
 		return a/b
 	
+	#Functions that calculate the variances (E[x^2] - E[x]^2) of certain PDFs
 	@staticmethod
 	def var_uniform(a,b):
 		return 1./12. *(b-a)**2.
@@ -69,6 +77,10 @@ class stats:
 	
 	@staticmethod
 	def moments_to_params(disttype,first,second):
+		"""
+		Calculates the distribution parameters (e.g., alpha, & beta) from E[x] and E[x^2].
+		This helps for moment matching
+		"""
 		variance = second - first**2.
 		if variance > 0:
 			if disttype == "beta":
@@ -85,46 +97,45 @@ class stats:
 	
 	@staticmethod
 	def rv_multivariate_normal(mu,cov,number=1):
+		"""
+		Generate random numbers from a multivariate normal distribution
+		"""
+		#Calculate transformation to skew symmetric variates to desired shape
 		l = np.linalg.cholesky(cov)
-		xshape = (number,np.size(mu))
-		#Draw normal RVS
-		x = np.random.normal(size=xshape)
-		#Transform
+		#Draw symmetric normally distributed random numbers for each dimension
+		x = np.random.normal(size=(number,np.size(mu)))
+		#Transform by shifting to the mean, and skew according to covariance.
 		return mu[None,:] + np.dot(x,l.T)
 
+	#Wishart distribution values (see C. Bishop - Pattern Recognition and Machine Learning)
+	#Calculate values for last axis, i.e., they are vectorized to nu ~ (...,d) and W ~ (...,d,d)
 	@staticmethod
 	def wishart_ln_B(W,nu):
 		d = W.shape[-1]
 		return -nu/2.*np.log(np.linalg.det(W)) - nu*d*np.log(2.)/2. - d*(d-1.)/4.*np.log(np.pi) - special.gammaln((nu[...,None] + 1 -np.linspace(1,d,d).reshape((1,)*nu.ndim+(d,)))/2.).sum(-1)
-	
 	@staticmethod
 	def wishart_E_ln_det_lam(W,nu):
 		d = W.shape[-1]
 		return d*np.log(2.) + np.log(np.linalg.det(W)) + special.psi((nu[...,None] + 1 -np.linspace(1,d,d).reshape((1,)*nu.ndim+(d,)))/2.).sum(-1)
-
 	@staticmethod
 	def wishart_entropy(W,nu):
 		d = W.shape[-1]
 		return -stats.wishart_ln_B(W,nu) - (nu - d - 1.)/2. * stats.wishart_E_ln_det_lam(W,nu) + nu*d/2.
-	
-	from scipy.stats import truncnorm
-	
-	@staticmethod
-	def truncnorm_pdf(x,a,b,mu,sig):
-		aa,bb = (a-mu)/sig,(b-mu)/sig
-		return stats.truncnorm.pdf(x,aa,bb)
-	
-	@staticmethod
-	def truncnorm_rvs(a,b,mu,sig,n=1):
-		aa,bb = (a-mu)/sig,(b-mu)/sig
-		return stats.truncnorm.rvs(aa,bb,size=n)
+
 
 class dist:
+	"""
+	Represents a probability distribution
+	distribution is a string for the name of the distribution
+	p1, and p2 are the parameters for that distribution
+	"""
+	
 	def __init__(self,distribution,p1,p2):
 		self.type = distribution.lower()
 		self.p1 = p1
 		self.p2 = p2
 		
+		#Make distribution name types uniformily stored
 		if self.type in ['uniform','u',0]:
 			self.type = 'uniform'
 		elif self.type in ['normal','norm','n','gaussian','gauss',1]:
@@ -133,9 +144,14 @@ class dist:
 			self.type = 'beta'
 		elif self.type in ['gamma','g',3]:
 			self.type = 'gamma'
+			
+		#Check to see if this makes a valid distribution
 		self.good = self.good_check()
 
 	def good_check(self):
+		"""
+		Check if parameters are withing support range and return 1 if so
+		"""
 		if self.type == 'uniform':
 			if np.isfinite(self.p1) and np.isfinite(self.p2) and self.p1 < self.p2:
 				return 1
@@ -146,8 +162,12 @@ class dist:
 			if self.p1 > 0. and self.p2 > 0.:
 				return 1
 		return 0
-		
+	
 	def pdf(self,x):
+		"""
+		Return the probability distribution function
+		x can be a vector
+		"""
 		if self.good:
 			if self.type == "uniform":
 				pdffxn = stats.p_uniform(x,self.p1,self.p2)
@@ -161,9 +181,15 @@ class dist:
 		return 0
 	
 	def logpdf(self,x):
+		"""
+		Return the log of the probability distribution function
+		"""
 		return np.log(self.pdf(x))
 	
 	def mean(self):
+		"""
+		Calculate E[x]
+		"""
 		if self.type == "uniform":
 			mean = stats.mean_uniform(self.p1,self.p2)
 		elif self.type == "normal":
@@ -175,6 +201,9 @@ class dist:
 		return mean
 		
 	def var(self):
+		"""
+		Calculate E[x^2] - E[x]^2
+		"""
 		if self.type == "uniform":
 			var = stats.var_uniform(self.p1,self.p2)
 		elif self.type == "normal":
@@ -186,6 +215,9 @@ class dist:
 		return var
 		
 	def random(self,size_rvs):
+		"""
+		Generate random numbers in shape of size_rvs
+		"""
 		#At least correct for numpy 1.9.2
 		np.random.seed()
 		if self.type == "uniform":
@@ -199,6 +231,11 @@ class dist:
 		return rvs
 
 class biasddistribution:
+	"""
+	Stores the five parameter probability distribution functions used for the BIASD \Theta.
+	\Theta = [\epsilon_1, \epsilon_2, \sigma, \k_1, \k_2]
+	This is used for both the prior and the posterior probability distributions
+	"""
 	def __init__(self,e1,e2,sigma,k1,k2):
 		self.names = ['e1','e2','sigma','k1','k2']
 		self.e1 = e1
@@ -207,11 +244,16 @@ class biasddistribution:
 		self.k1 = k1
 		self.k2 = k2
 		self.list = [self.e1,self.e2,self.sigma,self.k1,self.k2]
+		
+		#Ensure each distribution in \Theta is sound
 		self.complete = self.test_distributions()
 		if self.complete != 1:
 			print "Distributions are incomplete"
 		
 	def test_distributions(self):
+		"""
+		If all distributions in \Theta are correct and return 1
+		"""
 		good = 1
 		for dists in self.list:
 			try:
@@ -223,6 +265,9 @@ class biasddistribution:
 		return good
 		
 	def get_dist_means(self):
+		"""
+		Calculate means of \Theta
+		"""
 		if self.complete == 1:
 			return np.array((self.e1.mean(),self.e2.mean(),self.sigma.mean(),self.k1.mean(),self.k2.mean()))
 		else:
@@ -230,6 +275,9 @@ class biasddistribution:
 			return np.repeat(np.nan,5)
 	
 	def get_dist_vars(self):
+		"""
+		Calculate the variances of \Theta
+		"""
 		if self.complete == 1:
 			return np.array((self.e1.var(),self.e2.var(),self.sigma.var(),self.k1.var(),self.k2.var()))
 		else:
@@ -237,6 +285,9 @@ class biasddistribution:
 			return np.repeat(np.nan,5)
 			
 	def sum_log_pdf(self,theta):
+		"""
+		Returns \Sum_i \ln p\left( \theta_i \right) evaluated at theta (list of numpy array)
+		"""
 		if self.complete == 1:
 			ll = 0
 			for theta_i,distribution in zip(theta,self.list):
@@ -247,6 +298,9 @@ class biasddistribution:
 			return np.nan
 			
 	def which_bad(self):
+		"""
+		Figure out which of the distributions is bad
+		"""
 		if self.complete != 1:
 			print "Bad Distributions:"
 			baddists=[]
@@ -260,14 +314,19 @@ class biasddistribution:
 			return None
 			
 	def random_theta(self):
+		"""
+		Generate a random [\epsilon_1, \epsion_2, \sigma, k_1, k_2] from the BIASD distributions
+		"""
 		theta = np.repeat(np.nan,5)
 		if self.complete == 1:
+			#Try a max of 100 times
 			for i in range(100):
 				for j,distribution in zip(range(5),self.list):
 					theta[j] = distribution.random(1)
+				#Enforce conditions \epsilon_1 < \epsilon_2, and others are > 0
 				if theta[0] < theta[1] and theta[2] > 0. and theta[3] > 0. and theta[4] > 0.:
 					break
-				theta = np.repeat(np.nan,5)
+			theta = np.repeat(np.nan,5)
 		return theta
 
 def python_integrand(x,d,e1,e2,sigma,k1,k2,tau):	
