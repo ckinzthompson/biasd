@@ -37,7 +37,9 @@ git checkout -b new_branch_name_here
 git pull origin branch_name_here
 ```
 ### Merge branch into master
+```bash
 git checkout master
 git pull origin master
 git merge test
+```
 git push origin master
