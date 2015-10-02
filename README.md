@@ -40,6 +40,6 @@ git pull origin branch_name_here
 ```bash
 git checkout master
 git pull origin master
-git merge test
-```
+git merge branch_to_merge
 git push origin master
+```
