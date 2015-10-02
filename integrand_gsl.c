@@ -285,24 +285,29 @@ double integrand(int n, double args[n]) {
 
 	double out;
 
+	//Pre-calulate some parameters
 	double k = k1 + k2;
 	double p1 = k2/k;
 	double p2 = k1/k;
 	double y = 2.*k*tau * pow(p1*p2*f*(1.-f),.5);
 	double z = p2*f + p1*(1.-f);
 
+	//Enforce parameter support
 	if (f < 0. || f > 1. || k1 <= 0. || k2 <= 0. || sigma <= 0. || tau <= 0. || ep1 >= ep2) {
 		out = 0.;
 	}
 	else {
+		//Time averaging part
 		out = 2.*k*tau*p1*p2*(i0(y)+k*tau*(1.-z)*i1(y)/y)*exp(-z*k*tau);
+		//Observation noise part
 		out *= 1./sigma * M_2_SQRTPI/2. * M_SQRT1_2 * exp(-.5/sigma/sigma*pow(d-(ep1*f+ep2*(1.-f)),2.));
 	}
 	return out;
 }
 
 
-/* 
+/*
+Linux: 
 How to compile for CTYPES in python:
 Note: This doesn't need GSL b/c it is the same fxns
 1) $ gcc -L/usr/local/lib -shared -o integrand_gsl.so -fPIC -O3 integrand_gsl.c -lm
