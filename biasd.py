@@ -329,7 +329,11 @@ class biasddistribution:
 			theta = np.repeat(np.nan,5)
 		return theta
 
-def python_integrand(x,d,e1,e2,sigma,k1,k2,tau):	
+def python_integrand(x,d,e1,e2,sigma,k1,k2,tau):
+	"""
+	Integrand for BIASD likelihood function
+	"""
+	#Ensures proper support
 	if x < 0. or x > 1. or k1 <= 0. or k2 <= 0. or sigma <= 0. or tau <= 0. or e1 >= e2:
 		return 0.
 	else:
@@ -343,44 +347,70 @@ def python_integrand(x,d,e1,e2,sigma,k1,k2,tau):
 		return py
 
 def python_integral(d,e1,e2,sigma,k1,k2,tau):
+	"""
+	Use Gaussian quadrature to integrate the BIASD integrand across df between f = 0 ... 1
+	"""
 	return quad(python_integrand,0.,1.,args=(d,e1,e2,sigma,k1,k2,tau),limit=1000)[0]
 
+#integral is a global function that can use either the python-based or the C-based integrand for the BIASD likelihood function
 integral = python_integral
 integral = np.vectorize(integral)
 
 def load_c_integral(integrandpath):
+	"""
+	Uses ctypes to load a library written in C that calculates the BIASD integrand.
+	This is much faster than evaluate the integrand with python
+	Returns 1 if successful, 0 if not successful at loading
+	"""
 	global integral
-	# integrandpath = '/home/colin/Documents/data/20150821_biasd/integrand_gsl.so' #34.6x increase
-	# integrandpath = '/home/colin/Documents/data/20150821_biasd/integrand_full_gsl.so' #31.8x increase
-	# integrandpath = '/home/colin/Documents/data/20150821_biasd/integrand_cephes.so' #23.7x increase
+	
+	#Make sure the file exists
 	if path.isfile(integrandpath):
 		import ctypes
+		
+		#Load the integrand library
 		lib = ctypes.CDLL(integrandpath)
+		
+		#Setup the integrand function calls/returns
 		integrand = lib.integrand
 		integrand.restype = ctypes.c_double
 		integrand.argtypes = (ctypes.c_int,ctypes.c_double)
+		
+		#Define the integration of the integrand across df between f = 0 ... 1
 		def c_integral(d,e1,e2,sigma,k1,k2,tau):
 			return quad(integrand,0.,1.,args=(d,e1,e2,sigma,k1,k2,tau))[0]
+			
+		#Set the integral
 		integral = c_integral
 		print "Loaded integrand written in C"
 		integral = np.vectorize(integral)
 		return 1
+		
 	else:
 		print "Couldn't find the compiled library"
 		print "Using integrand written in Python"
 		return 0
 
 def calc_hessian(fxn,x,eps = np.sqrt(np.finfo(np.float64).eps)):
+	"""
+	Finite difference approximation of the Hessian
+	#Using Abramowitz & Stegun Eqn. 25.3.23 (on-diagonal), and 25.3.26 (off-diagonal)
+	"""
 	
-	#Using Abramowitz & Stegun Eqn. 25.3.23, and 25.3.26
+	# xij is the position to evaluate the function at
+	# if i or j = 0, it's the starting postion, 1 or m1 are x + 1.*eps and x - 1.*eps, respetively
+	# yij is the function evaluated at xij
+	
 	h = np.zeros((x.size,x.size))
 	y00 = fxn(x)
 	
 	for i in range(x.size):
 		for j in range(x.size):
+			#Off-diagonals below the diagonal are the same as those above.
 			if j < i:
 				h[i,j] = h[j,i]
 			else:
+				#On-diagonals
 				if i == j:
 					x10 = x.copy()
 					xm10 = x.copy()
@@ -392,7 +422,8 @@ def calc_hessian(fxn,x,eps = np.sqrt(np.finfo(np.float64).eps)):
 					ym10 = fxn(xm10)
 					
 					h[i,j] = eps**(-2.) * (y10 - 2.*y00 + ym10)
-					
+				
+				#Off-diagonals above the diagonal
 				elif j > i:
 					x11 = x.copy()
 					x1m1 = x.copy()
@@ -416,13 +447,21 @@ def calc_hessian(fxn,x,eps = np.sqrt(np.finfo(np.float64).eps)):
 					h[i,j] = 1./(4.*eps**2.) * (y11 - y1m1 - ym11 + ym1m1)
 	return h
 
+
 def switch_to_python_integral():
+	"""
+	Reset the BIASD integral to the python-based integrand version
+	"""
 	global integral
 	integral = python_integral
 	integral = np.vectorize(integral)
 	print "Using integrand written in Python"
 
 def log_likelihood(theta,d,tau):
+	"""
+	Calculate the log of the BIASD likelihood function at theta using the data d given the time period of the d as tau
+	"""
+	
 	global integral
 	e1,e2,sigma,k1,k2 = theta
 	p1 = k2/(k1+k2)
@@ -432,12 +471,22 @@ def log_likelihood(theta,d,tau):
 	peak2 = stats.p_gauss(d,e2,sigma)
 	out += p1*peak1*np.exp(-k1*tau)
 	out += p2*peak2*np.exp(-k2*tau)
+	
+	#Don't use -infinity
 	return np.log(out+eps)
 
+
 def log_posterior(d,priors,tau,theta):
+	""""
+	Calculate the ln of the posterior probability distribution for data d, with priors as priors, time period of d as tau, at the point theta
+	"""
 	return log_likelihood(theta,d,tau).sum()+priors.sum_log_pdf(theta)
 
 def test_speed(n):
+	"""
+	Test how fast the BIASD integral (python-based or C-based) runs. C-based should be ~30 us. Python-based is ~30x that.
+	"""
+	
 	d = np.linspace(-2,1.2,5000)
 	t0 = time.time()
 	for i in range(n):
@@ -448,8 +497,14 @@ def test_speed(n):
 	print 'Average speed: ', np.around((t1-t0)/n/d.size*1.e6,4),' (usec/datapoint)'
 
 def variational_gmm(x,nstates,maxiter=5000,lowerbound_threshold=1e-16):
-################# Bishop Algorithim - Chapter 10, Section 2
-
+	"""
+	Variational Gaussian Mixture Model from C. Bishop - Chapter 10, Section 2.
+	x is an n by d array, where n is the number of points, and d is the dimensionality of the points.
+	maxiter is the maximum number of rounds before stopping if the lowerbound_thershold is not met.
+	
+	This version is fully vectorized. Possible typo in the lower_bound calculation.
+	"""
+################# 
 
 ######## Initialize
 	ntraces = x.shape[0]
@@ -489,6 +544,7 @@ def variational_gmm(x,nstates,maxiter=5000,lowerbound_threshold=1e-16):
 		lowerbound =  np.nan_to_num((eq71,eq72,eq73,eq74,-eq75,-eq76,-eq77)).sum()
 		return lowerbound#,[eq71,eq72,eq73,eq74,eq75,eq76,eq77]
 
+######## Iterations
 	it = 0
 	while 1:
 		if it > maxiter or finished_counter > 5:
@@ -550,6 +606,7 @@ def variational_gmm(x,nstates,maxiter=5000,lowerbound_threshold=1e-16):
 			#~ finished_counter += 1
 		#~ else:
 			#~ finished_counter = 0
+		# Run until it's done....
 		if it > 1 and lb[it-1,1]==lb[it,1]:
 			break
 			#~ finished_counter += 1
@@ -558,11 +615,16 @@ def variational_gmm(x,nstates,maxiter=5000,lowerbound_threshold=1e-16):
 			
 		it += 1
 	
+	#Don't sort by class population size
 	#return [alpha_k,r_nk,m_k,beta_k,nu_k,W_k,S_k,lb,state_log]
+	#Sort by class population size (largest first)
 	xsort = alpha_k.argsort()[::-1]
 	return [alpha_k[xsort],r_nk[:,xsort],m_k[xsort],beta_k[xsort],nu_k[xsort],W_k[xsort],S_k[xsort],lb,state_log]
 
 class Laplace_Worker(mp.Process):
+	"""
+	To parallel process the laplace approximation steps, this worker will take a signal vs time trajectory from the queue and process it
+	"""
 	def __init__(self,queue_in,queue_out):
 		self.__queue_in = queue_in
 		self.__queue_out = queue_out
@@ -570,13 +632,22 @@ class Laplace_Worker(mp.Process):
 	
 	def run(self):
 		while 1:
+			#Check the queue
 			item = self.__queue_in.get()
+			
+			#If the queue is done
 			if item is None:
+				#add a None to watcher queue so it knows this is done.
 				self.__queue_out.put(item)
 				break
+			
+			#Calculate the laplace approximation of the posterior probability distribution for the trace from the queue and pass it to the watcher
 			self.__queue_out.put(item.laplace_approximation())
 
 class Variational_Worker(mp.Process):
+	"""
+	To parallel process the variational gaussian mixture model steps, this worker will take set of smaples from the queue and process it
+	"""
 	def __init__(self,queue_in,queue_out):
 		self.__queue_in = queue_in
 		self.__queue_out = queue_out
@@ -584,13 +655,20 @@ class Variational_Worker(mp.Process):
 	
 	def run(self):
 		while 1:
+			#Check the queue
 			item = self.__queue_in.get()
+			#If the queue is done
 			if item is None:
+				#add a None to watcher queue so it knows this is done.
 				self.__queue_out.put(item)
 				break
+			#Calculate the variational gaussian mixture  model of the samples from the queue and pass it to the watcher
 			self.__queue_out.put(variational_gmm(*item))
 
 class Watcher(mp.Process):
+	"""
+	This allows the queue used to parallel process the variational GMM and laplace approximations to be observed in real-time
+	"""
 	def __init__(self,queue_in,queue_out,numworkers,numjobs,batchnum):
 		self.__queue_out = queue_out
 		self.__queue_in = queue_in
@@ -602,41 +680,59 @@ class Watcher(mp.Process):
 	def run(self):
 		pillcount = 0
 		self.resultcount = 0
+		
+		#Initialze the progress bar
 		#stdout.write("\nBatch "+str(self.batchnum)+": 000.00%")
 		stdout.write("\nBatch "+str(self.batchnum+1)+": "+"_"*self.numjobs)
 		stdout.flush()
 		
 		while pillcount < self.numworkers:
 			item = self.__queue_in.get()
+			#If a worker is completely done
 			if item is None:
 				pillcount += 1
+			#If the worker provided a result
 			else:
+				#Return the result to be processed by something else
 				self.__queue_out.put(item)
 				self.resultcount += 1
+				#Update the progress bar
 				#stdout.write("\b"*7+'{:06.2f}'.format(self.resultcount/float(self.numjobs)*100.) + "%")
 				stdout.write("\b"*self.numjobs+"X"*self.resultcount+"_"*(self.numjobs-self.resultcount))
 				stdout.flush()
 
 class laplace_posterior:
+	"""
+	Holds the results of a laplace approximation of the posterior probability distribution from BIASD
+	"""
 	def __init__(self,means,covars):
 		self.mu = means
 		self.covar = covars
 
 class ensemble:
+	"""
+	Holds the results of a variational GMM  of the laplace approximated BIASD posteriors
+	"""
 	def __init__(self,x,params):
+		#Samples from posteriors that were used
 		self.x = x
+		#Variational GMM parameters
 		self.alpha,self.r,self.m,self.beta,self.nu,self.W,self.S_k,self.lowerbound,self.state_log = params
 		self.var = np.zeros_like(self.m)
 		self.covar = np.zeros_like(self.W)
+		
+		#calculated covariance of parameters.
 		for i in range(np.size(self.alpha)):
 			self.covar[i] = np.linalg.inv(self.nu[i]*self.W[i])
 			self.var[i] = np.diag(self.covar[i])
 		self.z = None
 	
+	#Generate n random variates of the \Theta for a particular class as state
 	def get_rvs(self,state,n):
 		rvs = np.zeros((n,5))
 		for i in range(5):
 			rvs[:,i] = np.random.normal(self.m[state,i],self.var[state,i]**.5,size=n)
+			#Enforce support on \sigma, k_1, and k_2
 			if i  > 1:
 				while 1:
 					xbad = rvs[:,i] <= 0.
@@ -648,6 +744,9 @@ class ensemble:
 		#~ return np.random.multivariate_normal(self.m[state],self.S_k[state],size=n)
 	
 	def report(self):
+		"""
+		Generate a legible output of the variational GMM results - mostly for the GUI.
+		"""
 		rep = "Iterations Lowerbound \n"+str(self.lowerbound[-1][0]) +"  "+str(self.lowerbound[-1][1]) + "\n\n"
 		rep += "Final States\n" + str(self.alpha.size)+"\n\n"
 		rep += "Fraction\nState Mean Var.\n" 
@@ -665,11 +764,20 @@ class ensemble:
 		return rep
 
 class trace:
+	"""
+	A trace is a signal versus time trajectory loaded in from a dataset. It can be processed using the Laplace approximation.
+	"""
+	
 	def __init__(self, data, tau=None, prior=None,identity=0):
+		#Signal versus time data as a numpy array
 		self.data = data.flatten()
+		#time period
 		self.tau = float(tau)
+		#Prior as a biasddistributions object
 		self.prior = prior
+		#Posterior will be a biasddistributions objet
 		self.posterior = None
+		#Identifying number
 		self.identity = identity
 	
 	def log_likelihood(self,theta):
