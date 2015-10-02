@@ -781,31 +781,59 @@ class trace:
 		self.identity = identity
 	
 	def log_likelihood(self,theta):
+		'''
+		Calculate the log of the BIASD likelihood function at theta for this trace
+		'''
 		return log_likelihood(theta,self.data,self.tau)
 
 	def log_posterior(self,theta):
+		'''
+		Calculate the log of the BIASD posterior at theta for this trace
+		'''
 		return log_posterior(self.data,self.prior,self.tau,theta)
 	
 	def find_map(self,meth='nelder-mead',xx=None,nrestarts=5):
+		'''
+		Use numerical minimization to find the maximum a posteriori estimate of the posterior
+		Provide xx to force first theta initialization at that theta
+		meth is the method used by the minimizer - default to simplex
+		nrestarts is the number of restarts for the MAP
+		'''
+		
 		ylist = []
+		
+		#If no xx, start at the mean of the priors
 		if type(xx).__name__ != 'ndarray':
 			xx = self.prior.get_dist_means()
+			
+		#Rounds to minimze the -log posterior
 		ylist.append(minimize(lambda theta: -1.*self.log_posterior(theta),x0=xx,method=meth))
 		for i in range(nrestarts):
+			#Try a random location consistent with the prior.
 			xx = self.prior.random_theta()
 			ylist.append(minimize(lambda theta: -1.*self.log_posterior(theta),x0=xx,method=meth))
+			
+		#Select the best MAP estimate
 		ymin = np.inf
 		for i in ylist:
 			if i['success']:
 				if i['fun'] < ymin:
 					ymin = i['fun']
 					y = i
+		#If no MAP estimates, return None
 		if ymin == np.inf:
 			y = None
 		return y
 
 	def laplace_approximation(self):
+		'''
+		Perform the Laplace approximation on the posterior probability distribution of this trace
+		'''
+		
 		def sanitize_uniform(x,p):
+			'''
+			Make sure you can calculate the Hessian if \theta_i is at the edge of a uniform distribution
+			'''
 			for i in range(5):
 				if p.list[i].type == 'uniform':
 					if np.abs(p.list[i].p1 - x[i]) < 1e-5:
@@ -813,41 +841,66 @@ class trace:
 					elif np.abs(p.list[i].p2 - x[i]) < 1e-5:
 						x[i] -= 1e-5
 			return x
-					
+		
+		#Calculate the best MAP estimate
 		mind = self.find_map()
 		if not mind is None:
+			#Calculate the Hessian at MAP estimate
 			if mind['success']: 
 				mu = sanitize_uniform(mind['x'],self.prior)
 				feps = np.sqrt(np.finfo(np.float).eps)
 				hessian = calc_hessian(self.log_posterior,mu,eps=feps)
+				
+				#Ensure that the hessian is positive semi-definite by checking that all eigenvalues are positive
+				#If not, expand the value of machine error in the hessian calculation and try again
 				try:
+					#Check eigenvalues
 					while np.any(np.linalg.eig(-hessian)[0] <= 0.):
 						feps *= 2.
+						#Calculate hessian
 						hessian = calc_hessian(self.log_posterior,mu,eps=feps)
+					#Invert hessian to get the covariance matrix
 					var = np.linalg.inv(-hessian)
-					#Ensure symmetry if witin machine error
+					#Ensure symmetry of covariance matrix if witin machine error
 					if np.allclose(var,var.T):
 						var = np.tri(5,5,-1)*var+(np.tri(5,5)*var).T
 						return (self.identity,laplace_posterior(mu,var))
+						
+				#If this didn't work, return None
 				except np.linalg.LinAlgError:
 					return (self.identity,None)
 		return (self.identity,None)
 
 class dataset:
+	'''
+	A dataset is a collection of traces (i.e., all of the signal vs. time trajectories from a particular experiment).
+	'''
 	def __init__(self,data_fname=None,fmt='2D-NxT',tau=None,temperature = 25., title = None, prior = None,analysis_fname=None):
+		#Location of the file containing the signal vs. time trajectories
 		self.data_fname = data_fname
+		#Data format of the signal vs. time trajectories ('2D-NxT','2D-TxN','1D')
 		self.fmt = fmt
+		#Time period
 		self.tau =tau
+		#Temperature
 		self.temperature = temperature
+		#Random Notes from GUI are stored here
 		self.title = title
+		#prior for all traces
 		self.prior = prior
+		#List of traces to make accessing them easier
 		self.traces = []
+		#File name where this dataset will be/already is saved so that it can be loaded/saved later
 		self.analysis_fname = analysis_fname
+		#Best ensemble parameters for the ensemble of signal vs. time trajectories.
+		#Calculated from the variational GMM of the Laplace approximated BIASD posteriors
 		self.ensemble_result = None
 	
 	@staticmethod
 	def _convert_2D_to_1D(trace_matrix):
-		"Convert NxT (with NaN\'s of inf\'s for no data) to 2x(N*T) with labels format"
+		'''
+		Convert NxT (with NaN\'s or inf\'s for no data) to 2x(N*T) with labels format
+		'''
 		if trace_matrix.ndim == 1:
 			trace_matrix = trace_matrix[None,:]
 		identities = np.array([])
@@ -860,7 +913,9 @@ class dataset:
 
 	@staticmethod
 	def _convert_1D_to_2D(trace_matrix):
-		"Convert 2x(N*T) with labels format to NxT format (with NaN\'s for no data)"
+		'''
+		Convert 2x(N*T) with labels format to NxT format (with NaN\'s for no data)
+		'''
 	
 		ns = np.unique(trace_matrix[0])
 		sizes = (trace_matrix[0][None,:] == ns[:,None]).sum(1)
@@ -874,6 +929,11 @@ class dataset:
 	
 	
 	def load_data(self):
+		'''
+		Creates traces from the signal vs. time trajectories in the file specified by data_fname.
+		Stores the signal vs. time data in the '1D' format.
+		'''
+		
 		if type(self.data_fname) == str:
 			if path.isfile(self.data_fname):
 				try:
@@ -892,6 +952,7 @@ class dataset:
 				print self.data_fname + " isn't a file"
 				return
 			
+			#Construct traces
 			ns = np.unique(self.data[0])
 			for i in range(ns.size):
 				self.traces.append(trace(self.data[1][self.data[0]==ns[i]],tau=self.tau,prior=self.prior,identity=i))
@@ -899,12 +960,20 @@ class dataset:
 			
 			
 	def save_analysis(self):
+		'''
+		Allows the entire dataset to be saved using pickle to the filename specified in analysis_fname. 
+		Everything including traces, laplace posteriors, and ensembles will be saved.
+		'''
 		if self.analysis_fname:
 			f = open(self.analysis_fname,'wb')
 			pickle.dump(self.__dict__,f,2)
 			f.close()
 	
 	def load_analysis(self):
+		'''
+		Loads the entire dataset that was save to the file specified by the filename in analysis_fname.
+		Everything including traces, laplace posteriors, and ensembles will be loaded.
+		'''
 		if path.isfile(self.analysis_fname):
 			f = open(self.analysis_fname,'rb')
 			tmp_dict = pickle.load(f)
@@ -914,11 +983,19 @@ class dataset:
 			print "No file called ",self.analysis_fname
 	
 	def update(self):
+		'''
+		Changes to the priors or time period specified in the dataset will be updated to the traces in the dataset.
+		'''
+		
 		for tracei in self.traces:
 			tracei.prior = self.prior
 			tracei.tau = self.tau
 	
 	def run_laplace(self,nproc=1):
+		'''
+		Calculates the Laplace approximation of the posterior probability distributions for the traces loaded into this dataset.
+		If nproc is > 1, then this function will use multiple processors to perform this calculation on traces simultaneously.
+		'''
 		if nproc > mp.cpu_count():
 			print "Using max number of CPUs: "+str(mp.cpu_count())
 			nproc = mp.cpu_count()
@@ -926,6 +1003,8 @@ class dataset:
 		j = 1
 		print "-----------------\nLaplace Approximations"
 		t0 = time.time()
+		
+		#Serial version - go one by one.
 		if nproc == 1:
 			for tracei in self.traces:
 				print j,"/",np.size(self.traces)
@@ -933,7 +1012,8 @@ class dataset:
 				tracei.posterior = item[1]
 				j += 1
 		else:
-			#Multiprocessing has a memory problem, so run in batches
+			#Multiprocessing has a memory problem, so run in batches... can increase batch size if you want, but beware not to max out memory.
+			#Calculate batch size
 			batchsize = 100
 			while batchsize % nproc != 0:
 				batchsize -= 1
@@ -941,13 +1021,17 @@ class dataset:
 
 			tracelist= []
 			print "Batches - ",batchnum,
+			#Calculate a batch of traces
 			for bi in range(batchnum):
+				#Choose traces to calculate
 				tracelist = self.traces[bi::batchnum]
 				
+				#Setup the queues for the multiprocessing workers
 				queue_work = mp.Queue(nproc)
 				queue_out = mp.Queue()
 				queue_results = mp.Queue()
-
+				
+				#Start the multiprocessing workers and the watcher
 				workers = []
 				for i in range(nproc):
 					worker = Laplace_Worker(queue_work,queue_out)
@@ -956,28 +1040,37 @@ class dataset:
 				watcher = Watcher(queue_out,queue_results,nproc,len(tracelist),bi)
 				watcher.start()
 
+				#Begin the laplace approximations by sending the traces to the queue
 				for tracei in tracelist:
 					queue_work.put(tracei)
 				
-				#Poison Pills
+				#Add Poison Pills to the queue so that the workers know when they're done.
 				for i in workers:
 					queue_work.put(None)
 				
-				#Wait for it
+				#Wait for the calculations to finish
 				for worker in workers:
 					worker.join()
 
+				#Collect the results from this batch
 				for i,n in enumerate(tracelist):
 					y = queue_results.get()
 					self.traces[y[0]].posterior = y[1]
 				watcher.join()
 				
-		
 		t1 = time.time()
 		print "\nTime:",t1-t0
 		#self.save_analysis()
 		
+		
 	def variational_ensemble(self,nstates=20,nsamples=100,nrestarts=5,nproc=1):
+		'''
+		Calculates the variational GMM from Laplace approximations of the posteriors for the traces loaded into this dataset.
+		If nproc is > 1, then this function will use multiple processors to perform this calculation on traces simultaneously.
+		nstates - Maximum number of classes for the variational GMM to use. All between [1 ... nstates] will be processed.
+		nsamples - Number of samples to draw from the mean and covariance of each of the Laplace approximated posteriors.
+		nrestarts - Number of restarts per class to run.
+		'''
 		if nproc > mp.cpu_count():
 			print "Using max number of CPUs: "+str(mp.cpu_count())
 			nproc = mp.cpu_count()
@@ -989,6 +1082,7 @@ class dataset:
 		tid = 0
 		t0 = time.time()
 		
+		#Generate samples from each laplace approximated posterior to use for the variational GMM
 		for tracei in self.traces:
 			if not tracei.posterior is None:
 				trace_id.append(tid)
@@ -1004,10 +1098,14 @@ class dataset:
 			t0 = time.time()
 			
 			if nstates > 1:
+				#No batches here, because the memory probably isn't usually an issue.
+				
+				#Setup the queues for the multiprocessing workers
 				queue_work = mp.Queue(nproc)
 				queue_out = mp.Queue()
 				queue_results = mp.Queue()
 				
+				#Start the multiprocessing workers and the watcher
 				workers = []
 				for i in range(nproc):
 					worker = Variational_Worker(queue_work,queue_out)
@@ -1016,19 +1114,21 @@ class dataset:
 				watcher = Watcher(queue_out,queue_results,nproc,1+nrestarts*(nstates-1),0)
 				watcher.start()
 				
+				#Begin the GMMs by sending the samples and the number of states to the queue
 				queue_work.put((x.reshape((x.shape[0]*x.shape[1],5)),1))
 				for st in np.linspace(2,nstates,nstates-1,dtype='i'):
 					for nr in range(nrestarts):
 						queue_work.put((x.reshape((x.shape[0]*x.shape[1],5)),st))
 				
-				#Poison Pills
+				#Add Poison Pills to the queue so that the workers know when they're done.
 				for i in range(nproc):
 					queue_work.put(None)
 				
-				#Wait for it
+				#Wait for the calculations to finish
 				for worker in workers:
 					worker.join()
 				
+				#Collect the results into _ensemble_results
 				print "\n"
 				for i in range(1+nrestarts*(nstates-1)):
 					y = queue_results.get()
@@ -1036,10 +1136,13 @@ class dataset:
 					self._ensemble_results.append(y)
 				watcher.join()
 			
+			#Serial version - go one by one
 			else:
 				y = variational_gmm(x.reshape((x.shape[0]*x.shape[1],5)),1)
 				self._ensemble_results.append(y)
 
+			#Find out the best restart for each number of classes and store that
+			#Also choose the best result from all of the classes and restarts
 			print "Post-Processing"
 			self._lb_states = np.zeros((3,nstates)) - 1.
 			self._lb_states[0] = np.linspace(1,nstates,nstates)
@@ -1054,11 +1157,16 @@ class dataset:
 					self._lb_states[1,er_states-1] = er_lb
 					self._lb_states[2,er_states-1] = ind
 			
+			#Assign max probability state to each trace.
 			z = np.repeat(-1.,self.n_traces)
 			for i in range(len(trace_id)):
 				z[i] = self.ensemble_result.r[i*nsamples:(i+1)*nsamples].sum(0).argmax()
 			self.ensemble_result.z = z
 			
+			#For the best restart in each number of classes:
+			#	Calculate the histograms of data which go to each class
+			#	~Marginalize \Theta to calculate an approximate evidence
+			#	Store these curves (esp. for plotting in the GUI)
 			for k in range(nstates):
 				er = ensemble(self.ensemble_result.x,self._ensemble_results[int(self._lb_states[2,k])])
 				if k == 0:
@@ -1102,7 +1210,7 @@ class dataset:
 			print "No Posteriors?"
 
 
-
+#Example biasddistributions
 prior_personal_distribution = biasddistribution(
 dist('normal',0.15,.1),
 dist('normal',.75,.1),
