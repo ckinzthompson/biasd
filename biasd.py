@@ -21,7 +21,10 @@ import cPickle as pickle
 import time
 
 
-def pdot(a,b):
+def pdot(a,b)
+	# Parallel dot product
+	# -- Takes dot product along last two dimensions:
+	# -- i.e., dot((N,K,D,D),(N,K,D,D)) --> (N,K,1,1)
 	return np.einsum('...ij,...jk->...ik',a,b)
 
 class stats:
