@@ -784,14 +784,15 @@ class Analysis(Frame):
 			recordout += "\n"+str(i+1)+" "+str(data._lb_states[1,i])
 		self.text_output.insert(END,recordout)
 
+###Initialize with some personal settings
 #data = dataset(tau=1.,prior=prior_generic_distribution)
 data = dataset(tau=.05,prior=prior_personal_distribution)
 
-#integrandlibraryloc = './integrand_gsl.so'
-integrandlibraryloc = '/media/colin/COLINHDD/data/20150922 biasd_gui/integrand_gsl.so'
+###Try here first
+integrandlibraryloc = './integrand_gsl.so'
 integralflag = load_c_integral(integrandlibraryloc)
 
-
+#Start up the GUI
 app = BIASDapp()
 app.mainloop()
 

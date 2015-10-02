@@ -1,3 +1,4 @@
+# BIASD
 This repository contains the Bayesian Inference for the Analysis of Sub-temporal-resolution Data (BIASD) algorithm written in Python.
 Additionally, it includes a GUI, and a version of the integrand in the BIASD likelihood function that is written in C for optimal performance.
 
@@ -27,5 +28,11 @@ git push origin branch_name_here
 ```
 
 ### Make new branch
-```git
+```bash
 git checkout -b new_branch_name_here
+```
+
+### Pull updates from gitlab
+```bash
+git pull origin branch_name_here
+```
