@@ -3,12 +3,29 @@ Additionally, it includes a GUI, and a version of the integrand in the BIASD lik
 
 # To Use Git:
 
-### get repository
-git clone git@gitlab.com:ckinztho/biasd.git will get the git repository from gitlab and clone it to the local machine
+### To get the repository
+```bash
+git clone git@gitlab.com:ckinztho/biasd.git
+```
+will get the git repository from gitlab and clone it to the local machine
 
-### after creating file
+### After changing/creating a file
+```bash
 git add filename.txt
 git commit -m "this is the commit message"
+```
 
-### push local to 
-git push -u origin master
+### Remove a file
+```bash
+git rm filename.txt
+git commit -m "the commit message"
+```
+
+### Push local to gitlab
+```bash
+git push origin branch_name_here
+```
+
+### Make new branch
+```git
+git checkout -b new_branch_name_here
