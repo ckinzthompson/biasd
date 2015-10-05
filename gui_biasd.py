@@ -730,6 +730,7 @@ class Analysis(Frame):
 		er = data.ensemble_result
 		if not n is None and np.any(data._lb_states[0] == n):
 			er = ensemble(data.ensemble_result.x,data._ensemble_results[int(data._lb_states[2,n-1])])
+			plot_marginals(data._ensemble_results[int(data._lb_states[2,n-1])])
 		
 		ax1.cla()
 		ax1.scatter(klist,evidences,s=5,color='k')

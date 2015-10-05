@@ -121,6 +121,19 @@ class stats:
 	def wishart_entropy(W,nu):
 		d = W.shape[-1]
 		return -stats.wishart_ln_B(W,nu) - (nu - d - 1.)/2. * stats.wishart_E_ln_det_lam(W,nu) + nu*d/2.
+	
+	@staticmethod
+	#Marginal posterior pdf for mu from Normal-Wishart.
+	#Not vectorized.
+	def posterior_marginal_mu(x,n,mu,beta,nu,W):
+		d = 1.
+		mui = mu[n]
+		Wi = W[n,n]/(beta*(nu-d+1.))
+		nui = nu
+		y1 = special.gamma((nui+d)/2.)*(np.pi*nui)**(-d/2.)
+		y2 = np.abs(Wi)**-.5 / special.gamma(nui/2.)
+		y3 = (1. + 1/nui*((x-mui)/Wi*(x-mui))) ** (-.5*(nui+d))
+		return y1 * y2 * y3
 
 
 class dist:
@@ -496,7 +509,45 @@ def test_speed(n):
 	print "Total time for "+str(n)+" runs: ",np.around(t1-t0,4)," (s)"
 	print 'Average speed: ', np.around((t1-t0)/n/d.size*1.e6,4),' (usec/datapoint)'
 
-def variational_gmm(x,nstates,maxiter=5000,lowerbound_threshold=1e-16):
+
+def kmeans(x,nstates,nrestarts=5):
+	"""
+	K-means Clustering
+	x is Nxd
+	"""
+	
+	jbest = np.inf
+	mbest = None
+	rbest = None
+	for nr in range(nrestarts):
+		mu_k = x[np.random.randint(0,x.shape[0],size=nstates)]
+		j_last = np.inf
+		for i in range(500):
+			dist = np.sqrt(np.sum(np.square(x[:,None,:] - mu_k[None,...]),axis=2))
+			r_nk = (dist == dist.min(1)[:,None]).astype('i')
+			j = (r_nk.astype('f') * dist).sum()
+			mu_k = (r_nk[:,:,None].astype('f')*x[:,None,:]).sum(0)/(r_nk.astype('f').sum(0)[:,None]+1e-16)
+			if np.abs(j - j_last)/j <= 1e-100:
+				if j < jbest:
+					jbest = j
+					mbest = mu_k
+					rbest = r_nk
+				break
+			else:
+				j_last = j
+	mu_k = mbest
+	r_nk = rbest
+	sig_k = np.empty((nstates,x.shape[1],x.shape[1]))
+	for k in range(nstates):
+		sig_k[k] = np.cov(x[r_nk[:,k]==1.].T)
+	pi_k = (r_nk.sum(0)).astype('f')
+	pi_k /= pi_k.sum()
+		
+	xsort = pi_k.argsort()[::-1]
+	#pi_k is fraction, r_nk is responsibilities, mu_k is means, sig_k is variances
+	return [pi_k[xsort],r_nk[:,xsort],mu_k[xsort],sig_k[xsort]]
+		
+def variational_gmm_new(x,nstates,maxiter=5000,lowerbound_threshold=1e-10):
 	"""
 	Variational Gaussian Mixture Model from C. Bishop - Chapter 10, Section 2.
 	x is an n by d array, where n is the number of points, and d is the dimensionality of the points.
@@ -504,9 +555,19 @@ def variational_gmm(x,nstates,maxiter=5000,lowerbound_threshold=1e-16):
 	
 	This version is fully vectorized. Possible typo in the lower_bound calculation.
 	"""
-################# 
-
-######## Initialize
+	def calc_lowerbound(nstates,ndim,ntraces,alpha_0,beta_0,nu_0,W_0,Winv_0,m_0,r_nk,N_k,xbar_k,S_k,m_k,W_k,alpha_k,beta_k,nu_k,E_lam,E_pi,E_mulam):
+		eq71 = 0.5 * np.sum( N_k * (E_lam - ndim/beta_k - nu_k * np.trace(pdot(S_k,W_k),axis1=-2,axis2=-1) -nu_k*pdot((xbar_k-m_k)[:,None,:],pdot(W_k,(xbar_k-m_k)[:,:,None]))[:,0,0]  - ndim*np.log(2.*np.pi) ))
+		eq72 = np.sum(np.sum(r_nk*E_pi[None,:],axis=1),axis=0)
+		eq73 = special.gammaln(alpha_0*nstates) - nstates*special.gammaln(alpha_0) + (alpha_0-1.)*np.sum(E_pi)
+		eq74 = 0.5 * np.sum( ndim*np.log(beta_0/(2.*np.pi)) + E_lam - ndim*beta_0/beta_k - beta_0 * nu_k * pdot((m_k-m_0)[:,None,:],pdot(W_k,(m_k-m_0)[:,:,None])))
+		eq74 += nstates * stats.wishart_ln_B(W_0,np.array((nu_0))) + (nu_0 - ndim -1.)/2. * np.sum(E_lam) - 0.5 * np.sum(nu_k * np.trace(pdot(Winv_0[None,...],W_k),axis1=-2,axis2=-1))
+		eq75 = np.sum(np.sum(r_nk*np.log(r_nk+1e-300),axis=1),axis=0)
+		eq76 = np.sum((alpha_k-1.)*E_pi) + special.gammaln(alpha_k.sum()) - np.sum(special.gammaln(alpha_k))
+		eq77 = 0.5 *np.sum(E_lam + ndim*np.log(beta_k/(2.*np.pi)) - ndim - 2.*stats.wishart_entropy(W_k,nu_k))
+		lowerbound =  eq71+eq72+eq73+eq74-eq75-eq76-eq77
+		return lowerbound#,[eq71,eq72,eq73,eq74,eq75,eq76,eq77]
+	
+	#### Initialize
 	ntraces = x.shape[0]
 	ndim = x.shape[1]
 
@@ -519,6 +580,7 @@ def variational_gmm(x,nstates,maxiter=5000,lowerbound_threshold=1e-16):
 	
 	np.random.seed()
 	r_nk = np.array([np.random.dirichlet(np.repeat(alpha_0,nstates)) for _ in range(ntraces)])
+
 	N_k = np.zeros((nstates))
 	m_k = np.repeat(m_0[None,:],nstates,axis=0)
 	W_k = np.repeat(W_0[None,:,:],nstates,axis=0)
@@ -532,25 +594,11 @@ def variational_gmm(x,nstates,maxiter=5000,lowerbound_threshold=1e-16):
 	E_pi = np.zeros((nstates))
 	E_mulam = np.zeros((ntraces,nstates))
 
-	def calc_lowerbound(nstates,ndim,ntraces,alpha_0,beta_0,nu_0,W_0,Winv_0,m_0,r_nk,N_k,xbar_k,S_k,m_k,W_k,alpha_k,E_lam,E_pi,E_mulam):
-		eq71 = 0.5 * np.sum( N_k * (E_lam - ndim/beta_k - nu_k * np.trace(pdot(S_k,W_k),axis1=-2,axis2=-1) -nu_k*pdot((xbar_k-m_k)[:,None,:],pdot(W_k,(xbar_k-m_k)[:,:,None]))[:,0,0]  - ndim*np.log(2.*np.pi) ))
-		eq72 = np.sum(np.sum(r_nk*E_pi[None,:],axis=1),axis=0)
-		eq73 = special.gammaln(alpha_0*nstates) - nstates*special.gammaln(alpha_0) + (alpha_0-1.)*np.sum(E_pi)
-		eq74 = 0.5 * np.sum( ndim*np.log(beta_0/(2.*np.pi)) + E_lam - ndim*beta_0/beta_k - beta_0 * nu_k * pdot((m_k-m_0)[:,None,:],pdot(W_k,(m_k-m_0)[:,:,None])))
-		eq74 += nstates * stats.wishart_ln_B(W_0,np.array((nu_0))) + (nu_0 - ndim -1.)/2. * np.sum(E_lam) - 0.5 * np.sum(nu_k * np.trace(pdot(Winv_0[None,...],W_k),axis1=-2,axis2=-1))
-		eq75 = np.sum(np.sum(r_nk*np.log(r_nk+1e-300),axis=1),axis=0)
-		eq76 = np.sum((alpha_k-1.)*E_pi) + special.gammaln(alpha_k.sum()) - np.sum(special.gammaln(alpha_k))
-		eq77 = 0.5 *np.sum(E_lam + ndim*np.log(beta_k/(2.*np.pi)) - ndim - 2.*stats.wishart_entropy(W_k,nu_k))
-		lowerbound =  np.nan_to_num((eq71,eq72,eq73,eq74,-eq75,-eq76,-eq77)).sum()
-		return lowerbound#,[eq71,eq72,eq73,eq74,eq75,eq76,eq77]
-
-######## Iterations
 	it = 0
 	while 1:
-		if it > maxiter or finished_counter > 5:
+		if it > maxiter or finished_counter > 3:
 			break
 		
-############ M-Step
 		N_k = np.sum(r_nk,axis=0)
 		xbar_k = np.sum(r_nk[:,:,None]*x[:,None,:],axis=0)/(N_k+1e-16)[:,None]
 		S_k = np.sum(r_nk[:,:,None,None]*pdot((x[:,None,:] - xbar_k[None,:,:])[:,:,:,None],(x[:,None,:] - xbar_k[None,:,:])[:,:,None,:]),axis=0)/(N_k+1e-16)[:,None,None]
@@ -561,7 +609,6 @@ def variational_gmm(x,nstates,maxiter=5000,lowerbound_threshold=1e-16):
 		m_k = (beta_0*m_0 + N_k[:,None]*xbar_k)/beta_k[:,None]
 		W_k = np.linalg.inv( Winv_0 + N_k[:,None,None]*S_k + (beta_0*N_k/(beta_0 + N_k))[:,None,None] * pdot((xbar_k - m_0)[:,:,None],(xbar_k - m_0)[:,None,:]) )
 		
-############ E-Step
 		E_lam = np.sum(special.psi((nu_k[:,None] + 1. - np.linspace(1,ndim,ndim)[None,:])/2.),axis=1) + ndim*np.log(2.) + np.log(np.linalg.det(W_k))
 		E_pi = special.psi(alpha_k) - special.psi(alpha_k.sum())
 		E_mulam = ndim/beta_k[None,:] + nu_k[None,:] * pdot((x[:,None,None,:] - m_k[None,:,None,:]),pdot(W_k[None,:,:,:],(x[:,None,:,None] - m_k[None,:,:,None])))[:,:,0,0]
@@ -571,53 +618,23 @@ def variational_gmm(x,nstates,maxiter=5000,lowerbound_threshold=1e-16):
 		rho_nk = np.exp(rho_nk)
 		r_nk = rho_nk/np.sum(rho_nk,axis=1)[:,None]
 
-#~ ############ Remove Unpopulated States
-		#~ cutk = np.nonzero(N_k < alpha_0*1e-6)[0]
-		#~ if cutk.size > 0:
-			#~ nstates -= cutk.size
-			#~ if not np.ndim(state_log):
-				#~ state_log = np.array([it,nstates])[None,:]
-			#~ else:
-				#~ state_log = np.append(state_log,np.array([it,nstates])[None,:],axis=0)
-			#~ xbar_k = np.delete(xbar_k,cutk,axis=0)
-			#~ S_k = np.delete(S_k,cutk,axis=0)
-			#~ N_k = np.delete(N_k,cutk,axis=0)
-			#~ rho_nk = np.delete(rho_nk,cutk,axis=1)
-			#~ r_nk = np.delete(r_nk,cutk,axis=1)
-			#~ nu_k = np.delete(nu_k,cutk,axis=0)
-			#~ beta_k = np.delete(beta_k,cutk,axis=0)
-			#~ alpha_k = np.delete(alpha_k,cutk,axis=0)
-			#~ m_k = np.delete(m_k,cutk,axis=0)
-			#~ W_k = np.delete(W_k,cutk,axis=0)
-			#~ E_lam = np.delete(E_lam,cutk,axis=0)
-			#~ E_pi = np.delete(E_pi,cutk,axis=0)
-			#~ E_mulam = np.delete(E_mulam,cutk,axis=1)
-
-############ Lowerbound Threshold for Convergence
-		l = calc_lowerbound(nstates,ndim,ntraces,alpha_0,beta_0,nu_0,W_0,Winv_0,m_0,r_nk,N_k,xbar_k,S_k,m_k,W_k,alpha_k,E_lam,E_pi,E_mulam)
+		l = calc_lowerbound(nstates,ndim,ntraces,alpha_0,beta_0,nu_0,W_0,Winv_0,m_0,r_nk,N_k,xbar_k,S_k,m_k,W_k,alpha_k,beta_k,nu_k,E_lam,E_pi,E_mulam)
 		
 		if not np.ndim(lb):
 			lb = np.array((it,l))[None,:]
 		else:
 			lb = np.append(lb,np.array((it,l))[None,:],axis=0)
-		
-		#print it,nstates,l,-lb[it-1,1]+lb[it,1]
-		#~ if it > 1 and (np.abs((lb[it,1]-lb[it-1,1])/lb[it,1]) < lowerbound_threshold ):# or lb[it,1] < lb[it-1,1]):
-			#~ finished_counter += 1
-		#~ else:
-			#~ finished_counter = 0
-		# Run until it's done....
-		if it > 1 and lb[it-1,1]==lb[it,1]:
-			break
-			#~ finished_counter += 1
-		#~ else:
-			#~ finished_counter = 0
+
+		##A few threshold options: equivalent, rel. change, abs. change
+		# if it > 1 and lb[it-1,1] == lb[it,1]:
+		if it > 1 and (np.abs((lb[it,1]-lb[it-1,1])/lb[it,1]) < lowerbound_threshold):
+		# if it > 1 and (np.abs((lb[it,1]-lb[it-1,1])) < lowerbound_threshold):
+			finished_counter += 1
+		else:
+			finished_counter = 0
 			
 		it += 1
 	
-	#Don't sort by class population size
-	#return [alpha_k,r_nk,m_k,beta_k,nu_k,W_k,S_k,lb,state_log]
-	#Sort by class population size (largest first)
 	xsort = alpha_k.argsort()[::-1]
 	return [alpha_k[xsort],r_nk[:,xsort],m_k[xsort],beta_k[xsort],nu_k[xsort],W_k[xsort],S_k[xsort],lb,state_log]
 
@@ -1225,3 +1242,12 @@ dist('normal',.1,1000.),
 dist('normal',1.,1000.),
 dist('normal',1.,1000.))
 
+def plot_marginals(y):
+	f,ax = plt.subplots(1,5)
+	y = variational_gmm_new(x,2)
+	for j in range(y[0].shape[0]):
+		for i,a in zip(range(y[2].shape[1]),ax[0]):
+			s = 5.*y[6][j]**.5
+			xx = np.linspace(y[2][j]-s,y[2][j]+s,10001)
+			a.semilogy(x,posterior_marginal_mu(x,i,y[2][j],y[3][j],y[4][j],y[5][j]))
+	plt.show()
