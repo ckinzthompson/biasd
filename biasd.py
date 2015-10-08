@@ -339,7 +339,7 @@ class biasddistribution:
 				#Enforce conditions \epsilon_1 < \epsilon_2, and others are > 0
 				if theta[0] < theta[1] and theta[2] > 0. and theta[3] > 0. and theta[4] > 0.:
 					break
-			theta = np.repeat(np.nan,5)
+				theta = np.repeat(np.nan,5)
 		return theta
 
 def python_integrand(x,d,e1,e2,sigma,k1,k2,tau):
@@ -628,7 +628,7 @@ def variational_gmm(x,c,nstates,maxiter=5000,lowerbound_threshold=1e-20):
 		##############
 		E_lam = np.sum(special.psi((nu_k[:,None] + 1. - np.linspace(1,ndim,ndim)[None,:])/2.),axis=1) + ndim*np.log(2.) + np.nan_to_num(np.log(np.linalg.det(W_k)))
 		E_pi = special.psi(alpha_k) - special.psi(alpha_k.sum())
-		E_mulam = ndim/beta_k[None,:] + nu_k[None,:] * pdot((x[:,None,None,:] - m_k[None,:,None,:]),pdot(np.linalg.inv(Winv_k[None,:,:,:])+c[:,None,:,:]),(x[:,None,:,None] - m_k[None,:,:,None])))[:,:,0,0]
+		E_mulam = ndim/beta_k[None,:] + nu_k[None,:] * pdot((x[:,None,None,:] - m_k[None,:,None,:]),pdot(np.linalg.inv(Winv_k[None,:,:,:]+c[:,None,:,:]),(x[:,None,:,None] - m_k[None,:,:,None])))[:,:,0,0]
 
 		rho_nk = E_pi[None,:] + .5 * E_lam[None,:] - ndim/2.*np.log(2.*np.pi) - .5*E_mulam
 		rho_nk -= rho_nk.max(1)[:,None]
@@ -747,9 +747,7 @@ class ensemble:
 	"""
 	Holds the results of a variational GMM  of the laplace approximated BIASD posteriors
 	"""
-	def __init__(self,x,params):
-		#Samples from posteriors that were used
-		self.x = x
+	def __init__(self,params):
 		#Variational GMM parameters
 		self.alpha,self.r,self.m,self.beta,self.nu,self.W,self.S_k,self.lowerbound,self.state_log = params
 		self.var = np.zeros_like(self.m)
@@ -1112,68 +1110,67 @@ class dataset:
 		self._ensemble_results = []
 
 		x = []
+		c = []
 		trace_id = []
 		tid = 0
 		t0 = time.time()
 		
-		#Generate samples from each laplace approximated posterior to use for the variational GMM
+		#Check for & collect a Laplace approximated posterior to use for the variational GMM
 		for tracei in self.traces:
 			if not tracei.posterior is None:
+				x.append(tracei.posterior.mu)
+				c.append(tracei.posterior.covar)
 				trace_id.append(tid)
 				tid += 1
-				x.append(stats.rv_multivariate_normal(tracei.posterior.mu,tracei.posterior.covar,number=nsamples))
-				
 		x = np.array(x)
+		c = np.array(c)
 		
-		if x.shape[0] > 0.:
-			print x.shape
-			print "-----------------\nVariational Mixtures"
+		print "-----------------\nVariational Mixtures"
+		t0 = time.time()
+		
+		if nstates > 1:
+			#No batches here, because the memory probably isn't usually an issue.
 			
-			t0 = time.time()
+			#Setup the queues for the multiprocessing workers
+			queue_work = mp.Queue(nproc)
+			queue_out = mp.Queue()
+			queue_results = mp.Queue()
 			
-			if nstates > 1:
-				#No batches here, because the memory probably isn't usually an issue.
-				
-				#Setup the queues for the multiprocessing workers
-				queue_work = mp.Queue(nproc)
-				queue_out = mp.Queue()
-				queue_results = mp.Queue()
-				
-				#Start the multiprocessing workers and the watcher
-				workers = []
-				for i in range(nproc):
-					worker = Variational_Worker(queue_work,queue_out)
-					worker.start()
-					workers.append(worker)
-				watcher = Watcher(queue_out,queue_results,nproc,1+nrestarts*(nstates-1),0)
-				watcher.start()
-				
-				#Begin the GMMs by sending the samples and the number of states to the queue
-				queue_work.put((x.reshape((x.shape[0]*x.shape[1],5)),1))
-				for st in np.linspace(2,nstates,nstates-1,dtype='i'):
-					for nr in range(nrestarts):
-						queue_work.put((x.reshape((x.shape[0]*x.shape[1],5)),st))
-				
-				#Add Poison Pills to the queue so that the workers know when they're done.
-				for i in range(nproc):
-					queue_work.put(None)
-				
-				#Wait for the calculations to finish
-				for worker in workers:
-					worker.join()
-				
-				#Collect the results into _ensemble_results
-				print "\n"
-				for i in range(1+nrestarts*(nstates-1)):
-					y = queue_results.get()
-					print "States:",y[0].size,", Iterations:",int(y[-2][-1][0]),", Lowerbound:",y[-2][-1][1]
-					self._ensemble_results.append(y)
-				watcher.join()
+			#Start the multiprocessing workers and the watcher
+			workers = []
+			for i in range(nproc):
+				worker = Variational_Worker(queue_work,queue_out)
+				worker.start()
+				workers.append(worker)
+			watcher = Watcher(queue_out,queue_results,nproc,1+nrestarts*(nstates-1),0)
+			watcher.start()
 			
-			#Serial version - go one by one
-			else:
-				y = variational_gmm(x.reshape((x.shape[0]*x.shape[1],5)),1)
+			#Begin the GMMs by sending the samples and the number of states to the queue
+			queue_work.put((x,c,1))
+			for st in np.linspace(2,nstates,nstates-1,dtype='i'):
+				for nr in range(nrestarts):
+					queue_work.put((x,c,st))
+			
+			#Add Poison Pills to the queue so that the workers know when they're done.
+			for i in range(nproc):
+				queue_work.put(None)
+			
+			#Wait for the calculations to finish
+			for worker in workers:
+				worker.join()
+			
+			#Collect the results into _ensemble_results
+			print "\n"
+			for i in range(1+nrestarts*(nstates-1)):
+				y = queue_results.get()
+				print "States:",y[0].size,", Iterations:",int(y[-2][-1][0]),", Lowerbound:",y[-2][-1][1]
 				self._ensemble_results.append(y)
+			watcher.join()
+		
+		#Serial version - go one by one
+		else:
+			y = variational_gmm(x,c,1)
+			self._ensemble_results.append(y)
 
 			#Find out the best restart for each number of classes and store that
 			#Also choose the best result from all of the classes and restarts
@@ -1181,12 +1178,12 @@ class dataset:
 			self._lb_states = np.zeros((3,nstates)) - 1.
 			self._lb_states[0] = np.linspace(1,nstates,nstates)
 			self._lb_states[1] = np.repeat(-np.inf,self._lb_states[1].size)
-			self.ensemble_result = ensemble(x,self._ensemble_results[0])
+			self.ensemble_result = ensemble(self._ensemble_results[0])
 			for ind,er in enumerate(self._ensemble_results):
 				er_lb = er[-2][-1,1]
 				er_states = er[0].size
 				if er_lb > self.ensemble_result.lowerbound[-1,1]:
-					self.ensemble_result = ensemble(x,er)
+					self.ensemble_result = ensemble(er)
 				if self._lb_states[1,er_states-1] < er_lb:
 					self._lb_states[1,er_states-1] = er_lb
 					self._lb_states[2,er_states-1] = ind
@@ -1202,11 +1199,11 @@ class dataset:
 			#	~Marginalize \Theta to calculate an approximate evidence
 			#	Store these curves (esp. for plotting in the GUI)
 			for k in range(nstates):
-				er = ensemble(self.ensemble_result.x,self._ensemble_results[int(self._lb_states[2,k])])
+				er = ensemble(self._ensemble_results[int(self._lb_states[2,k])])
 				if k == 0:
 					hy,hx = np.histogram(self.data[1],bins=self.data[1].size**.5,normed=1)
 					hxx = 0.5*(hx[1:]+hx[:-1])
-					x0 = er.get_rvs(0,1000)
+					x0 = er.get_rvs(0,300)
 					dx0 = np.zeros_like(hxx)
 					for x in x0:
 						dx0 += np.exp(log_likelihood(x,hxx,self.tau))
@@ -1227,7 +1224,7 @@ class dataset:
 						chy,chx = np.histogram(q,bins=hx,normed=1,weights=w)
 						chy *= counts.sum(0)[kk]/counts.sum()
 						try:
-							x0 = er.get_rvs(kk,1000)
+							x0 = er.get_rvs(kk,300)
 							dx0 = np.zeros_like(hxx)
 							for x in x0:
 								dx0 += np.exp(log_likelihood(x,hxx,self.tau))
@@ -1240,8 +1237,6 @@ class dataset:
 			
 			t1 = time.time()
 			print "time:",t1-t0
-		else:
-			print "No Posteriors?"
 
 
 #Example biasddistributions

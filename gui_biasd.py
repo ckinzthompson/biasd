@@ -540,16 +540,16 @@ class Priors(Frame):
 		
 		global integralflag
 		if integralflag:
-			npoints = 1000
+			npoints = 300
 		else:
 			npoints = 10
 			
 		hy,hx = np.histogram(data.data[1],bins=data.data[1].size**.5,normed=1)
 		hxx = np.linspace(hx.min(),hx.max(),101)
 		ax4.hist(data.data[1],bins=data.data[1].size**.5,normed=1,alpha=.6,histtype='stepfilled',color='b',label='data')
-		ll = np.exp(log_likelihood(data.prior.random_theta(),hxx,data.tau))
+		ll = np.nan_to_num(np.exp(log_likelihood(data.prior.random_theta(),hxx,data.tau)))
 		for i in range(npoints-1):
-			ll += np.exp(log_likelihood(data.prior.random_theta(),hxx,data.tau))
+			ll += np.nan_to_num(np.exp(log_likelihood(data.prior.random_theta(),hxx,data.tau)))
 		ll /= ll.sum() * (hxx[1]-hxx[0])
 		ax4.plot(hxx,ll,color='k',lw=1.5,label='Marginal')
 		ax4.fill_between(hxx,ll,color='k',alpha=.4)
@@ -729,7 +729,7 @@ class Analysis(Frame):
 		
 		er = data.ensemble_result
 		if not n is None and np.any(data._lb_states[0] == n):
-			er = ensemble(data.ensemble_result.x,data._ensemble_results[int(data._lb_states[2,n-1])])
+			er = ensemble(data._ensemble_results[int(data._lb_states[2,n-1])])
 		
 		ax1.cla()
 		ax1.scatter(klist,evidences,s=5,color='k')
