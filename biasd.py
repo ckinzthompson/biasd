@@ -120,7 +120,20 @@ class stats:
 	@staticmethod
 	def wishart_entropy(W,nu):
 		d = W.shape[-1]
-		return -stats.wishart_ln_B(W,nu) - (nu - d - 1.)/2. * stats.wishart_E_ln_det_lam(W,nu) + nu*d/2.
+		return -stats.wishart_ln_B(W,nu) - (nu - d - 1.)/2. * stats.wishart_E_ln_det_lam(W,nu) + nu*d/2
+	
+	#Marginal posterior pdf for mu from Normal-Wishart.
+	#Not vectorized.
+	@staticmethod
+	def posterior_marginal_mu(x,n,mu,beta,nu,W):
+		d = 1.
+		mui = mu[n]
+		Wi = W[n,n]/(beta*(nu-d+1.))
+		nui = nu
+		y1 = special.gamma((nui+d)/2.)*(np.pi*nui)**(-d/2.)
+		y2 = np.abs(Wi)**-.5 / special.gamma(nui/2.)
+		y3 = (1. + 1/nui*((x-mui)/Wi*(x-mui))) ** (-.5*(nui+d))
+		return y1 * y2 * y3
 
 
 class dist:
@@ -496,43 +509,53 @@ def test_speed(n):
 	print "Total time for "+str(n)+" runs: ",np.around(t1-t0,4)," (s)"
 	print 'Average speed: ', np.around((t1-t0)/n/d.size*1.e6,4),' (usec/datapoint)'
 
-def variational_gmm(x,nstates,maxiter=5000,lowerbound_threshold=1e-16):
+def kmeans(x,nstates,nrestarts=5):
 	"""
-	Variational Gaussian Mixture Model from C. Bishop - Chapter 10, Section 2.
-	x is an n by d array, where n is the number of points, and d is the dimensionality of the points.
+	K-means Clustering
+	x is Nxd
+	"""
+	
+	jbest = np.inf
+	mbest = None
+	rbest = None
+	for nr in range(nrestarts):
+		mu_k = x[np.random.randint(0,x.shape[0],size=nstates)]
+		j_last = np.inf
+		for i in range(500):
+			dist = np.sqrt(np.sum(np.square(x[:,None,:] - mu_k[None,...]),axis=2))
+			r_nk = (dist == dist.min(1)[:,None]).astype('i')
+			j = (r_nk.astype('f') * dist).sum()
+			mu_k = (r_nk[:,:,None].astype('f')*x[:,None,:]).sum(0)/(r_nk.astype('f').sum(0)[:,None]+1e-16)
+			if np.abs(j - j_last)/j <= 1e-100:
+				if j < jbest:
+					jbest = j
+					mbest = mu_k
+					rbest = r_nk
+				break
+			else:
+				j_last = j
+	mu_k = mbest
+	r_nk = rbest
+	sig_k = np.empty((nstates,x.shape[1],x.shape[1]))
+	for k in range(nstates):
+		sig_k[k] = np.cov(x[r_nk[:,k]==1.].T)
+	pi_k = (r_nk.sum(0)).astype('f')
+	pi_k /= pi_k.sum()
+		
+	xsort = pi_k.argsort()[::-1]
+	#pi_k is fraction, r_nk is responsibilities, mu_k is means, sig_k is variances
+	return [pi_k[xsort],r_nk[:,xsort],mu_k[xsort],sig_k[xsort]]
+
+def variational_gmm(x,c,nstates,maxiter=5000,lowerbound_threshold=1e-20):
+	"""
+	Based on variational Gaussian mixture model from C. Bishop - Chapter 10, Section 2, but accounts for covariances of x.
+	x is an n by d array, where n is the number of points, and d is the dimensionality of the points. (Means)
+	c is an n by d by d array, where n is the number of points, and d is the dimensionality of the points. (Covariances)
 	maxiter is the maximum number of rounds before stopping if the lowerbound_thershold is not met.
-	
-	This version is fully vectorized. Possible typo in the lower_bound calculation.
+
+	This version is fully vectorized.
 	"""
-################# 
-
-######## Initialize
-	ntraces = x.shape[0]
-	ndim = x.shape[1]
-
-	alpha_0 = .1
-	beta_0 = 1e-20
-	nu_0 = ndim + 1.
-	W_0 = np.identity(ndim,dtype='f')
-	Winv_0 = np.linalg.inv(W_0)
-	m_0 = np.zeros((ndim),dtype='f')
-	
-	np.random.seed()
-	r_nk = np.array([np.random.dirichlet(np.repeat(alpha_0,nstates)) for _ in range(ntraces)])
-	N_k = np.zeros((nstates))
-	m_k = np.repeat(m_0[None,:],nstates,axis=0)
-	W_k = np.repeat(W_0[None,:,:],nstates,axis=0)
-	alpha_k = np.repeat(alpha_0,nstates)
-	
-	lb = None
-	state_log = None
-	finished_counter = 0
-
-	E_lam = np.zeros((nstates))
-	E_pi = np.zeros((nstates))
-	E_mulam = np.zeros((ntraces,nstates))
-
-	def calc_lowerbound(nstates,ndim,ntraces,alpha_0,beta_0,nu_0,W_0,Winv_0,m_0,r_nk,N_k,xbar_k,S_k,m_k,W_k,alpha_k,E_lam,E_pi,E_mulam):
+	def calc_lowerbound(nstates,ndim,ntraces,alpha_0,beta_0,nu_0,W_0,Winv_0,m_0,r_nk,N_k,xbar_k,S_k,m_k,W_k,alpha_k,beta_k,nu_k,E_lam,E_pi,E_mulam):
 		eq71 = 0.5 * np.sum( N_k * (E_lam - ndim/beta_k - nu_k * np.trace(pdot(S_k,W_k),axis1=-2,axis2=-1) -nu_k*pdot((xbar_k-m_k)[:,None,:],pdot(W_k,(xbar_k-m_k)[:,:,None]))[:,0,0]  - ndim*np.log(2.*np.pi) ))
 		eq72 = np.sum(np.sum(r_nk*E_pi[None,:],axis=1),axis=0)
 		eq73 = special.gammaln(alpha_0*nstates) - nstates*special.gammaln(alpha_0) + (alpha_0-1.)*np.sum(E_pi)
@@ -541,85 +564,96 @@ def variational_gmm(x,nstates,maxiter=5000,lowerbound_threshold=1e-16):
 		eq75 = np.sum(np.sum(r_nk*np.log(r_nk+1e-300),axis=1),axis=0)
 		eq76 = np.sum((alpha_k-1.)*E_pi) + special.gammaln(alpha_k.sum()) - np.sum(special.gammaln(alpha_k))
 		eq77 = 0.5 *np.sum(E_lam + ndim*np.log(beta_k/(2.*np.pi)) - ndim - 2.*stats.wishart_entropy(W_k,nu_k))
-		lowerbound =  np.nan_to_num((eq71,eq72,eq73,eq74,-eq75,-eq76,-eq77)).sum()
+		lowerbound =  eq71+eq72+eq73+eq74-eq75-eq76-eq77
 		return lowerbound#,[eq71,eq72,eq73,eq74,eq75,eq76,eq77]
 
-######## Iterations
+	#### Initialize
+	ntraces = x.shape[0]
+	ndim = x.shape[1]
+	cinv = np.linalg.inv(c)
+
+	alpha_0 = .1
+	beta_0 = 1e-20
+	nu_0 = ndim + 1.
+	W_0 = np.identity(ndim,dtype='f')
+	Winv_0 = np.linalg.inv(W_0)
+	m_0 = np.zeros((ndim),dtype='f')
+
+
+	np.random.seed()
+	r_nk = np.array([np.random.dirichlet(np.repeat(alpha_0,nstates)) for _ in range(ntraces)])
+	###Or... cheat w/ K-means
+	km = kmeans(x,nstates)
+	r_nk = km[1] + .1
+	r_nk /= r_nk.sum(1)[:,None]
+
+	N_k = np.zeros((nstates))
+	m_k = np.repeat(m_0[None,:],nstates,axis=0)
+	W_k = np.repeat(W_0[None,:,:],nstates,axis=0)
+	alpha_k = np.repeat(alpha_0,nstates)
+
+	lb = None
+	state_log = None
+	finished_counter = 0
+
+	E_lam = np.zeros((nstates))
+	E_pi = np.zeros((nstates))
+	E_mulam = np.zeros((ntraces,nstates))
+
+
+	##################
+	### Iterations ###
+	##################
+	
 	it = 0
-	while 1:
-		if it > maxiter or finished_counter > 5:
-			break
-		
-############ M-Step
+	while it < maxiter:
+
+		##############
+		### M-step ###
+		##############
+	
 		N_k = np.sum(r_nk,axis=0)
 		xbar_k = np.sum(r_nk[:,:,None]*x[:,None,:],axis=0)/(N_k+1e-16)[:,None]
-		S_k = np.sum(r_nk[:,:,None,None]*pdot((x[:,None,:] - xbar_k[None,:,:])[:,:,:,None],(x[:,None,:] - xbar_k[None,:,:])[:,:,None,:]),axis=0)/(N_k+1e-16)[:,None,None]
+		S_k = np.nan_to_num(np.sum(r_nk[:,:,None,None]*(pdot((x[:,None,:] - xbar_k[None,:,:])[:,:,:,None],(x[:,None,:] - xbar_k[None,:,:])[:,:,None,:]) +c[:,None,:,:]),axis=0)/(N_k+1e-16)[:,None,None])
 
 		nu_k = nu_0+ N_k
 		beta_k = beta_0 + N_k
 		alpha_k = alpha_0 + N_k
 		m_k = (beta_0*m_0 + N_k[:,None]*xbar_k)/beta_k[:,None]
-		W_k = np.linalg.inv( Winv_0 + N_k[:,None,None]*S_k + (beta_0*N_k/(beta_0 + N_k))[:,None,None] * pdot((xbar_k - m_0)[:,:,None],(xbar_k - m_0)[:,None,:]) )
-		
-############ E-Step
-		E_lam = np.sum(special.psi((nu_k[:,None] + 1. - np.linspace(1,ndim,ndim)[None,:])/2.),axis=1) + ndim*np.log(2.) + np.log(np.linalg.det(W_k))
+		Winv_k = Winv_0 + N_k[:,None,None]*S_k + (beta_0*N_k/(beta_0 + N_k))[:,None,None] * pdot((xbar_k - m_0)[:,:,None],(xbar_k - m_0)[:,None,:])
+		W_k = np.linalg.inv(Winv_k)
+	
+		##############
+		### E-Step ###
+		##############
+		E_lam = np.sum(special.psi((nu_k[:,None] + 1. - np.linspace(1,ndim,ndim)[None,:])/2.),axis=1) + ndim*np.log(2.) + np.nan_to_num(np.log(np.linalg.det(W_k)))
 		E_pi = special.psi(alpha_k) - special.psi(alpha_k.sum())
-		E_mulam = ndim/beta_k[None,:] + nu_k[None,:] * pdot((x[:,None,None,:] - m_k[None,:,None,:]),pdot(W_k[None,:,:,:],(x[:,None,:,None] - m_k[None,:,:,None])))[:,:,0,0]
+		E_mulam = ndim/beta_k[None,:] + nu_k[None,:] * pdot((x[:,None,None,:] - m_k[None,:,None,:]),pdot(np.linalg.inv(Winv_k[None,:,:,:])+c[:,None,:,:]),(x[:,None,:,None] - m_k[None,:,:,None])))[:,:,0,0]
 
 		rho_nk = E_pi[None,:] + .5 * E_lam[None,:] - ndim/2.*np.log(2.*np.pi) - .5*E_mulam
 		rho_nk -= rho_nk.max(1)[:,None]
 		rho_nk = np.exp(rho_nk)
 		r_nk = rho_nk/np.sum(rho_nk,axis=1)[:,None]
-
-#~ ############ Remove Unpopulated States
-		#~ cutk = np.nonzero(N_k < alpha_0*1e-6)[0]
-		#~ if cutk.size > 0:
-			#~ nstates -= cutk.size
-			#~ if not np.ndim(state_log):
-				#~ state_log = np.array([it,nstates])[None,:]
-			#~ else:
-				#~ state_log = np.append(state_log,np.array([it,nstates])[None,:],axis=0)
-			#~ xbar_k = np.delete(xbar_k,cutk,axis=0)
-			#~ S_k = np.delete(S_k,cutk,axis=0)
-			#~ N_k = np.delete(N_k,cutk,axis=0)
-			#~ rho_nk = np.delete(rho_nk,cutk,axis=1)
-			#~ r_nk = np.delete(r_nk,cutk,axis=1)
-			#~ nu_k = np.delete(nu_k,cutk,axis=0)
-			#~ beta_k = np.delete(beta_k,cutk,axis=0)
-			#~ alpha_k = np.delete(alpha_k,cutk,axis=0)
-			#~ m_k = np.delete(m_k,cutk,axis=0)
-			#~ W_k = np.delete(W_k,cutk,axis=0)
-			#~ E_lam = np.delete(E_lam,cutk,axis=0)
-			#~ E_pi = np.delete(E_pi,cutk,axis=0)
-			#~ E_mulam = np.delete(E_mulam,cutk,axis=1)
-
-############ Lowerbound Threshold for Convergence
-		l = calc_lowerbound(nstates,ndim,ntraces,alpha_0,beta_0,nu_0,W_0,Winv_0,m_0,r_nk,N_k,xbar_k,S_k,m_k,W_k,alpha_k,E_lam,E_pi,E_mulam)
-		
-		if not np.ndim(lb):
-			lb = np.array((it,l))[None,:]
-		else:
-			lb = np.append(lb,np.array((it,l))[None,:],axis=0)
-		
-		#print it,nstates,l,-lb[it-1,1]+lb[it,1]
-		#~ if it > 1 and (np.abs((lb[it,1]-lb[it-1,1])/lb[it,1]) < lowerbound_threshold ):# or lb[it,1] < lb[it-1,1]):
-			#~ finished_counter += 1
-		#~ else:
-			#~ finished_counter = 0
-		# Run until it's done....
-		if it > 1 and lb[it-1,1]==lb[it,1]:
-			break
-			#~ finished_counter += 1
-		#~ else:
-			#~ finished_counter = 0
-			
-		it += 1
 	
-	#Don't sort by class population size
-	#return [alpha_k,r_nk,m_k,beta_k,nu_k,W_k,S_k,lb,state_log]
-	#Sort by class population size (largest first)
+
+		#################
+		### Calc ELBO ###
+		#################
+		elbo = calc_lowerbound(nstates,ndim,ntraces,alpha_0,beta_0,nu_0,W_0,Winv_0,m_0,r_nk,N_k,xbar_k,S_k,m_k,W_k,alpha_k,beta_k,nu_k,E_lam,E_pi,E_mulam)
+		if not np.ndim(lb):
+			lb = np.array((it,elbo))[None,:]
+		else:
+			lb = np.append(lb,np.array((it,elbo))[None,:],axis=0)
+		it += 1
+		##A few threshold options: equivalent, rel. change, abs. change
+		# print it, lb[-1,1]
+		# if it > 1 and lb[it-1,1] == lb[it,1]:
+		if it > 1 and (np.abs((lb[-1,1]-lb[-2,1])/lb[-1,1]) < lowerbound_threshold):
+		# if it > 1 and (np.abs((lb[it,1]-lb[it-1,1])) < lowerbound_threshold):
+			break
+
 	xsort = alpha_k.argsort()[::-1]
-	return [alpha_k[xsort],r_nk[:,xsort],m_k[xsort],beta_k[xsort],nu_k[xsort],W_k[xsort],S_k[xsort],lb,state_log]
+	return [alpha_k[xsort], r_nk[:,xsort], m_k[xsort], beta_k[xsort], nu_k[xsort], W_k[xsort], lb]
 
 class Laplace_Worker(mp.Process):
 	"""
