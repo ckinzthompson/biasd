@@ -725,7 +725,7 @@ class Analysis(Frame):
 		evidences = np.array((),dtype='f')
 		for er in data._ensemble_results:
 			klist = np.append(klist,er[0].size)
-			evidences = np.append(evidences,er[-2][-1][1])
+			evidences = np.append(evidences,er[-1][-1][1])
 		
 		er = data.ensemble_result
 		if not n is None and np.any(data._lb_states[0] == n):
@@ -765,13 +765,15 @@ class Analysis(Frame):
 		ax4.set_yticks((),())
 		#ax4.set_xlim(hx.min(),hx.max())
 		ax4.set_xlim(-.4,1.4)
-		ax4.set_ylim(0.,data._histograms[0][0][1].max()*1.3)
+		ax4.set_ylim(0.,np.max((data._histograms[er.alpha.size-1][k][3].max(),data._histograms[0][0][1].max()))*1.3)
 		ax4.set_ylabel('Data Frequency',labelpad=15)
 		ax4.set_xlabel('Signal Units')
 		ax4.locator_params(nbins=12,axis='x')
 		#ax4.locator_params(nbins=5,axis='y')
 		
-		ax4.plot(data._histograms[0][0][2],data._histograms[0][0][1],color='k',lw=1.5,alpha=.8)
+		ax4.plot(data._histograms[0][0][2],data._histograms[0][0][1],color='k',lw=1.5,alpha=.8,zorder=-1)
+		ax4.set_yscale('log')
+		ax4.set_ylim(ymin=1e-2)
 		
 		self.fig.tight_layout()
 		self.canvas.draw()

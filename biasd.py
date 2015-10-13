@@ -106,6 +106,18 @@ class stats:
 		x = np.random.normal(size=(number,np.size(mu)))
 		#Transform by shifting to the mean, and skew according to covariance.
 		return mu[None,:] + np.dot(x,l.T)
+	
+	@staticmethod
+	def rv_multivariate_t(mu,nu,sig,number=1):
+		"""
+		Generate random numbers from a multivariate T distribution
+		"""
+		#Calculate transformation to skew symmetric variates to desired shape
+		l = np.linalg.cholesky(sig)
+		#Draw symmetric normally distributed random numbers for each dimension
+		x = np.random.standard_t(nu,size=(number,np.size(mu)))
+		#Transform by shifting to the mean, and skew according to covariance.
+		return mu[None,:] + np.dot(x,l.T)
 
 	#Wishart distribution values (see C. Bishop - Pattern Recognition and Machine Learning)
 	#Calculate values for last axis, i.e., they are vectorized to nu ~ (...,d) and W ~ (...,d,d)
@@ -391,7 +403,7 @@ def load_c_integral(integrandpath):
 		
 		#Define the integration of the integrand across df between f = 0 ... 1
 		def c_integral(d,e1,e2,sigma,k1,k2,tau):
-			return quad(integrand,0.,1.,args=(d,e1,e2,sigma,k1,k2,tau))[0]
+			return quad(integrand,0.,1.,args=(d,e1,e2,sigma,k1,k2,tau),limit=1000)[0]
 			
 		#Set the integral
 		integral = c_integral
@@ -583,9 +595,9 @@ def variational_gmm(x,c,nstates,maxiter=5000,lowerbound_threshold=1e-20):
 	np.random.seed()
 	r_nk = np.array([np.random.dirichlet(np.repeat(alpha_0,nstates)) for _ in range(ntraces)])
 	###Or... cheat w/ K-means
-	km = kmeans(x,nstates)
-	r_nk = km[1] + .1
-	r_nk /= r_nk.sum(1)[:,None]
+	#~ km = kmeans(x,nstates)
+	#~ r_nk = km[1] + .1
+	#~ r_nk /= r_nk.sum(1)[:,None]
 
 	N_k = np.zeros((nstates))
 	m_k = np.repeat(m_0[None,:],nstates,axis=0)
@@ -749,7 +761,7 @@ class ensemble:
 	"""
 	def __init__(self,params):
 		#Variational GMM parameters
-		self.alpha,self.r,self.m,self.beta,self.nu,self.W,self.S_k,self.lowerbound,self.state_log = params
+		self.alpha,self.r,self.m,self.beta,self.nu,self.W,self.lowerbound = params
 		self.var = np.zeros_like(self.m)
 		self.covar = np.zeros_like(self.W)
 		
@@ -761,20 +773,17 @@ class ensemble:
 	
 	#Generate n random variates of the \Theta for a particular class as state
 	def get_rvs(self,state,n):
-		rvs = np.zeros((n,5))
-		for i in range(5):
-			rvs[:,i] = np.random.normal(self.m[state,i],self.var[state,i]**.5,size=n)
-			#Enforce support on \sigma, k_1, and k_2
-			if i  > 1:
-				while 1:
-					xbad = rvs[:,i] <= 0.
-					if np.any(xbad):
-						rvs[np.nonzero(xbad)[0],i] = np.random.normal(self.m[state,i],self.var[state,i]**.5,size=xbad.sum())
-					else:
-						break
-		return rvs
-		#~ return np.random.multivariate_normal(self.m[state],self.S_k[state],size=n)
-	
+		### From the marginal posterior of mu for a Normal-Wishart
+		nu = self.nu[state]-5.+1.
+		### Variance of the mean
+		#sig = np.linalg.inv(nu*self.beta[state]*self.W[state])
+		### Actual Variance
+		sig = np.linalg.inv(nu*self.beta[state]*self.W[state]/(self.beta[state]+1.))
+		return stats.rv_multivariate_t(self.m[state],nu,sig,number=n)
+		#From the posterior predictive of a Normal-Wishart... sig is upside down?
+		#return stats.rv_multivariate_t(self.m[state],self.nu[state], self.W[state]*(self.beta[state] + 1.)/(self.beta[state] *(self.nu[state] - 5. + 1.)), number=n)
+		#return np.random.multivariate_normal(self.m[state],self.covar[state],size=n)
+
 	def report(self):
 		"""
 		Generate a legible output of the variational GMM results - mostly for the GUI.
@@ -790,9 +799,12 @@ class ensemble:
 		
 		theta = ['E1','E2','Sigma','K1','K2']
 		for i in range(5):
-			rep += "\n"+ theta[i] +"\n"+ "State Mean Var.\n"
+			rep += "\n"+ theta[i] +"\n"+ "State Mean Std\n"
 			for j in range(states):
-				rep += str(j+1) + " " + str(self.m[j,i]) + " " + str(self.var[j,i]) + "\n"
+				nu = self.nu[j]-5.+1.
+				sig = np.linalg.inv(nu*self.beta[j]*self.W[j])
+				var = nu/(nu-2.)*sig
+				rep += str(j+1) + " " + str(self.m[j,i]) + " " + str(var[i,i]**.5) + "\n"
 		return rep
 
 class trace:
@@ -1122,8 +1134,11 @@ class dataset:
 				c.append(tracei.posterior.covar)
 				trace_id.append(tid)
 				tid += 1
+				
 		x = np.array(x)
 		c = np.array(c)
+		##scaledown for testing
+		#c *= 0.1
 		
 		print "-----------------\nVariational Mixtures"
 		t0 = time.time()
@@ -1163,7 +1178,7 @@ class dataset:
 			print "\n"
 			for i in range(1+nrestarts*(nstates-1)):
 				y = queue_results.get()
-				print "States:",y[0].size,", Iterations:",int(y[-2][-1][0]),", Lowerbound:",y[-2][-1][1]
+				print "States:",y[0].size,", Iterations:",int(y[-1][-1][0]),", Lowerbound:",y[-1][-1][1]
 				self._ensemble_results.append(y)
 			watcher.join()
 		
@@ -1172,71 +1187,73 @@ class dataset:
 			y = variational_gmm(x,c,1)
 			self._ensemble_results.append(y)
 
-			#Find out the best restart for each number of classes and store that
-			#Also choose the best result from all of the classes and restarts
-			print "Post-Processing"
-			self._lb_states = np.zeros((3,nstates)) - 1.
-			self._lb_states[0] = np.linspace(1,nstates,nstates)
-			self._lb_states[1] = np.repeat(-np.inf,self._lb_states[1].size)
-			self.ensemble_result = ensemble(self._ensemble_results[0])
-			for ind,er in enumerate(self._ensemble_results):
-				er_lb = er[-2][-1,1]
-				er_states = er[0].size
-				if er_lb > self.ensemble_result.lowerbound[-1,1]:
-					self.ensemble_result = ensemble(er)
-				if self._lb_states[1,er_states-1] < er_lb:
-					self._lb_states[1,er_states-1] = er_lb
-					self._lb_states[2,er_states-1] = ind
-			
-			#Assign max probability state to each trace.
-			z = np.repeat(-1.,self.n_traces)
-			for i in range(len(trace_id)):
-				z[i] = self.ensemble_result.r[i*nsamples:(i+1)*nsamples].sum(0).argmax()
-			self.ensemble_result.z = z
-			
-			#For the best restart in each number of classes:
-			#	Calculate the histograms of data which go to each class
-			#	~Marginalize \Theta to calculate an approximate evidence
-			#	Store these curves (esp. for plotting in the GUI)
-			for k in range(nstates):
-				er = ensemble(self._ensemble_results[int(self._lb_states[2,k])])
-				if k == 0:
-					hy,hx = np.histogram(self.data[1],bins=self.data[1].size**.5,normed=1)
-					hxx = 0.5*(hx[1:]+hx[:-1])
-					x0 = er.get_rvs(0,300)
+		#Find out the best restart for each number of classes and store that
+		#Also choose the best result from all of the classes and restarts
+		print "Post-Processing"
+		self._lb_states = np.zeros((3,nstates)) - 1.
+		self._lb_states[0] = np.linspace(1,nstates,nstates)
+		self._lb_states[1] = np.repeat(-np.inf,self._lb_states[1].size)
+		self.ensemble_result = ensemble(self._ensemble_results[0])
+		for ind,er in enumerate(self._ensemble_results):
+			er_lb = er[-1][-1,1]
+			er_states = er[0].size
+			if er_lb > self.ensemble_result.lowerbound[-1,1]:
+				self.ensemble_result = ensemble(er)
+			if self._lb_states[1,er_states-1] < er_lb:
+				self._lb_states[1,er_states-1] = er_lb
+				self._lb_states[2,er_states-1] = ind
+		
+		#For the best restart in each number of classes:
+		#	Calculate the histograms of data which go to each class
+		#	~Marginalize \Theta to calculate an approximate evidence
+		#	Store these curves (esp. for plotting in the GUI)
+		n_marginalize_points = 500
+		for k in range(nstates):
+			er = ensemble(self._ensemble_results[int(self._lb_states[2,k])])
+			if k == 0:
+				hy,hx = np.histogram(self.data[1],bins=np.min((self.data[1].size**.5,301)),normed=1)
+				hxx = 0.5*(hx[1:]+hx[:-1])
+				x0 = er.get_rvs(0,n_marginalize_points)
+				dx0 = np.zeros_like(hxx)
+				for x in x0:
+					dx0 += np.nan_to_num(np.exp(log_likelihood(x,hxx,self.tau)))
+				dx0 /= dx0.sum() * (hxx[1]-hxx[0])
+				px0 = dx0*1.
+				self._histograms = [[[hx,hy,hxx,px0]]]
+			else:
+				hk = []
+				for kk in range(k+1):
+					q = np.array(())
+					w = np.array(())
+					for i in range(len(trace_id)):
+						q = np.append(q,self.traces[trace_id[i]].data)
+						w = np.append(w,np.repeat(er.r[i,kk],self.traces[trace_id[i]].data.size))
+					chy,chx = np.histogram(q,bins=hx,normed=1,weights=w)
+					chy *= er.alpha[kk]/er.alpha.sum()
+				
+					x0 = er.get_rvs(kk,n_marginalize_points)
 					dx0 = np.zeros_like(hxx)
 					for x in x0:
-						dx0 += np.exp(log_likelihood(x,hxx,self.tau))
+						if x[1] > x[0] and x[2] >0. and x[3] > 0. and x[4] > 0.:
+							dx0 += np.nan_to_num(np.exp(log_likelihood(x,hxx,self.tau))) 
 					dx0 /= dx0.sum() * (hxx[1]-hxx[0])
-					px0 = dx0*1.
-					self._histograms = [[[hx,hy,hxx,px0]]]
-				else:
-					counts = np.zeros((self.n_traces,er.alpha.size))
-					for i in range(len(trace_id)):
-						counts[i] = er.r[trace_id[i]*nsamples:(trace_id[i]+1)*nsamples].sum(0)
-					hk = []
-					for kk in range(k+1):
-						q = np.array(())
-						w = np.array(())
-						for i in self.traces:
-							q = np.append(q,i.data)
-							w = np.append(w,np.repeat(counts[i.identity,kk],i.data.size))
-						chy,chx = np.histogram(q,bins=hx,normed=1,weights=w)
-						chy *= counts.sum(0)[kk]/counts.sum()
-						try:
-							x0 = er.get_rvs(kk,300)
-							dx0 = np.zeros_like(hxx)
-							for x in x0:
-								dx0 += np.exp(log_likelihood(x,hxx,self.tau))
-							dx0 /= dx0.sum() * (hxx[1]-hxx[0])
-							px0 = dx0*er.alpha[kk]/er.alpha.sum()
-						except:
-							px0 = np.zeros_like(hxx)
-						hk.append([chx,chy,hxx,px0])
-					self._histograms.append(hk)
+					px0 = dx0*er.alpha[kk]/er.alpha.sum()
+					px0[~np.isfinite(px0)] = 0.
+					
+					#dx0 = np.exp(log_likelihood(er.m[kk],hxx,self.tau))
+					#x0 = er.get_rvs(kk,1000)
+					#dx0 = np.zeros_like(hxx)
+					#for x in x0:
+					#	dx0 += np.exp(log_likelihood(x,hxx,self.tau))
+					#dx0 /= dx0.sum() * (hxx[1]-hxx[0])
+					#px0 = dx0*er.alpha[kk]/er.alpha.sum()
+#					except:
+#						px0 = np.zeros_like(hxx)
+					hk.append([chx,chy,hxx,px0])
+				self._histograms.append(hk)
 			
-			t1 = time.time()
-			print "time:",t1-t0
+		t1 = time.time()
+		print "time:",t1-t0
 
 
 #Example biasddistributions
