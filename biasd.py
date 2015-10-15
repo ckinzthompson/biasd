@@ -89,6 +89,10 @@ class stats:
 			elif disttype == "gamma":
 				alpha = first*first/variance
 				beta = first/variance
+			elif disttype == 'lognormal':
+				#beta = sig**2., alpha=mu
+				beta = np.log(1.+(second-first*first)/(first**2.))
+				alpha = np.log(first)-.5*beta
 			else:
 				alpha = first
 				beta = np.sqrt(variance)
@@ -595,9 +599,9 @@ def variational_gmm(x,c,nstates,maxiter=5000,lowerbound_threshold=1e-20):
 	np.random.seed()
 	r_nk = np.array([np.random.dirichlet(np.repeat(alpha_0,nstates)) for _ in range(ntraces)])
 	###Or... cheat w/ K-means
-	#~ km = kmeans(x,nstates)
-	#~ r_nk = km[1] + .1
-	#~ r_nk /= r_nk.sum(1)[:,None]
+	#km = kmeans(x,nstates)
+	#r_nk = km[1] + .1
+	#r_nk /= r_nk.sum(1)[:,None]
 
 	N_k = np.zeros((nstates))
 	m_k = np.repeat(m_0[None,:],nstates,axis=0)
@@ -627,6 +631,7 @@ def variational_gmm(x,c,nstates,maxiter=5000,lowerbound_threshold=1e-20):
 		N_k = np.sum(r_nk,axis=0)
 		xbar_k = np.sum(r_nk[:,:,None]*x[:,None,:],axis=0)/(N_k+1e-16)[:,None]
 		S_k = np.nan_to_num(np.sum(r_nk[:,:,None,None]*(pdot((x[:,None,:] - xbar_k[None,:,:])[:,:,:,None],(x[:,None,:] - xbar_k[None,:,:])[:,:,None,:]) +c[:,None,:,:]),axis=0)/(N_k+1e-16)[:,None,None])
+		#~ S_k = np.nan_to_num(np.sum(r_nk[:,:,None,None]*(pdot((x[:,None,:] - xbar_k[None,:,:])[:,:,:,None],(x[:,None,:] - xbar_k[None,:,:])[:,:,None,:])),axis=0)/(N_k+1e-16)[:,None,None])
 
 		nu_k = nu_0+ N_k
 		beta_k = beta_0 + N_k
@@ -641,6 +646,7 @@ def variational_gmm(x,c,nstates,maxiter=5000,lowerbound_threshold=1e-20):
 		E_lam = np.sum(special.psi((nu_k[:,None] + 1. - np.linspace(1,ndim,ndim)[None,:])/2.),axis=1) + ndim*np.log(2.) + np.nan_to_num(np.log(np.linalg.det(W_k)))
 		E_pi = special.psi(alpha_k) - special.psi(alpha_k.sum())
 		E_mulam = ndim/beta_k[None,:] + nu_k[None,:] * pdot((x[:,None,None,:] - m_k[None,:,None,:]),pdot(np.linalg.inv(Winv_k[None,:,:,:]+c[:,None,:,:]),(x[:,None,:,None] - m_k[None,:,:,None])))[:,:,0,0]
+		#~ E_mulam = ndim/beta_k[None,:] + nu_k[None,:] * pdot((x[:,None,None,:] - m_k[None,:,None,:]),pdot(W_k[None,:,:,:],(x[:,None,:,None] - m_k[None,:,:,None])))[:,:,0,0]
 
 		rho_nk = E_pi[None,:] + .5 * E_lam[None,:] - ndim/2.*np.log(2.*np.pi) - .5*E_mulam
 		rho_nk -= rho_nk.max(1)[:,None]
@@ -728,8 +734,8 @@ class Watcher(mp.Process):
 		self.resultcount = 0
 		
 		#Initialze the progress bar
-		#stdout.write("\nBatch "+str(self.batchnum)+": 000.00%")
-		stdout.write("\nBatch "+str(self.batchnum+1)+": "+"_"*self.numjobs)
+		stdout.write("\nBatch "+str(self.batchnum+1)+": 000.00%")
+		#stdout.write("\nBatch "+str(self.batchnum+1)+": "+"_"*self.numjobs)
 		stdout.flush()
 		
 		while pillcount < self.numworkers:
@@ -743,8 +749,8 @@ class Watcher(mp.Process):
 				self.__queue_out.put(item)
 				self.resultcount += 1
 				#Update the progress bar
-				#stdout.write("\b"*7+'{:06.2f}'.format(self.resultcount/float(self.numjobs)*100.) + "%")
-				stdout.write("\b"*self.numjobs+"X"*self.resultcount+"_"*(self.numjobs-self.resultcount))
+				stdout.write("\b"*7+'{:06.2f}'.format(self.resultcount/float(self.numjobs)*100.) + "%")
+				#stdout.write("\b"*self.numjobs+"X"*self.resultcount+"_"*(self.numjobs-self.resultcount))
 				stdout.flush()
 
 class laplace_posterior:
@@ -775,14 +781,24 @@ class ensemble:
 	def get_rvs(self,state,n):
 		### From the marginal posterior of mu for a Normal-Wishart
 		nu = self.nu[state]-5.+1.
-		### Variance of the mean
-		#sig = np.linalg.inv(nu*self.beta[state]*self.W[state])
-		### Actual Variance
+		### Variance of the mean from t dist
+		sigm = np.linalg.inv(nu*self.beta[state]*self.W[state])
+		### Actual Variance from t dist
 		sig = np.linalg.inv(nu*self.beta[state]*self.W[state]/(self.beta[state]+1.))
-		return stats.rv_multivariate_t(self.m[state],nu,sig,number=n)
+		var = nu/(nu-2.)*sig
+		#calculate moments
+		first = self.m[state]
+		second = np.diag(var) + first**2.
+		rvs = stats.rv_multivariate_t(self.m[state],nu,sig,number=n)
+		for i in [2,3,4]:
+			#convert to lognorm for support
+			alpha,beta = stats.moments_to_params('lognormal',first[i],second[i])
+			
+			rvs[:,i] = np.random.lognormal(mean=alpha,sigma=beta**2.,size=n)
 		#From the posterior predictive of a Normal-Wishart... sig is upside down?
 		#return stats.rv_multivariate_t(self.m[state],self.nu[state], self.W[state]*(self.beta[state] + 1.)/(self.beta[state] *(self.nu[state] - 5. + 1.)), number=n)
 		#return np.random.multivariate_normal(self.m[state],self.covar[state],size=n)
+		return rvs
 
 	def report(self):
 		"""
@@ -801,6 +817,7 @@ class ensemble:
 		for i in range(5):
 			rep += "\n"+ theta[i] +"\n"+ "State Mean Std\n"
 			for j in range(states):
+				#Std Dev of the Mean
 				nu = self.nu[j]-5.+1.
 				sig = np.linalg.inv(nu*self.beta[j]*self.W[j])
 				var = nu/(nu-2.)*sig
@@ -836,7 +853,7 @@ class trace:
 		'''
 		return log_posterior(self.data,self.prior,self.tau,theta)
 	
-	def find_map(self,meth='nelder-mead',xx=None,nrestarts=5):
+	def find_map(self,meth='nelder-mead',xx=None,nrestarts=2):
 		'''
 		Use numerical minimization to find the maximum a posteriori estimate of the posterior
 		Provide xx to force first theta initialization at that theta
@@ -1107,7 +1124,7 @@ class dataset:
 		#self.save_analysis()
 		
 		
-	def variational_ensemble(self,nstates=20,nsamples=100,nrestarts=5,nproc=1):
+	def variational_ensemble(self,nstates=20,nsamples=100,nrestarts=10,nproc=1):
 		'''
 		Calculates the variational GMM from Laplace approximations of the posteriors for the traces loaded into this dataset.
 		If nproc is > 1, then this function will use multiple processors to perform this calculation on traces simultaneously.
@@ -1126,19 +1143,21 @@ class dataset:
 		trace_id = []
 		tid = 0
 		t0 = time.time()
+		totaldata = np.array(())
 		
 		#Check for & collect a Laplace approximated posterior to use for the variational GMM
 		for tracei in self.traces:
-			if not tracei.posterior is None:
+			if not tracei.posterior is None and tracei.data.size > 200:
 				x.append(tracei.posterior.mu)
 				c.append(tracei.posterior.covar)
+				totaldata=np.append(totaldata,tracei.data)
 				trace_id.append(tid)
 				tid += 1
 				
 		x = np.array(x)
 		c = np.array(c)
 		##scaledown for testing
-		#c *= 0.1
+		#c = c*.001
 		
 		print "-----------------\nVariational Mixtures"
 		t0 = time.time()
@@ -1207,16 +1226,27 @@ class dataset:
 		#	Calculate the histograms of data which go to each class
 		#	~Marginalize \Theta to calculate an approximate evidence
 		#	Store these curves (esp. for plotting in the GUI)
-		n_marginalize_points = 500
+		#n_marginalize_points = 1000
 		for k in range(nstates):
 			er = ensemble(self._ensemble_results[int(self._lb_states[2,k])])
 			if k == 0:
-				hy,hx = np.histogram(self.data[1],bins=np.min((self.data[1].size**.5,301)),normed=1)
+				#hy,hx = np.histogram(self.data[1],bins=np.min((self.data[1].size**.5,301)),normed=1)
+				hy,hx = np.histogram(totaldata,bins=np.min((totaldata.size**.5,301)),normed=1)
 				hxx = 0.5*(hx[1:]+hx[:-1])
-				x0 = er.get_rvs(0,n_marginalize_points)
-				dx0 = np.zeros_like(hxx)
-				for x in x0:
-					dx0 += np.nan_to_num(np.exp(log_likelihood(x,hxx,self.tau)))
+				#~ x0 = er.get_rvs(0,n_marginalize_points)
+				#~ dx0 = np.zeros_like(hxx)
+				#~ for x in x0:
+					#~ dx0 += np.nan_to_num(np.exp(log_likelihood(x,hxx,self.tau)))
+				#~ counts = 0
+				#~ while counts < n_marginalize_points:
+					#~ x = er.get_rvs(0,1)[0]
+					#~ if x[1] > x[0] and x[2] >0. and x[3] > 0. and x[4] > 0.:
+						#~ dx0 += np.nan_to_num(np.exp(log_likelihood(x,hxx,self.tau))) 
+				dx0 = np.nan_to_num(np.exp(log_likelihood(er.m[0],hxx,self.tau))) 
+						#~ counts +=1
+					#~ print counts
+					#~ if counts > n_marginalize_points:
+						#~ break
 				dx0 /= dx0.sum() * (hxx[1]-hxx[0])
 				px0 = dx0*1.
 				self._histograms = [[[hx,hy,hxx,px0]]]
@@ -1231,11 +1261,21 @@ class dataset:
 					chy,chx = np.histogram(q,bins=hx,normed=1,weights=w)
 					chy *= er.alpha[kk]/er.alpha.sum()
 				
-					x0 = er.get_rvs(kk,n_marginalize_points)
-					dx0 = np.zeros_like(hxx)
-					for x in x0:
-						if x[1] > x[0] and x[2] >0. and x[3] > 0. and x[4] > 0.:
-							dx0 += np.nan_to_num(np.exp(log_likelihood(x,hxx,self.tau))) 
+					#~ x0 = er.get_rvs(kk,n_marginalize_points)
+					#~ dx0 = np.zeros_like(hxx)
+					#~ for x in x0:
+						#~ dx0 += np.nan_to_num(np.exp(log_likelihood(x,hxx,self.tau)))
+					dx0 = np.nan_to_num(np.exp(log_likelihood(er.m[kk],hxx,self.tau)))
+					#~ counts = 0
+					#~ while counts < n_marginalize_points:
+						#~ x = er.get_rvs(kk,1)[0]
+						#~ if x[1] > x[0] and x[2] >0. and x[3] > 0. and x[4] > 0.:
+							#~ dx0 += np.nan_to_num(np.exp(log_likelihood(x,hxx,self.tau))) 
+							#~ counts +=1
+						#~ print counts
+						#~ if counts > n_marginalize_points:
+							#~ break
+							
 					dx0 /= dx0.sum() * (hxx[1]-hxx[0])
 					px0 = dx0*er.alpha[kk]/er.alpha.sum()
 					px0[~np.isfinite(px0)] = 0.
@@ -1247,8 +1287,8 @@ class dataset:
 					#	dx0 += np.exp(log_likelihood(x,hxx,self.tau))
 					#dx0 /= dx0.sum() * (hxx[1]-hxx[0])
 					#px0 = dx0*er.alpha[kk]/er.alpha.sum()
-#					except:
-#						px0 = np.zeros_like(hxx)
+					#except:
+						#px0 = np.zeros_like(hxx)
 					hk.append([chx,chy,hxx,px0])
 				self._histograms.append(hk)
 			
@@ -1270,4 +1310,5 @@ dist('normal',1.,1000.),
 dist('normal',.1,1000.),
 dist('normal',1.,1000.),
 dist('normal',1.,1000.))
+
 
