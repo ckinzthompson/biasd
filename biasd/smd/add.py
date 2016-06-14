@@ -34,7 +34,7 @@ def mcmc(smd,i,sampler):
 	smd.data[i].attr.mcmc_lnprobability = sampler.lnprobability.tolist()
 	smd.data[i].attr.mcmc_iterations = sampler.iterations
 	smd.data[i].attr.mcmc_naccepted = sampler.naccepted.tolist()
-	from .mcmc import get_samples
+	from ..mcmc import get_samples
 	smd.data[i].attr.mcmc_samples = get_samples(sampler).tolist()
 	return smd
 

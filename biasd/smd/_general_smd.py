@@ -84,8 +84,11 @@ def new(time,data,channel_names=None):
 			T: number of time points
 	channel_names is a list of strings, e.g. ["Cy3","Cy5"]
 	"""
-	if data.ndim == 2:
+	if data.ndim == 1:
+		data = data[None,None,:]
+	elif data.ndim == 2:
 		data = data[:,None,:]
+	
 	if channel_names is None:
 		channel_names = ["C"+str(i) for i in range(data.shape[1])]
 	elif isinstance(channel_names,str):
