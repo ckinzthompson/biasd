@@ -15,6 +15,7 @@ s = smd.new(np.arange(1000)*.1,d,["Cy3","Cy5","FRET"])
 smd.save("test.smd",s)
 q = smd.load("test.smd")
 """
+
 import numpy as _np
 
 class _object_from_dict(object):
@@ -175,76 +176,7 @@ def save(filename,smd):
 	f.close()
 	return j
 
-### Helper functions
+
 class smd_io_error(Exception):
 	def __init__(self):
 		Exception.__init__(self,"SMD I/O error") 
-
-def add_priors(smd,i,priors):
-	smd.data[i].attr.biasd_priors_names, smd.data[i].attr.biasd_priors_parameters = priors.format_for_smd()
-	return smd
-
-def add_posterior(smd,i,posterior):
-	smd.data[i].attr.biasd_posterior_names, smd.data[i].attr.biasd_posterior_parameters = posterior.format_for_smd()
-	return smd
-
-def add_laplace_posterior(smd,i,lp):
-	smd.data[i].attr.biasd_laplace_posterior_mu = lp.mu.tolist()
-	smd.data[i].attr.biasd_laplace_posterior_covar = lp.covar.tolist()
-	return smd
-
-def read_priors(smd,i):
-	attr = smd.data[i].attr.__dict__
-	key1 = 'biasd_priors_names'
-	key2 = 'biasd_priors_parameters'
-	if attr.has_key(key1) and attr.has_key(key2):
-		from ..distributions import parameter_collection
-		return parameter_collection.new_from_smd(attr.get(key1),attr.get(key2))
-	else:
-		raise smd_io_error()
-		return None
-	
-def read_posterior(smd,i):
-	attr = smd.data[i].attr.__dict__
-	key1 = 'biasd_posterior_names'
-	key2 = 'biasd_posterior_parameters'
-	if attr.has_key(key1) and attr.has_key(key2):
-		from ..distributions import parameter_collection
-		return parameter_collection.new_from_smd(attr.get(key1),attr.get(key2))
-	else:
-		raise smd_io_error()
-		return None
-
-def read_laplace_posterior(smd,i):
-	attr = smd.data[i].attr.__dict__
-	key1 = 'biasd_laplace_posterior_mu'
-	key2 = 'biasd_laplace_posterior_covar'
-	if attr.has_key(key1) and attr.has_key(key2):
-		from ..laplace import _laplace_posterior
-		return _laplace_posterior(_np.array(attr.get(key1)),_np.array(attr.get(key2)))
-	else:
-		raise smd_io_error()
-		return None
-
-def add_baseline(smd,i,p):
-	# pi,mu,var,r,baseline,R2,ll,iter
-	smd.data[i].attr.baseline_pi = p.pi.tolist()
-	smd.data[i].attr.baseline_mu = p.mu.tolist()
-	smd.data[i].attr.baseline_var = p.var.tolist()
-	smd.data[i].attr.baseline_r = p.r.tolist()
-	smd.data[i].attr.baseline_baseline = p.baseline.tolist()
-	smd.data[i].attr.baseline_r2 = p.r2.tolist()
-	smd.data[i].attr.baseline_log_likelihood = p.log_likelihood
-	smd.data[i].attr.baseline_iterations = p.iterations
-	return smd
-
-def read_baseline(smd,i):
-	attr = smd.data[i].attr.__dict__
-	keys= ['baseline_' + j for j in ['pi','mu','var','r','baseline','r2','log_likelihood','iterations']]
-
-	if _np.all([attr.has_key(keyi) for keyi in keys]):
-		from .baseline import params
-		return params(*[_np.array(attr.get(keyi)) for keyi in keys])
-	else:
-		raise smd_io_error()
-		return None

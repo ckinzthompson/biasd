@@ -120,4 +120,3 @@ def create_posterior_collection(samples,priors):
 	k2 = priors.k2.new(_np.around(priors.k2._moment2param_fxn(first[4], second[4]),4))
 	
 	return parameter_collection(e1,e2,sigma,k1,k2)
-	
