@@ -1,7 +1,23 @@
+"""
+Read a BIASD result from an SMD file into a useful format. This includes functions for `prior collections`, `posterior collections`, `Laplace posteriors`, `baseline corrections`, and `MCMC results`.
+
+Input:
+	* `smd` is the input SMD object from where the data will be read
+	* `i` is the number of the molecule to from which to read the data
+
+"""
+
 import numpy as _np
 from ._general_smd import smd_io_error
 
 def priors(smd,i):
+	"""
+	Load a BIASD prior distribution collection from an SMD.
+	
+	Returns:
+		* a `biasd.distributions.parameter_collection`
+	"""
+	
 	attr = smd.data[i].attr.__dict__
 	key1 = 'biasd_priors_names'
 	key2 = 'biasd_priors_parameters'
@@ -13,6 +29,13 @@ def priors(smd,i):
 		return None
 	
 def posterior(smd,i):
+	"""
+	Load a BIASD posterior distribution collection from an SMD.
+	
+	Returns:
+		* a `biasd.distributions.parameter_collection`
+	"""
+	
 	attr = smd.data[i].attr.__dict__
 	key1 = 'biasd_posterior_names'
 	key2 = 'biasd_posterior_parameters'
@@ -24,6 +47,12 @@ def posterior(smd,i):
 		return None
 
 def laplace_posterior(smd,i):
+	"""
+	Load a Laplace posterior object from an SMD.
+	
+	Returns:
+		* a `biasd.laplace._laplace_posterior`
+	"""
 	attr = smd.data[i].attr.__dict__
 	key1 = 'biasd_laplace_posterior_mu'
 	key2 = 'biasd_laplace_posterior_covar'
@@ -35,6 +64,12 @@ def laplace_posterior(smd,i):
 		return None
 
 def baseline(smd,i):
+	"""
+	Load a baseline calculation from an SMD.
+	
+	Returns:
+		* a `biasd.utils.baseline.params`
+	"""
 	attr = smd.data[i].attr.__dict__
 	keys= ['baseline_' + j for j in ['pi','mu','var','r','baseline','r2','log_likelihood','iterations']]
 
@@ -46,6 +81,13 @@ def baseline(smd,i):
 		return None
 		
 def mcmc(smd,i):
+	"""
+	Load a BIASD MCMC result from an SMD.
+	
+	Returns:
+		* a `biasd.smd.read.mcmc.mcmc_result`
+	"""
+	
 	class mcmc_result(object):
 		def __init__(self, acor,chain,lnprobability,iterations,naccepted,samples):
 			self.acor = acor

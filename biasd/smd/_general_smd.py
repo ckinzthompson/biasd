@@ -1,21 +1,3 @@
-"""
-Practical Single-molecule Dataset Usage
-	Adapted from the github smddata/smd-python script, so that now it's useful...
-	CKT - 2016/06/01
----------------------------------------
-
-Example:
-import numpy as np
-d = np.zeros((10,3,1000))
-d[:,0] = np.random.normal(loc=300.,scale=10.,size=(10,1000))
-d[:,1] = np.random.normal(loc=700.,scale=20.,size=(10,1000))
-d[:,2] = d[:,1]/(d[:,0]+d[:,1])
-
-s = smd.new(np.arange(1000)*.1,d,["Cy3","Cy5","FRET"])
-smd.save("test.smd",s)
-q = smd.load("test.smd")
-"""
-
 import numpy as _np
 
 class _object_from_dict(object):
@@ -76,13 +58,44 @@ def test_smd(n_points=1000,n_traces=10):
 
 def new(time,data,channel_names=None):
 	"""
-	time is T (number of datapoints)
-	data is NxDxT because that's consistent with original SMD...
+	Create a new SMD structure. The structure is:
+	
+	SMD:
+		- .attr 
+			- .many
+			- .items
+			- .here
+		- .data ``(this is a list)``
+			- [0] ``(trace 0)``
+				- .attr ``(BIASD saves data in here)``
+					- .many
+					- .here
+				- .id ``(a unique number)``
+				- .index ``(time array)``
+				- .values ``(signal data is in here)``
+					- .channel_1 ``(e.g. Cy3)``
+					- .channel_2
+					- .channel_etc
+			- [1] ``(trace 1)``
+				- ...
+			- ...
+		- .id ``(a unique number)``
+			..
+		- .types ``(the datatypes of the entries in values)``
+			..
+	
+	Input:
+		* `time` is an `np.ndarray` of length T (number of datapoints). It marks the indexing time for each data point.
+		* `data` is an NxDxT `np.ndarray`, because that ordering is consistent with original SMD...
 		where: 
-			N: number traces
-			D: data dimensionality i.e. number of channels
-			T: number of time points
-	channel_names is a list of strings, e.g. ["Cy3","Cy5"]
+			* N: number traces
+			* D: data dimensionality i.e. number of channels
+			* T: number of time points
+		* `channel_names` is a list of strings, e.g. ["Cy3","Cy5"] of length D
+	
+	Returns:
+		* an SMD object
+	
 	"""
 	if data.ndim == 1:
 		data = data[None,None,:]
@@ -133,8 +146,11 @@ def _conversion_default(smd):
 
 def load(filename,JSON=False,conversion=_conversion_default):
 	"""
-	Give filename
-	default returns SMD in Python Object form
+	Load an SMD file saved in JSON format into Python
+	Input:
+		* `filename` is a str with the path the SMD file you wish to open
+	Returns:
+		* SMD in Python object form
 	"""
 	import json
 	json_data = open(filename).read()
@@ -150,7 +166,10 @@ def load(filename,JSON=False,conversion=_conversion_default):
 
 def save(filename,smd):
 	'''
-	Save your SMD file in filename... will save as JSON.... so all numpy things are turned into lists... yay.
+	Save your SMD file. This has to save as JSON.... so all numpy things are turned into lists...
+	Input:
+		* `filename` is the output filename to save
+		* `smd` is an SMD object that will be saved in `filename`
 	
 	'''
 	import json
@@ -177,7 +196,7 @@ def save(filename,smd):
 	f=open((filename+'.smd'),"w")
 	f.write(j)
 	f.close()
-	return j
+	# return j
 
 
 class smd_io_error(Exception):
