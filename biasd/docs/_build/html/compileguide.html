@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Compiling the Likelihood &mdash; BIASD 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="BIASD 0.1 documentation" href="index.html" />
+    <link rel="prev" title="Getting Started" href="getstarted.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="getstarted.html" title="Getting Started"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">BIASD 0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="compiling-the-likelihood">
+<span id="compileguide"></span><h1>Compiling the Likelihood<a class="headerlink" href="#compiling-the-likelihood" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="background">
+<h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+<p>The BIASD log-likelihood function is something like</p>
+<div class="math">
+\[ln(\mathcal{L}) \sim \sum\limits_t ln \left( \delta(f) + \delta(1-f) + \int\limits_0^1 df \cdot \rm{blurring} \right)\]</div>
+<p>Unfortunately, the integral in the logarithm makes it difficult to compute. It is the rate limiting step for this calculation, which is quite slow in Python. Therefore, this package comes with the log-likelihood function written in  C, and also in CUDA. There are three versions in the <code class="docutils literal"><span class="pre">./src</span></code> directory. One is in pure C &#8211; it should be fairly straight forward to compile. The second is written in C with the <a class="reference external" href="https://www.gnu.org/software/gsl/">GNU Science Library (GSL)</a> &#8211; it&#8217;s slightly faster, but requires having installed GSL. The third is in CUDA, which allows the calculations to be performed on NVIDIA GPUs. You can use any of the above if compiled, or a version written in Python if you don&#8217;t want to compile anything.</p>
+</div>
+<div class="section" id="how-to-compile">
+<h2>How to Compile<a class="headerlink" href="#how-to-compile" title="Permalink to this headline">¶</a></h2>
+<p>There&#8217;s a Makefile included in the package that will allow you to easily compile all of the libraries necessary to calculate BIASD likelihoods. First, to download GSL, go to their <a class="reference external" href="ftp://ftp.gnu.org/gnu/gsl/">FTP site</a> and download the latest version. Un-pack it, then in the terminal, navigate to the directory using <code class="docutils literal"><span class="pre">cd</span></code> and type</p>
+<div class="highlight-bash"><div class="highlight"><pre>./configure
+make
+make install
+</pre></div>
+</div>
+<p>Now, even if you didn&#8217;t install GSL, you can compile the BIASD likelihood functions. In the terminal, move to the BIASD directory using <code class="docutils literal"><span class="pre">cd</span></code>, and make them with</p>
+<div class="highlight-bash"><div class="highlight"><pre>make
+</pre></div>
+</div>
+<p>Some might fail, for instance if you don&#8217;t have a CUDA-enabled GPU, but you&#8217;ll compile as many as possible into the <code class="docutils literal"><span class="pre">./lib</span></code> directory.</p>
+</div>
+<div class="section" id="testing-speed">
+<h2>Testing Speed<a class="headerlink" href="#testing-speed" title="Permalink to this headline">¶</a></h2>
+<p>To get a feeling for how long it takes the various versions of the BIASD likelihood function to execute, you can use the test function in the likelihood module. For instance, try</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">biasd</span>
+
+<span class="c"># Switch to the Python version</span>
+<span class="n">biasd</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">use_python_ll</span><span class="p">()</span>
+
+<span class="c"># Run the test 10 times, for 5000 datapoints</span>
+<span class="n">biasd</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">test_speed</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5000</span><span class="p">)</span>
+
+<span class="c"># Switch to the C version and test</span>
+<span class="c"># Note: will default to GSL over pure C</span>
+<span class="n">biasd</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">use_C_ll</span><span class="p">()</span>
+<span class="n">biasd</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">test_speed</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5000</span><span class="p">)</span>
+
+<span class="c"># Switch to the CUDA version and test</span>
+<span class="n">biasd</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">use_CUDA_ll</span><span class="p">()</span>
+<span class="n">biasd</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">test_speed</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5000</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The actual execution time depends upon the rate constants, but Python is ~ 1 ms, C with GSL is around ~40 us, and CUDA (when you have many datapoints) is ~ 5 us.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Compiling the Likelihood</a><ul>
+<li><a class="reference internal" href="#background">Background</a></li>
+<li><a class="reference internal" href="#how-to-compile">How to Compile</a></li>
+<li><a class="reference internal" href="#testing-speed">Testing Speed</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="getstarted.html"
+                        title="previous chapter">Getting Started</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/compileguide.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Colin Kinz-Thompson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/compileguide.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>
