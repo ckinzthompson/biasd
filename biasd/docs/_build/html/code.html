@@ -1,0 +1,424 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Code &mdash; BIASD v0.1</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="BIASD v0.1" href="index.html"/>
+        <link rel="prev" title="Compiling the Likelihood" href="compileguide.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="index.html" class="fa fa-home"> BIASD</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getstarted.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getstarted.html#biasd-mcmc">BIASD + MCMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getstarted.html#plot-biasd-mcmc-results-using-corner">Plot BIASD-MCMC Results Using Corner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getstarted.html#plot-biasd-mcmc-results-using-viewer">Plot BIASD-MCMC Results Using Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getstarted.html#biasd-laplace-approximation">BIASD + Laplace Approximation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getstarted.html#my-baseline-and-biasd">My Baseline and BIASD...</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="compileguide.html">Compiling the Likelihood</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="compileguide.html#background">Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compileguide.html#how-to-compile">How to Compile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compileguide.html#testing-speed">Testing Speed</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#distributions">.distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#likelihood">Likelihood</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#smd">SMD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mcmc">MCMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#laplace">Laplace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utils">Utils</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">BIASD</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Code</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/code.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="code">
+<span id="id1"></span><h1>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h1>
+<p>This page gives the details about the BIASD code.</p>
+<div class="section" id="distributions">
+<h2>.distributions<a class="headerlink" href="#distributions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-distributions">
+<span id="some-standard-probability-distributions"></span><h3>Some standard probability distributions<a class="headerlink" href="#module-distributions" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="distributions.beta">
+<em class="property">class </em><code class="descclassname">distributions.</code><code class="descname">beta</code><span class="sig-paren">(</span><em>alpha</em>, <em>beta</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.beta" title="Permalink to this definition">¶</a></dt>
+<dd><p>The beta distribution is often used for probabilities or fractions.</p>
+<p>It is <span class="math">\(p(x\vert\alpha ,\beta) = \frac{ x^{\alpha-1}(1-x)^{\beta-1}}{B(\alpha ,\beta)}\)</span></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="distributions.gamma">
+<em class="property">class </em><code class="descclassname">distributions.</code><code class="descname">gamma</code><span class="sig-paren">(</span><em>alpha</em>, <em>beta</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.gamma" title="Permalink to this definition">¶</a></dt>
+<dd><p>The gamma distribution is often used for compounded times.</p>
+<p>It is <span class="math">\(p(x\vert\alpha ,\beta) = \frac{ \beta^\alpha x^{\alpha - 1} e^{-\beta x} }{\Gamma(\alpha)}\)</span></p>
+<p>Parameters are alpha (shape), and beta (rate)</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="distributions.normal">
+<em class="property">class </em><code class="descclassname">distributions.</code><code class="descname">normal</code><span class="sig-paren">(</span><em>mu</em>, <em>sigma</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.normal" title="Permalink to this definition">¶</a></dt>
+<dd><p>The normal/Gaussian distribution is useful for everything
+Parameters are mean, and the standard deviation</p>
+<p>It is <span class="math">\(p(x\vert\mu ,\sigma) = \frac{ 1}{\sqrt{2\pi\sigma^2}}e^{\frac{-1}{2}\left(\frac{x-\mu}{\sigma}\right)^2}\)</span></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="distributions.uniform">
+<em class="property">class </em><code class="descclassname">distributions.</code><code class="descname">uniform</code><span class="sig-paren">(</span><em>a</em>, <em>b</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.uniform" title="Permalink to this definition">¶</a></dt>
+<dd><p>The uniform distribution is useful limiting ranges
+Parameters are a (lower bound), and b (upper bound)</p>
+<p>It is <span class="math">\(p(x\vert a , b) = \frac{1}{b-a}\)</span></p>
+</dd></dl>
+
+</div>
+<div class="section" id="convert-between-distributions">
+<h3>Convert between distributions<a class="headerlink" href="#convert-between-distributions" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="distributions.convert_distribution">
+<code class="descclassname">distributions.</code><code class="descname">convert_distribution</code><span class="sig-paren">(</span><em>this</em>, <em>to_this_type_string</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.convert_distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts <cite>this</cite> distribution to <cite>to_this_type_string</cite> distribution</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><cite>this</cite> is a <cite>biasd.distribution._distribution</cite></li>
+<li><cite>to_this_type_string</cite> is a string of &#8216;beta&#8217;, &#8216;gamma&#8217;, &#8216;normal&#8217;, or &#8216;uniform&#8217;</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd><ul class="first last simple">
+<li>a <cite>biasd.distribution._distribution</cite></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">biasd</span> <span class="kn">import</span> <span class="n">distributions</span> <span class="k">as</span> <span class="n">bd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">bd</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">,</span><span class="o">.</span><span class="mo">01</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">10000</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">bd</span><span class="o">.</span><span class="n">convert_distribution</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="s">&#39;gamma&#39;</span><span class="p">)</span>
+<span class="n">cc</span> <span class="o">=</span> <span class="n">bd</span><span class="o">.</span><span class="n">convert_distribution</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="s">&#39;uniform&#39;</span><span class="p">)</span>
+<span class="n">ccc</span> <span class="o">=</span> <span class="n">bd</span><span class="o">.</span><span class="n">convert_distribution</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="s">&#39;beta&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">n</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">c</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">cc</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">ccc</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="distributions-can-be-collected-for-priors-or-posteriors">
+<h3>Distributions can be collected for priors or posteriors<a class="headerlink" href="#distributions-can-be-collected-for-priors-or-posteriors" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="distributions.parameter_collection">
+<em class="property">class </em><code class="descclassname">distributions.</code><code class="descname">parameter_collection</code><span class="sig-paren">(</span><em>e1</em>, <em>e2</em>, <em>sigma</em>, <em>k1</em>, <em>k2</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.parameter_collection" title="Permalink to this definition">¶</a></dt>
+<dd><p>A collection of distribution functions that are used for the BIASD two-state model as parameters for Bayesian inference. parameter_collection&#8217;s are used as priors for BIASD.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>e1 is the probability distribution for <span class="math">\(\epsilon_1\)</span></li>
+<li>e2 is the probability distribution for <span class="math">\(\epsilon_2\)</span></li>
+<li>sigma is the probability distribution for <span class="math">\(\sigma\)</span></li>
+<li>k1 is the probability distribution for <span class="math">\(k_1\)</span></li>
+<li>k2 is the probability distribution for <span class="math">\(k_2\)</span></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="collections-can-be-visualized">
+<h3>Collections can be visualized<a class="headerlink" href="#collections-can-be-visualized" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="distributions.viewer">
+<em class="property">class </em><code class="descclassname">distributions.</code><code class="descname">viewer</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.viewer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows you to view BIASD parameter probability distributions</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li>parameter_collection is a biasd.distributions.parameter_collection</li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">biasd</span> <span class="kn">import</span> <span class="n">distributions</span> <span class="k">as</span> <span class="n">bd</span>
+
+<span class="c"># Make the parameter_collection</span>
+<span class="n">e1</span> <span class="o">=</span> <span class="n">bd</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">5.</span><span class="p">,</span><span class="mf">1.</span><span class="p">)</span>
+<span class="n">e2</span> <span class="o">=</span> <span class="n">bd</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="mf">95.</span><span class="p">,</span><span class="mf">5.</span><span class="p">)</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="n">bd</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="mf">5.</span><span class="p">,</span><span class="mf">100.</span><span class="p">)</span>
+<span class="n">k1</span> <span class="o">=</span> <span class="n">bd</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span><span class="mf">1.</span><span class="p">)</span>
+<span class="n">k2</span> <span class="o">=</span> <span class="n">bd</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mf">1.</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">bd</span><span class="o">.</span><span class="n">parameter_collection</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span><span class="n">e2</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">k1</span><span class="p">,</span><span class="n">k2</span><span class="p">)</span>
+
+<span class="c"># Start the viewer</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">bd</span><span class="o">.</span><span class="n">viewer</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-distributions">
+<span id="finally-you-can-easily-generate-a-few-useful-collections-using"></span><h3>Finally, you can easily generate a few useful collections using<a class="headerlink" href="#module-distributions" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="distributions.uninformative_prior">
+<code class="descclassname">distributions.</code><code class="descname">uninformative_prior</code><span class="sig-paren">(</span><em>data_range</em>, <em>timescale</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.uninformative_prior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate an uninformative prior probability distribution for BIASD.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><cite>data_range</cite> is a list or array of the [lower,upper] bounds of the data</li>
+<li><cite>timescale</cite> is the frame rate (the prior will be centered here +/- 3 decades)</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd><ul class="first last simple">
+<li>a flat <cite>biasd.distributions.parameter_collection</cite></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="distributions.guess_prior">
+<code class="descclassname">distributions.</code><code class="descname">guess_prior</code><span class="sig-paren">(</span><em>y</em>, <em>tau=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.guess_prior" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a guess for the prior probability distribution for BIASD. This approach uses a Gaussian mixture model to learn both states and the noise, then it idealizes the trace, and calculates the transition probabilities. Rate constants are then calculated, and an attempt is made to correct these with virtual states.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><cite>y</cite> is a <cite>numpy.ndarray</cite> of the time series</li>
+<li><cite>tau</cite> is the measurement period of the time series (i.e., inverse acquisition rate)</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd><ul class="first last simple">
+<li>a guessed <cite>biasd.distributions.parameter_collection</cite></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="likelihood">
+<h2>Likelihood<a class="headerlink" href="#likelihood" title="Permalink to this headline">¶</a></h2>
+<p>Nothin&#8217; here yet.</p>
+</div>
+<div class="section" id="smd">
+<h2>SMD<a class="headerlink" href="#smd" title="Permalink to this headline">¶</a></h2>
+<p>The Single-Molecule Dataset (SMD) format is a standardized data format for use in time-resolved, single-molecule experiments (e.g, smFRET, force spectroscopy, etc.). It was published in collaboration between the <a class="reference external" href="http://www.columbia.edu/cu/chemistry/groups/gonzalez/index.html">Gonzalez</a> and <a class="reference external" href="http://cmgm.stanford.edu/herschlag/">Herschlag</a> labs (Greenfield, M <em>et al</em>. <em>BMC Bioinformatics</em> <strong>2015</strong>, <em>16</em>, 3. <a class="reference external" href="http://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-014-0429-4">DOI: 10.1186/s12859-014-0429-4</a>). A github page with some <a class="reference external" href="https://smdata.github.io">Matlab</a> and <a class="reference external" href="https://github.com/smdata/smd-python">Python</a> code exists.</p>
+<p>asdf</p>
+<span class="target" id="module-smd"></span><p>asdf
+asdf</p>
+</div>
+<div class="section" id="mcmc">
+<h2>MCMC<a class="headerlink" href="#mcmc" title="Permalink to this headline">¶</a></h2>
+<p>Markov chain Monte Carlo</p>
+<span class="target" id="module-mcmc"></span><span class="target" id="module-mcmc"></span><div class="section" id="helper-functions-for-running-affine-invariant-markov-chain-monte-carlo-on-biasd-posteriors">
+<h3>Helper functions for running affine invariant Markov chain Monte Carlo on BIASD posteriors<a class="headerlink" href="#helper-functions-for-running-affine-invariant-markov-chain-monte-carlo-on-biasd-posteriors" title="Permalink to this headline">¶</a></h3>
+<p>Uses the emcee package: &lt;<a class="reference external" href="http://dan.iel.fm/emcee/current/">http://dan.iel.fm/emcee/current/</a>&gt;</p>
+<p>As described in:
+emcee: The MCMC Hammer
+Daniel Foreman-Mackey, David W. Hogg, Dustin Lang, and Jonathan Goodman
+&lt;<a class="reference external" href="http://arxiv.org/abs/1202.3665">http://arxiv.org/abs/1202.3665</a>&gt;
+&lt;DOI:10.1086/670067&gt;</p>
+<p>Based upon:
+Ensemble samplers with affine invariance
+Jonathan Goodman and Jonathan Weare
+Comm. Appl. Math. Comp. Sci. 2010, 5(1), 65-80.
+&lt;DOI:10.2140/camcos.2010.5.65&gt;</p>
+</div>
+<div class="section" id="example-use">
+<h3>Example use:<a class="headerlink" href="#example-use" title="Permalink to this headline">¶</a></h3>
+<p>sampler,initial_positions = b.mcmc.setup(dy, priors, tau, 16, initialize=&#8217;rvs&#8217;, threads=20)</p>
+<p>sampler,burned_positions = b.mcmc.burn_in(sampler,initial_positions,nsteps=50)
+sampler = b.mcmc.run(sampler,burned_positions,nsteps=100,timer=False)
+sampler = b.mcmc.continue_run(sampler,900)</p>
+<p>largest_autocorrelation_time = b.mcmc.chain_statistics(sampler)</p>
+<p>samples = b.mcmc.get_samples(sampler)
+f = b.mcmc.plot_corner(samples)
+plt.savefig(&#8216;mcmc_test.png&#8217;)</p>
+<p>posterior = b.mcmc.create_posterior_collection(samples,priors)
+b.distributions.viewer(posterior)</p>
+</div>
+</div>
+<div class="section" id="laplace">
+<h2>Laplace<a class="headerlink" href="#laplace" title="Permalink to this headline">¶</a></h2>
+<p>Laplace Approximation</p>
+</div>
+<div class="section" id="utils">
+<h2>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="utils.baseline.remove_baseline">
+<code class="descclassname">utils.baseline.</code><code class="descname">remove_baseline</code><span class="sig-paren">(</span><em>d</em>, <em>R2=0.01</em>, <em>maxiter=1000</em>, <em>relative_threshold=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.baseline.remove_baseline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automated Maximum Likelihood Separation of Signal from Baseline in
+Noisy Quantal Data</p>
+<p>Bruno, WJ, Ullah, G, Mak, DD, Pearson JE
+Biophys J 2013, 105, 68-79.
+&#8212;&#8212;&#8212;&#8212;&#8211;</p>
+<p>d is a 1d array of the signal
+R2 is an initial guess for the ratio of the random walk&#8217;s variance to that of the noise variance of the underlying states.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="compileguide.html" class="btn btn-neutral" title="Compiling the Likelihood"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Colin Kinz-Thompson.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

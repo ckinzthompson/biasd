@@ -1,0 +1,396 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>utils.baseline &mdash; BIASD v0.1</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="BIASD v0.1" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="../../index.html" class="fa fa-home"> BIASD</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../getstarted.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../getstarted.html#biasd-mcmc">BIASD + MCMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getstarted.html#plot-biasd-mcmc-results-using-corner">Plot BIASD-MCMC Results Using Corner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getstarted.html#plot-biasd-mcmc-results-using-viewer">Plot BIASD-MCMC Results Using Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getstarted.html#biasd-laplace-approximation">BIASD + Laplace Approximation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getstarted.html#my-baseline-and-biasd">My Baseline and BIASD...</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../compileguide.html">Compiling the Likelihood</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../compileguide.html#background">Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../compileguide.html#how-to-compile">How to Compile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../compileguide.html#testing-speed">Testing Speed</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../code.html">Code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../code.html#distributions">Distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../code.html#likelihood">Likelihood</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../code.html#smd">SMD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../code.html#mcmc">MCMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../code.html#laplace">Laplace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../code.html#utils">Utils</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">BIASD</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>utils.baseline</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <h1>Source code for utils.baseline</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Baseline remover </span>
+<span class="sd">------------------</span>
+<span class="sd">Use this to remove the baseline from a trace that it can be better processed using BIASD.</span>
+
+<span class="sd">import matplotlib.pyplot as plt</span>
+<span class="sd">from ckt_utils import sm_sim</span>
+
+<span class="sd">dd = sm_sim.simtrace(np.array(((0.,3.),(8.,0.))),np.array((.0,1)),.05,1000,.01)</span>
+<span class="sd">signal = dd.y</span>
+<span class="sd">baseline = simulate_diffusion(signal.size,.005)</span>
+<span class="sd">d = signal + baseline + np.random.normal(size=signal.size)*.02</span>
+
+<span class="sd">p = remove_baseline(d)</span>
+<span class="sd">f,a = plt.subplots(2,sharex=True)</span>
+<span class="sd">a[0].plot(d)</span>
+<span class="sd">a[0].plot(p.baseline,&#39;r&#39;)</span>
+<span class="sd">a[1].plot(d-p.baseline)</span>
+<span class="sd">plt.show()</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">TDMASolve</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Tri-diagonal Matrix Algebra solver.</span>
+<span class="sd">	Solves Ax = B where A is a tri-diagonal matrix with</span>
+<span class="sd">	a - lower diagonal</span>
+<span class="sd">	b - diagonal</span>
+<span class="sd">	c - upper diagonal</span>
+<span class="sd">	</span>
+<span class="sd">	d - RHS</span>
+<span class="sd">	</span>
+<span class="sd">	Returns x</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="c"># I rewrote the C version from... https://en.wikibooks.org/wiki/Algorithm_Implementation/Linear_Algebra/Tridiagonal_matrix_algorithm</span>
+	<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+	<span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/=</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+	<span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/=</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">d</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+		<span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+		<span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/=</span> <span class="n">m</span>
+		<span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="n">m</span>
+
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="mi">1</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+		<span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-=</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+	<span class="k">return</span> <span class="n">x</span>
+	
+	
+<span class="k">def</span> <span class="nf">simulate_diffusion</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">sigma</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Returns a n-long randomwalk with normal distribution steps of std dev sigma</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n</span><span class="p">)</span><span class="o">*</span><span class="n">sigma</span>
+	<span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">kmeans</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">nstates</span><span class="p">,</span><span class="n">nrestarts</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	K-means Clustering</span>
+<span class="sd">	x is Nxd</span>
+<span class="sd">	----</span>
+<span class="sd">	Returns pi_k, r_nk, mu_k, sig_k</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+
+	<span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+		<span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span><span class="bp">None</span><span class="p">]</span>
+
+	<span class="n">jbest</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+	<span class="n">mbest</span> <span class="o">=</span> <span class="bp">None</span>
+	<span class="n">rbest</span> <span class="o">=</span> <span class="bp">None</span>
+	<span class="k">for</span> <span class="n">nr</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrestarts</span><span class="p">):</span>
+		<span class="n">mu_k</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">size</span><span class="o">=</span><span class="n">nstates</span><span class="p">)]</span>
+		<span class="n">j_last</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
+			<span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="bp">None</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">mu_k</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span><span class="o">...</span><span class="p">]),</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+			<span class="n">r_nk</span> <span class="o">=</span> <span class="p">(</span><span class="n">dist</span> <span class="o">==</span> <span class="n">dist</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="mi">1</span><span class="p">)[:,</span><span class="bp">None</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;i&#39;</span><span class="p">)</span>
+			<span class="n">j</span> <span class="o">=</span> <span class="p">(</span><span class="n">r_nk</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;f&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">dist</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+			<span class="n">mu_k</span> <span class="o">=</span> <span class="p">(</span><span class="n">r_nk</span><span class="p">[:,:,</span><span class="bp">None</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;f&#39;</span><span class="p">)</span><span class="o">*</span><span class="n">x</span><span class="p">[:,</span><span class="bp">None</span><span class="p">,:])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">r_nk</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;f&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)[:,</span><span class="bp">None</span><span class="p">]</span><span class="o">+</span><span class="mf">1e-16</span><span class="p">)</span>
+			<span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="n">j_last</span><span class="p">)</span><span class="o">/</span><span class="n">j</span> <span class="o">&lt;=</span> <span class="mf">1e-100</span><span class="p">:</span>
+				<span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">jbest</span><span class="p">:</span>
+					<span class="n">jbest</span> <span class="o">=</span> <span class="n">j</span>
+					<span class="n">mbest</span> <span class="o">=</span> <span class="n">mu_k</span>
+					<span class="n">rbest</span> <span class="o">=</span> <span class="n">r_nk</span>
+				<span class="k">break</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">j_last</span> <span class="o">=</span> <span class="n">j</span>
+	<span class="n">mu_k</span> <span class="o">=</span> <span class="n">mbest</span>
+	<span class="n">r_nk</span> <span class="o">=</span> <span class="n">rbest</span>
+	<span class="n">sig_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nstates</span><span class="p">,</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+	<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nstates</span><span class="p">):</span>
+		<span class="n">sig_k</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">r_nk</span><span class="p">[:,</span><span class="n">k</span><span class="p">]</span><span class="o">==</span><span class="mf">1.</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+	<span class="n">pi_k</span> <span class="o">=</span> <span class="p">(</span><span class="n">r_nk</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;f&#39;</span><span class="p">)</span>
+	<span class="n">pi_k</span> <span class="o">/=</span> <span class="n">pi_k</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+	<span class="n">xsort</span> <span class="o">=</span> <span class="n">pi_k</span><span class="o">.</span><span class="n">argsort</span><span class="p">()[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+	<span class="c">#pi_k is fraction, r_nk is responsibilities, mu_k is means, sig_k is variances</span>
+	<span class="k">return</span> <span class="p">[</span><span class="n">pi_k</span><span class="p">[</span><span class="n">xsort</span><span class="p">],</span><span class="n">r_nk</span><span class="p">[:,</span><span class="n">xsort</span><span class="p">],</span><span class="n">mu_k</span><span class="p">[</span><span class="n">xsort</span><span class="p">],</span><span class="n">sig_k</span><span class="p">[</span><span class="n">xsort</span><span class="p">]]</span>
+
+<span class="k">def</span> <span class="nf">solve_baseline</span><span class="p">(</span><span class="n">R2</span><span class="p">,</span><span class="n">d</span><span class="p">):</span>
+	<span class="n">tdm_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span><span class="n">d</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+	<span class="n">tdm_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">R2</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span><span class="n">d</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+	<span class="n">tdm_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span><span class="n">d</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+	<span class="n">tdm_b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">+</span> <span class="n">R2</span>
+	<span class="n">tdm_b</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">+</span> <span class="n">R2</span>
+	<span class="n">tdm_d</span> <span class="o">=</span> <span class="n">R2</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span><span class="p">)</span>
+	<span class="n">bstar</span> <span class="o">=</span> <span class="n">TDMASolve</span><span class="p">(</span><span class="n">tdm_a</span><span class="p">,</span><span class="n">tdm_b</span><span class="p">,</span><span class="n">tdm_c</span><span class="p">,</span> <span class="n">tdm_d</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">bstar</span> <span class="c">#- bstar[0]</span>
+
+<span class="k">def</span> <span class="nf">optimal_r2</span><span class="p">(</span><span class="n">r2</span><span class="p">,</span><span class="n">baseline</span><span class="p">,</span><span class="n">sk2</span><span class="p">):</span>
+	<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">root</span>
+	<span class="k">def</span> <span class="nf">minr2fxn</span><span class="p">(</span><span class="n">r2</span><span class="p">,</span><span class="n">baseline</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">sk2</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">r2</span> <span class="o">&gt;</span> <span class="mf">1e2</span> <span class="ow">or</span> <span class="n">r2</span> <span class="o">&lt;</span> <span class="mf">1e-8</span><span class="p">:</span>
+			<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+		<span class="n">b</span> <span class="o">=</span> <span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">baseline</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">baseline</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+		<span class="n">f</span> <span class="o">=</span> <span class="n">b</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">sk2</span><span class="o">*</span><span class="n">r2</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
+		<span class="n">num</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">+</span> <span class="p">(</span><span class="mf">2.</span><span class="o">+</span><span class="n">r2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">4.</span><span class="o">*</span><span class="n">r2</span> <span class="o">+</span> <span class="n">r2</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
+		<span class="n">denom</span> <span class="o">=</span> <span class="mf">2.</span> <span class="o">+</span> <span class="n">r2</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">4.</span><span class="o">*</span><span class="n">r2</span> <span class="o">+</span> <span class="n">r2</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span> 
+		<span class="n">f</span> <span class="o">-=</span> <span class="n">t</span><span class="o">*</span> <span class="p">(</span><span class="n">num</span><span class="o">/</span><span class="n">denom</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">f</span>
+	<span class="n">r2</span> <span class="o">=</span> <span class="n">root</span><span class="p">(</span><span class="n">minr2fxn</span><span class="p">,</span><span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">r2</span><span class="p">),</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">baseline</span><span class="p">,</span><span class="nb">float</span><span class="p">(</span><span class="n">baseline</span><span class="o">.</span><span class="n">size</span><span class="p">),</span><span class="n">sk2</span><span class="p">),</span><span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;maxfev&#39;</span><span class="p">:</span><span class="mi">10000</span><span class="p">})</span><span class="o">.</span><span class="n">x</span>
+	<span class="k">return</span> <span class="n">r2</span>
+
+<span class="k">def</span> <span class="nf">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">mu</span><span class="p">,</span><span class="n">var</span><span class="p">):</span>
+	<span class="k">return</span> <span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">var</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-.</span><span class="mi">5</span><span class="o">/</span><span class="n">var</span><span class="o">*</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
+	
+<span class="k">def</span> <span class="nf">estep</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">pi</span><span class="p">,</span><span class="n">mu</span><span class="p">,</span><span class="n">var</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Expectation Step - returns responsibilities</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">r</span> <span class="o">=</span> <span class="n">pi</span><span class="p">[</span><span class="bp">None</span><span class="p">,:]</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="bp">None</span><span class="p">],</span> <span class="n">mu</span><span class="p">[</span><span class="bp">None</span><span class="p">,:],</span><span class="n">var</span><span class="p">[</span><span class="bp">None</span><span class="p">,:])</span>
+	<span class="n">r</span> <span class="o">=</span> <span class="n">r</span><span class="o">/</span><span class="p">(</span><span class="mf">1e-300</span><span class="o">+</span><span class="n">r</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)[:,</span><span class="bp">None</span><span class="p">])</span>
+	<span class="k">return</span> <span class="n">r</span>
+	
+<span class="k">def</span> <span class="nf">mstep</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">r</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Maximization Step - returns fractions, means, and variances</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-300</span>
+	<span class="n">mu</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">n</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">r</span><span class="o">*</span><span class="n">x</span><span class="p">[:,</span><span class="bp">None</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+	<span class="n">var</span><span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">n</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">r</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="bp">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">mu</span><span class="p">[</span><span class="bp">None</span><span class="p">,:])</span><span class="o">**</span><span class="mf">2.</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+	<span class="n">pi</span> <span class="o">=</span> <span class="n">n</span> <span class="o">/</span> <span class="n">n</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+	<span class="k">return</span> <span class="n">pi</span><span class="p">,</span><span class="n">mu</span><span class="p">,</span><span class="n">var</span>
+	
+<span class="k">def</span> <span class="nf">ideal_signal</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">mu</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Generate the weighted estimate of the signal</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">return</span> <span class="p">(</span><span class="n">r</span><span class="o">*</span><span class="n">mu</span><span class="p">[</span><span class="bp">None</span><span class="p">,:])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">params</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Container for remove_baseline results</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">pi</span><span class="p">,</span><span class="n">mu</span><span class="p">,</span><span class="n">var</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">baseline</span><span class="p">,</span><span class="n">R2</span><span class="p">,</span><span class="n">ll</span><span class="p">,</span><span class="n">iters</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">pi</span> <span class="o">=</span> <span class="n">pi</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="n">var</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">baseline</span> <span class="o">=</span> <span class="n">baseline</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">r2</span> <span class="o">=</span> <span class="n">R2</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">log_likelihood</span> <span class="o">=</span> <span class="n">ll</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">iterations</span> <span class="o">=</span> <span class="n">iters</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">responsibilities</span> <span class="o">=</span> <span class="n">r</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">=</span> <span class="n">r</span>
+
+
+<div class="viewcode-block" id="remove_baseline"><a class="viewcode-back" href="../../code.html#utils.baseline.remove_baseline">[docs]</a><span class="k">def</span> <span class="nf">remove_baseline</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">R2</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span><span class="n">maxiter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span><span class="n">relative_threshold</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Removes the baseline sort of according to:</span>
+<span class="sd">	--------------</span>
+<span class="sd">	Automated Maximum Likelihood Separation of Signal from Baseline in</span>
+<span class="sd">	Noisy Quantal Data</span>
+<span class="sd">	</span>
+<span class="sd">	Bruno, WJ, Ullah, G, Mak, DD, Pearson JE</span>
+<span class="sd">	Biophys J 2013, 105, 68-79.</span>
+<span class="sd">	--------------</span>
+<span class="sd">	</span>
+<span class="sd">	d is a 1d array of the signal</span>
+<span class="sd">	R2 is an initial guess for the ratio of the random walk&#39;s variance to that of the noise variance of the underlying states.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	
+	<span class="n">R2</span> <span class="o">=</span> <span class="o">.</span><span class="mo">01</span>
+	<span class="n">bstar</span> <span class="o">=</span> <span class="n">solve_baseline</span><span class="p">(</span><span class="n">R2</span><span class="p">,</span><span class="n">d</span><span class="p">)</span>
+
+	<span class="n">pi</span><span class="p">,</span><span class="n">_</span><span class="p">,</span><span class="n">mu</span><span class="p">,</span><span class="n">sig</span> <span class="o">=</span> <span class="n">kmeans</span><span class="p">(</span><span class="n">d</span><span class="o">-</span><span class="n">bstar</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+	<span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+	<span class="n">var</span> <span class="o">=</span> <span class="n">sig</span><span class="p">[:,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mf">2.</span>
+
+	<span class="n">l0</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+	<span class="n">ll</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+	<span class="n">r</span> <span class="o">=</span> <span class="n">estep</span><span class="p">(</span><span class="n">d</span> <span class="o">-</span> <span class="n">bstar</span><span class="p">,</span><span class="n">pi</span><span class="p">,</span><span class="n">mu</span><span class="p">,</span><span class="n">var</span><span class="p">)</span>
+
+	<span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maxiter</span><span class="p">):</span>
+		<span class="n">bstar</span> <span class="o">=</span> <span class="n">solve_baseline</span><span class="p">(</span><span class="n">R2</span><span class="p">,</span><span class="n">d</span><span class="o">-</span><span class="n">ideal_signal</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="n">mu</span><span class="p">))</span>
+		<span class="n">r</span> <span class="o">=</span> <span class="n">estep</span><span class="p">(</span><span class="n">d</span> <span class="o">-</span> <span class="n">bstar</span><span class="p">,</span><span class="n">pi</span><span class="p">,</span><span class="n">mu</span><span class="p">,</span><span class="n">var</span><span class="p">)</span>
+		<span class="n">pi</span><span class="p">,</span><span class="n">mu</span><span class="p">,</span><span class="n">var</span> <span class="o">=</span> <span class="n">mstep</span><span class="p">(</span><span class="n">d</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">bstar</span><span class="p">),</span><span class="n">r</span><span class="p">)</span>
+
+		<span class="n">bstar</span> <span class="o">+=</span> <span class="n">mu</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+		<span class="n">mu</span> <span class="o">-=</span> <span class="n">mu</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+		<span class="c"># worst case scenario</span>
+		<span class="n">R2</span> <span class="o">=</span> <span class="n">optimal_r2</span><span class="p">(</span><span class="n">R2</span><span class="p">,</span><span class="n">bstar</span><span class="p">,</span><span class="n">var</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+		<span class="k">if</span> <span class="n">R2</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span> <span class="c"># HACK b/c sometimes you hemorrhage R2... </span>
+			<span class="n">R2</span> <span class="o">/=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span>
+		<span class="n">vb</span> <span class="o">=</span> <span class="n">R2</span><span class="o">*</span><span class="p">(</span><span class="n">var</span><span class="o">*</span><span class="n">pi</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+		<span class="n">l0</span> <span class="o">=</span> <span class="n">ll</span>
+		<span class="n">ll</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pi</span><span class="p">[</span><span class="bp">None</span><span class="p">,:]</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">d</span><span class="p">[:,</span><span class="bp">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">bstar</span><span class="p">[:,</span><span class="bp">None</span><span class="p">],</span><span class="n">mu</span><span class="p">[</span><span class="bp">None</span><span class="p">,:],</span><span class="n">var</span><span class="p">[</span><span class="bp">None</span><span class="p">,:]),</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-.</span><span class="mi">5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">vb</span><span class="p">)</span> <span class="o">-.</span><span class="mi">5</span><span class="o">/</span><span class="n">vb</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">bstar</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">bstar</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mf">2.</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+		<span class="n">llratio</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">ll</span> <span class="o">-</span> <span class="n">l0</span><span class="p">)</span><span class="o">/</span><span class="n">l0</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">llratio</span> <span class="o">&lt;</span> <span class="n">relative_threshold</span><span class="p">:</span>
+			<span class="k">break</span>	
+	<span class="k">return</span> <span class="n">params</span><span class="p">(</span><span class="n">pi</span><span class="p">,</span><span class="n">mu</span><span class="p">,</span><span class="n">var</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">bstar</span><span class="p">,</span><span class="n">R2</span><span class="p">,</span><span class="n">ll</span><span class="p">,</span><span class="n">iteration</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Colin Kinz-Thompson.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

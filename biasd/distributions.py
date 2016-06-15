@@ -1,3 +1,13 @@
+"""
+.. module:: distributions
+
+	:synopsis: Contains probability distributions for use with BIASD prior and posterior distributions
+
+.. moduleauthor:: Colin Kinz-Thompson <cdk2119@columbia.edu>
+
+
+"""
+
 # import matplotlib.pyplot as plt
 import numpy as _np
 _np.seterr(all="ignore")
@@ -82,7 +92,9 @@ class _distribution(object):
 
 class beta(_distribution):
 	"""
-	Parameters are alpha, and beta
+	The beta distribution is often used for probabilities or fractions.
+	
+	It is :math:`p(x\\vert\\alpha ,\\beta) = \\frac{ x^{\\alpha-1}(1-x)^{\\beta-1}}{B(\\alpha ,\\beta)}`
 	"""
 	def __init__(self,alpha,beta):
 		self.name = 'beta'
@@ -156,6 +168,10 @@ class beta(_distribution):
 
 class gamma(_distribution):
 	"""
+	The gamma distribution is often used for compounded times.
+	
+	It is :math:`p(x\\vert\\alpha ,\\beta) = \\frac{ \\beta^\\alpha x^{\\alpha - 1} e^{-\\beta x} }{\\Gamma(\\alpha)}`
+
 	Parameters are alpha (shape), and beta (rate)
 	"""
 	def __init__(self,alpha,beta):
@@ -229,7 +245,10 @@ class gamma(_distribution):
 
 class normal(_distribution):
 	"""
+	The normal/Gaussian distribution is useful for everything
 	Parameters are mean, and the standard deviation
+	
+	It is :math:`p(x\\vert\\mu ,\\sigma) = \\frac{ 1}{\\sqrt{2\\pi\\sigma^2}}e^{\\frac{-1}{2}\\left(\\frac{x-\\mu}{\\sigma}\\right)^2}`
 	"""
 	def __init__(self,mu,sigma):
 		self.name = 'normal'
@@ -298,7 +317,10 @@ class normal(_distribution):
 
 class uniform(_distribution):
 	"""
-	Parameters are a,b
+	The uniform distribution is useful limiting ranges
+	Parameters are a (lower bound), and b (upper bound)
+	
+	It is :math:`p(x\\vert a , b) = \\frac{1}{b-a}`
 	"""
 	def __init__(self,a,b):
 		self.name = 'uniform'
@@ -367,23 +389,34 @@ class uniform(_distribution):
 
 def convert_distribution(this,to_this_type_string):
 	""" 
-	this is a _distribution
-	to_this_type_string is 'beta', 'gamma', 'normal', or 'uniform'
-	------------------
-	FUN!:
-	import biasd_distributions
-	n = biasd_distributions.normal(.5,.01)
-	x = _np.linspace(0,1,10000)
-	c = biasd_distributions.convert_distribution(n,'gamma')
-	cc = biasd_distributions.convert_distribution(n,'uniform')
-	ccc = biasd_distributions.convert_distribution(n,'beta')
-	plt.plot(x,n.pdf(x))
-	plt.plot(x,c.pdf(x))
-	plt.plot(x,cc.pdf(x))
-	plt.plot(x,ccc.pdf(x))
-	plt.yscale('log')
-	plt.show()
-	-------------------
+	Converts `this` distribution to `to_this_type_string` distribution
+	
+	Input:
+		* `this` is a `biasd.distribution._distribution`
+		* `to_this_type_string` is a string of 'beta', 'gamma', 'normal', or 'uniform'
+
+	Returns:
+		* a `biasd.distribution._distribution`
+	
+	Example:
+	
+	.. code-block:: python
+	
+		from biasd import distributions as bd
+		import numpy as np
+		import matplotlib.pyplot as plt
+	
+		n = bd.normal(.5,.01)
+		x = np.linspace(0,1,10000)
+		c = bd.convert_distribution(n,'gamma')
+		cc = bd.convert_distribution(n,'uniform')
+		ccc = bd.convert_distribution(n,'beta')
+		plt.plot(x,n.pdf(x))
+		plt.plot(x,c.pdf(x))
+		plt.plot(x,cc.pdf(x))
+		plt.plot(x,ccc.pdf(x))
+		plt.yscale('log')
+		plt.show()
 	"""
 	
 	to_this_type = dict(zip(('beta','gamma','normal','uniform'),(beta,gamma,normal,uniform)))[to_this_type_string]
@@ -394,6 +427,19 @@ def convert_distribution(this,to_this_type_string):
 	
 
 class parameter_collection(object):
+	"""
+	A collection of distribution functions that are used for the BIASD two-state model as parameters for Bayesian inference. parameter_collection's are used as priors for BIASD.
+	
+	Input:
+		* e1 is the probability distribution for :math:`\\epsilon_1`
+		* e2 is the probability distribution for :math:`\\epsilon_2`
+		* sigma is the probability distribution for :math:`\\sigma`
+		* k1 is the probability distribution for :math:`k_1`
+		* k2 is the probability distribution for :math:`k_2`
+	
+	
+	"""
+	
 	def __init__(self,e1,e2,sigma,k1,k2):
 		self.e1 = e1
 		self.e2 = e2
@@ -452,18 +498,26 @@ class parameter_collection(object):
 class viewer(object):
 	"""
 	Allows you to view BIASD parameter probability distributions
-	------------
+	
+	Input:
+		* parameter_collection is a biasd.distributions.parameter_collection
+
 	Example:
 	
-	import biasd_distributions as bd
-
-	e1 = bd.normal(5.,1.)
-	e2 = bd.beta(95.,5.)
-	sigma = bd.gamma(5.,100.)
-	k1 = bd.gamma(1.,1.)
-	k2 = bd.uniform(-1,1.)
-	d = bd.parameter_collection(e1,e2,sigma,k1,k2)
-	v = bd.viewer(d)
+	.. code-block:: python
+	
+		from biasd import distributions as bd
+		
+		# Make the parameter_collection
+		e1 = bd.normal(5.,1.)
+		e2 = bd.beta(95.,5.)
+		sigma = bd.gamma(5.,100.)
+		k1 = bd.gamma(1.,1.)
+		k2 = bd.uniform(-1,1.)
+		d = bd.parameter_collection(e1,e2,sigma,k1,k2)
+	
+		# Start the viewer
+		v = bd.viewer(d)
 	"""
 	import matplotlib.pyplot as plt
 	class mpl_button(object):
@@ -542,8 +596,14 @@ class viewer(object):
 		
 def uninformative_prior(data_range,timescale):
 	"""
-	data_range should be the [lower,upper] bounds of the data
-	timescale is the framerate (the prior will be centered here)
+	Generate an uninformative prior probability distribution for BIASD.
+	
+	Input:
+		* `data_range` is a list or array of the [lower,upper] bounds of the data
+		* `timescale` is the frame rate (the prior will be centered here +/- 3 decades)
+	
+	Returns:
+		* a flat `biasd.distributions.parameter_collection`
 	"""
 	lower,upper = data_range
 	e1 = bd.uniform(lower,(upper-lower)/2.+lower)
@@ -638,10 +698,16 @@ def _virtual_min(k1,k2,tau_c):
 
 def guess_prior(y,tau=1.):
 	"""
-	Use a GMM to learn both states and noise.
-	Idealize and calculate transition probabilities.
-	Calculate rate constants, and try to correct these with virtual states.
+	Generate a guess for the prior probability distribution for BIASD. This approach uses a Gaussian mixture model to learn both states and the noise, then it idealizes the trace, and calculates the transition probabilities. Rate constants are then calculated, and an attempt is made to correct these with virtual states.
+	
+	Input:
+		* `y` is a `numpy.ndarray` of the time series
+		* `tau` is the measurement period of the time series (i.e., inverse acquisition rate)
+	
+	Returns:
+		* a guessed `biasd.distributions.parameter_collection`
 	"""
+
 	
 	
 	theta = _GMM_EM_1D(y)

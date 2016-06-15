@@ -1,25 +1,30 @@
 '''
+.. module:: mcmc
+	:synopsis: Integrates emcee's MCMC into BIASD
+
+.. moduleauthor:: Colin Kinz-Thompson <cdk2119@columbia.edu>
+
+
 Helper functions for running affine invariant Markov chain Monte Carlo on BIASD posteriors
+------------------------------------------------------------------------------------------
 
---------------------
-
-Uses the emcee package: http://dan.iel.fm/emcee/current/
+Uses the emcee package: <http://dan.iel.fm/emcee/current/>
 
 As described in:
 emcee: The MCMC Hammer
 Daniel Foreman-Mackey, David W. Hogg, Dustin Lang, and Jonathan Goodman
-http://arxiv.org/abs/1202.3665
-DOI:10.1086/670067
+<http://arxiv.org/abs/1202.3665>
+<DOI:10.1086/670067>
 
 Based upon:
 Ensemble samplers with affine invariance
 Jonathan Goodman and Jonathan Weare
 Comm. Appl. Math. Comp. Sci. 2010, 5(1), 65-80.
-DOI: 10.2140/camcos.2010.5.65
+<DOI:10.2140/camcos.2010.5.65>
 
----------------
 
 Example use:
+------------
 
 sampler,initial_positions = b.mcmc.setup(dy, priors, tau, 16, initialize='rvs', threads=20)
 

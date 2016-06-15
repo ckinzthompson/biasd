@@ -13,6 +13,7 @@ Contents:
 	
 	getstarted
 	compileguide
+	code
 
 .. Indices and tables
 .. ==================
