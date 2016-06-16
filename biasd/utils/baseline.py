@@ -1,6 +1,6 @@
 """
 Baseline remover 
-------------------
+
 Use this to remove the baseline from a trace that it can be better processed using BIASD.
 
 import matplotlib.pyplot as plt
