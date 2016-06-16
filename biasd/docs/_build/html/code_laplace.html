@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Compiling the Likelihood &mdash; BIASD v0.1</title>
+  <title>Laplace &mdash; BIASD v0.1</title>
   
 
   
@@ -31,8 +31,8 @@
 
   
     <link rel="top" title="BIASD v0.1" href="index.html"/>
-        <link rel="next" title="Distributions" href="code_distributions.html"/>
-        <link rel="prev" title="Getting Started" href="getstarted.html"/> 
+        <link rel="next" title="Likelihood" href="code_likelihood.html"/>
+        <link rel="prev" title="Distributions" href="code_distributions.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -63,7 +63,7 @@
         
           
           
-              <ul class="current">
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="getstarted.html">Getting Started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="getstarted.html#biasd-mcmc">BIASD + MCMC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getstarted.html#plot-biasd-mcmc-results-using-corner">Plot BIASD-MCMC Results Using Corner</a></li>
@@ -72,14 +72,14 @@
 <li class="toctree-l2"><a class="reference internal" href="getstarted.html#my-baseline-and-biasd">My Baseline and BIASD...</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Compiling the Likelihood</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#background">Background</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#how-to-compile">How to Compile</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#testing-speed">Testing Speed</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compileguide.html">Compiling the Likelihood</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="compileguide.html#background">Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compileguide.html#how-to-compile">How to Compile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compileguide.html#testing-speed">Testing Speed</a></li>
 </ul>
 </li>
 </ul>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="code_distributions.html">Distributions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Some standard probability distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="code_distributions.html#convert-between-distributions">Convert between distributions</a></li>
@@ -88,8 +88,8 @@
 <li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Finally, you can easily generate a few useful collections using</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="code_laplace.html">Laplace</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_laplace.html#laplace-approximation">Laplace Approximation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Laplace</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#laplace-approximation">Laplace Approximation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="code_likelihood.html">Likelihood</a><ul>
@@ -135,10 +135,10 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>Compiling the Likelihood</li>
+    <li>Laplace</li>
       <li class="wy-breadcrumbs-aside">
         
-          <a href="_sources/compileguide.txt" rel="nofollow"> View page source</a>
+          <a href="_sources/code_laplace.txt" rel="nofollow"> View page source</a>
         
       </li>
   </ul>
@@ -146,51 +146,91 @@
 </div>
           <div role="main" class="document">
             
-  <div class="section" id="compiling-the-likelihood">
-<span id="compileguide"></span><h1>Compiling the Likelihood<a class="headerlink" href="#compiling-the-likelihood" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="background">
-<h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
-<p>The BIASD log-likelihood function is something like</p>
-<div class="math">
-\[ln(\mathcal{L}) \sim \sum\limits_t ln \left( \delta(f) + \delta(1-f) + \int\limits_0^1 df \cdot \rm{blurring} \right)\]</div>
-<p>Unfortunately, the integral in the logarithm makes it difficult to compute. It is the rate limiting step for this calculation, which is quite slow in Python. Therefore, this package comes with the log-likelihood function written in  C, and also in CUDA. There are three versions in the <code class="docutils literal"><span class="pre">./src</span></code> directory. One is in pure C &#8211; it should be fairly straight forward to compile. The second is written in C with the <a class="reference external" href="https://www.gnu.org/software/gsl/">GNU Science Library (GSL)</a> &#8211; it&#8217;s slightly faster, but requires having installed GSL. The third is in CUDA, which allows the calculations to be performed on NVIDIA GPUs. You can use any of the above if compiled, or a version written in Python if you don&#8217;t want to compile anything.</p>
-</div>
-<div class="section" id="how-to-compile">
-<h2>How to Compile<a class="headerlink" href="#how-to-compile" title="Permalink to this headline">¶</a></h2>
-<p>There&#8217;s a Makefile included in the package that will allow you to easily compile all of the libraries necessary to calculate BIASD likelihoods. First, to download GSL, go to their <a class="reference external" href="ftp://ftp.gnu.org/gnu/gsl/">FTP site</a> and download the latest version. Un-pack it, then in the terminal, navigate to the directory using <code class="docutils literal"><span class="pre">cd</span></code> and type</p>
-<div class="highlight-bash"><div class="highlight"><pre>./configure
-make
-make install
-</pre></div>
-</div>
-<p>Now, even if you didn&#8217;t install GSL, you can compile the BIASD likelihood functions. In the terminal, move to the BIASD directory using <code class="docutils literal"><span class="pre">cd</span></code>, and make them with</p>
-<div class="highlight-bash"><div class="highlight"><pre>make
-</pre></div>
-</div>
-<p>Some might fail, for instance if you don&#8217;t have a CUDA-enabled GPU, but you&#8217;ll compile as many as possible into the <code class="docutils literal"><span class="pre">./lib</span></code> directory.</p>
-</div>
-<div class="section" id="testing-speed">
-<h2>Testing Speed<a class="headerlink" href="#testing-speed" title="Permalink to this headline">¶</a></h2>
-<p>To get a feeling for how long it takes the various versions of the BIASD likelihood function to execute, you can use the test function in the likelihood module. For instance, try</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">biasd</span>
+  <div class="section" id="laplace">
+<span id="code-laplace"></span><h1>Laplace<a class="headerlink" href="#laplace" title="Permalink to this headline">¶</a></h1>
+<p>This page gives the details about the code in biasd.laplace.</p>
+<div class="section" id="laplace-approximation">
+<h2>Laplace Approximation<a class="headerlink" href="#laplace-approximation" title="Permalink to this headline">¶</a></h2>
+<p>In order to calculate the Laplace approximation to the posterior probability distribution, you must calculate the second derivative of the log-posterior function at the maximum a posteriori (MAP) estimate. This module contains code to calculate the finite difference Hessian, find the MAP estimate of the BIASD log-posterior using numerical maximization (Nelder-Mead), and apply this analysis to a time series. You should probably only need to use the <cite>biasd.laplace.laplace_approximation()</cite> function.</p>
+<span class="target" id="module-laplace"></span><dl class="function">
+<dt id="laplace.calc_hessian">
+<code class="descclassname">laplace.</code><code class="descname">calc_hessian</code><span class="sig-paren">(</span><em>fxn</em>, <em>x</em>, <em>eps=1.4901161193847656e-08</em><span class="sig-paren">)</span><a class="headerlink" href="#laplace.calc_hessian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the Hessian using the finite difference approximation.</p>
+<p>Finite difference formulas given in Abramowitz &amp; Stegun</p>
+<blockquote>
+<div><ul class="simple">
+<li>Eqn. 25.3.23 (on-diagonal)</li>
+<li>Eqn. 25.3.26 (off-diagonal)</li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><cite>fxn</cite> is a function that can be evaluated at x</li>
+<li><cite>x</cite> is a 1D <cite>np.ndarray</cite></li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd><ul class="first last simple">
+<li>an NxN <cite>np.ndarray</cite>, where N is the size of <cite>x</cite></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
-<span class="c"># Switch to the Python version</span>
-<span class="n">biasd</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">use_python_ll</span><span class="p">()</span>
+<dl class="function">
+<dt id="laplace.find_map">
+<code class="descclassname">laplace.</code><code class="descname">find_map</code><span class="sig-paren">(</span><em>data</em>, <em>prior</em>, <em>tau</em>, <em>meth='nelder-mead'</em>, <em>xx=None</em>, <em>nrestarts=2</em><span class="sig-paren">)</span><a class="headerlink" href="#laplace.find_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use numerical minimization to find the maximum a posteriori estimate of a BIASD log-posterior distribution.</p>
+<dl class="docutils">
+<dt>Inputs:</dt>
+<dd><ul class="first last simple">
+<li><cite>data</cite> is a 1D <cite>np.ndarray</cite> of the time series</li>
+<li><cite>prior</cite> is a <cite>biasd.distributions.parameter_collection</cite> that contains the prior the BIASD Bayesian inference</li>
+<li><cite>tau</cite> is the measurement period</li>
+</ul>
+</dd>
+<dt>Optional:</dt>
+<dd><ul class="first last simple">
+<li><cite>meth</cite> is the minimizer used to find the minimum of the negative posterior (i.e., the maximum). Defaults to simplex.</li>
+<li><cite>xx</cite> will initialize the minimizer at this theta position. Defaults to mean of the priors.</li>
+<li><cite>nrestarts</cite> is the number of times to try to find the minimum. Restarts initialize at a random variate chosen from prior distributions</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd><ul class="first last simple">
+<li>the minimizer dictionary</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
-<span class="c"># Run the test 10 times, for 5000 datapoints</span>
-<span class="n">biasd</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">test_speed</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5000</span><span class="p">)</span>
+<dl class="function">
+<dt id="laplace.laplace_approximation">
+<code class="descclassname">laplace.</code><code class="descname">laplace_approximation</code><span class="sig-paren">(</span><em>data</em>, <em>prior</em>, <em>tau</em>, <em>nrestarts=2</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#laplace.laplace_approximation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform the Laplace approximation on the BIASD posterior probability distribution of this trace.</p>
+<dl class="docutils">
+<dt>Inputs:</dt>
+<dd><ul class="first last simple">
+<li><cite>data</cite> is a 1D <cite>np.ndarray</cite> of the time series</li>
+<li><cite>prior</cite> is a <cite>biasd.distributions.parameter_collection</cite> that contains the prior the BIASD Bayesian inference</li>
+<li><cite>tau</cite> is the measurement period</li>
+</ul>
+</dd>
+<dt>Optional:</dt>
+<dd><ul class="first last simple">
+<li><cite>nrestarts</cite> is the number of times to try to find the MAP in <cite>find_map</cite>.</li>
+<li><cite>verbose</cite> is a boolean that determines whether the evaluation time for each Hessian and minimization is printed.</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd><ul class="first last simple">
+<li>a <cite>biasd.laplace._laplace_posterior</cite> object, which has a <cite>.mu</cite> with the means, a <cite>.covar</cite> with the covariances, and a <cite>.posterior</cite> which is a marginalized <cite>biasd.distributions.parameter_collection</cite> of normal distributions.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
-<span class="c"># Switch to the C version and test</span>
-<span class="c"># Note: will default to GSL over pure C</span>
-<span class="n">biasd</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">use_C_ll</span><span class="p">()</span>
-<span class="n">biasd</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">test_speed</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5000</span><span class="p">)</span>
-
-<span class="c"># Switch to the CUDA version and test</span>
-<span class="n">biasd</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">use_CUDA_ll</span><span class="p">()</span>
-<span class="n">biasd</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">test_speed</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5000</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The actual execution time depends upon the rate constants, but Python is ~ 1 ms, C with GSL is around ~40 us, and CUDA (when you have many datapoints) is ~ 5 us.</p>
 </div>
 </div>
 
@@ -200,10 +240,10 @@ make install
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="code_distributions.html" class="btn btn-neutral float-right" title="Distributions">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="code_likelihood.html" class="btn btn-neutral float-right" title="Likelihood">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="getstarted.html" class="btn btn-neutral" title="Getting Started"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="code_distributions.html" class="btn btn-neutral" title="Distributions"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

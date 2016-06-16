@@ -83,13 +83,40 @@
 <li class="toctree-l2"><a class="reference internal" href="compileguide.html#testing-speed">Testing Speed</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="code.html">Code</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code.html#distributions">Distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code.html#likelihood">Likelihood</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code.html#smd">SMD</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code.html#mcmc">MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code.html#laplace">Laplace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code.html#utils">Utils</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="code_distributions.html">Distributions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Some standard probability distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#convert-between-distributions">Convert between distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#distributions-can-be-collected-for-priors-or-posteriors">Distributions can be collected for priors or posteriors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#collections-can-be-visualized">Collections can be visualized</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Finally, you can easily generate a few useful collections using</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_laplace.html">Laplace</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_laplace.html#laplace-approximation">Laplace Approximation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_likelihood.html">Likelihood</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#switch-the-log-likelihood-function">Switch the log-likelihood function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#module-likelihood">Inference-related functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_mcmc.html">MCMC</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#markov-chain-monte-carlo">Markov chain Monte Carlo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Setup and Run MCMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Analyze MCMC samples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_smd.html">SMD</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd">Work with SMD data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.add">Add BIASD results to an SMD object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.read">Read BIASD results from an SMD object into a useful format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_utils.html">Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_utils.html#id1">Utils</a></li>
 </ul>
 </li>
 </ul>
@@ -130,6 +157,7 @@
 
    <div class="modindex-jumpbox">
    <a href="#cap-d"><strong>d</strong></a> | 
+   <a href="#cap-l"><strong>l</strong></a> | 
    <a href="#cap-m"><strong>m</strong></a> | 
    <a href="#cap-s"><strong>s</strong></a>
    </div>
@@ -141,7 +169,20 @@
      <tr>
        <td></td>
        <td>
-       <a href="code.html#module-distributions"><code class="xref">distributions</code></a></td><td>
+       <a href="code_distributions.html#module-distributions"><code class="xref">distributions</code></a></td><td>
+       <em></em></td></tr>
+     <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
+     <tr class="cap" id="cap-l"><td></td><td>
+       <strong>l</strong></td><td></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="code_laplace.html#module-laplace"><code class="xref">laplace</code></a></td><td>
+       <em></em></td></tr>
+     <tr>
+       <td></td>
+       <td>
+       <a href="code_likelihood.html#module-likelihood"><code class="xref">likelihood</code></a></td><td>
        <em></em></td></tr>
      <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
      <tr class="cap" id="cap-m"><td></td><td>
@@ -149,7 +190,7 @@
      <tr>
        <td></td>
        <td>
-       <a href="code.html#module-mcmc"><code class="xref">mcmc</code></a></td><td>
+       <a href="code_mcmc.html#module-mcmc"><code class="xref">mcmc</code></a></td><td>
        <em>Integrates emcee&#39;s MCMC into BIASD</em></td></tr>
      <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
      <tr class="cap" id="cap-s"><td></td><td>
@@ -158,17 +199,17 @@
        <td><img src="_static/minus.png" class="toggler"
               id="toggle-1" style="display: none" alt="-" /></td>
        <td>
-       <a href="code.html#module-smd"><code class="xref">smd</code></a></td><td>
+       <a href="code_smd.html#module-smd"><code class="xref">smd</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&nbsp;&nbsp;&nbsp;
-       <a href="code.html#module-smd.add"><code class="xref">smd.add</code></a></td><td>
+       <a href="code_smd.html#module-smd.add"><code class="xref">smd.add</code></a></td><td>
        <em></em></td></tr>
      <tr class="cg-1">
        <td></td>
        <td>&nbsp;&nbsp;&nbsp;
-       <a href="code.html#module-smd.read"><code class="xref">smd.read</code></a></td><td>
+       <a href="code_smd.html#module-smd.read"><code class="xref">smd.read</code></a></td><td>
        <em></em></td></tr>
    </table>
 

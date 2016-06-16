@@ -1,0 +1,462 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>MCMC &mdash; BIASD v0.1</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="BIASD v0.1" href="index.html"/>
+        <link rel="next" title="SMD" href="code_smd.html"/>
+        <link rel="prev" title="Likelihood" href="code_likelihood.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="index.html" class="fa fa-home"> BIASD</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="getstarted.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getstarted.html#biasd-mcmc">BIASD + MCMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getstarted.html#plot-biasd-mcmc-results-using-corner">Plot BIASD-MCMC Results Using Corner</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getstarted.html#plot-biasd-mcmc-results-using-viewer">Plot BIASD-MCMC Results Using Viewer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getstarted.html#biasd-laplace-approximation">BIASD + Laplace Approximation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getstarted.html#my-baseline-and-biasd">My Baseline and BIASD...</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="compileguide.html">Compiling the Likelihood</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="compileguide.html#background">Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compileguide.html#how-to-compile">How to Compile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compileguide.html#testing-speed">Testing Speed</a></li>
+</ul>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="code_distributions.html">Distributions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Some standard probability distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#convert-between-distributions">Convert between distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#distributions-can-be-collected-for-priors-or-posteriors">Distributions can be collected for priors or posteriors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#collections-can-be-visualized">Collections can be visualized</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Finally, you can easily generate a few useful collections using</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_laplace.html">Laplace</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_laplace.html#laplace-approximation">Laplace Approximation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_likelihood.html">Likelihood</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#switch-the-log-likelihood-function">Switch the log-likelihood function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#module-likelihood">Inference-related functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MCMC</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#markov-chain-monte-carlo">Markov chain Monte Carlo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mcmc">Setup and Run MCMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-mcmc">Analyze MCMC samples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_smd.html">SMD</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd">Work with SMD data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.add">Add BIASD results to an SMD object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.read">Read BIASD results from an SMD object into a useful format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_utils.html">Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_utils.html#id1">Utils</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">BIASD</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>MCMC</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/code_mcmc.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="mcmc">
+<span id="code-mcmc"></span><h1>MCMC<a class="headerlink" href="#mcmc" title="Permalink to this headline">¶</a></h1>
+<p>This page gives the details about the code in biasd.mcmc.</p>
+<div class="section" id="markov-chain-monte-carlo">
+<h2>Markov chain Monte Carlo<a class="headerlink" href="#markov-chain-monte-carlo" title="Permalink to this headline">¶</a></h2>
+<p>To sample the posterior probability distribution in BIASD, we&#8217;ll use an affine invariant Markov chain Monte Carlo (MCMC) sampler. The implementation here uses <a class="reference external" href="http://dan.iel.fm/emcee/current/">emcee</a>, which allow very efficient MCMC sampling. It is described in</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Title:</th><td class="field-body">emcee: The MCMC Hammer</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Authors:</th><td class="field-body">Daniel Foreman-Mackey,
+David W. Hogg,
+Dustin Lang,
+and Jonathan Goodman</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">arXiv:</th><td class="field-body"><a class="reference external" href="http://arxiv.org/abs/1202.3665">http://arxiv.org/abs/1202.3665</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">DOI:</th><td class="field-body">10.1086/670067</td>
+</tr>
+</tbody>
+</table>
+<p>Which extends upon the paper</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Title:</th><td class="field-body">Ensemble samplers with affine invariance</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Authors:</th><td class="field-body">Jonathan Goodman,
+and Jonathan Weare</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Citation:</th><td class="field-body"><em>Comm. Appl. Math. Comp. Sci.</em> <strong>2010</strong>, <em>5(1)</em>, 65-80.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">DOI:</th><td class="field-body">10.2140/camcos.2010.5.65&gt;</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="module-mcmc">
+<span id="setup-and-run-mcmc"></span><h2>Setup and Run MCMC<a class="headerlink" href="#module-mcmc" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-mcmc"></span><dl class="function">
+<dt id="mcmc.setup">
+<code class="descclassname">mcmc.</code><code class="descname">setup</code><span class="sig-paren">(</span><em>data</em>, <em>priors</em>, <em>tau</em>, <em>nwalkers</em>, <em>initialize='rvs'</em>, <em>threads=1</em><span class="sig-paren">)</span><a class="headerlink" href="#mcmc.setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare the MCMC sampler</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last">
+<li><p class="first"><cite>data</cite> is a <cite>np.ndarray</cite> of the time series</p>
+</li>
+<li><p class="first"><cite>priors</cite> is a <cite>biasd.distributions.parameter_collection</cite> of the priors</p>
+</li>
+<li><p class="first"><cite>tau</cite> is the measurement period each data point</p>
+</li>
+<li><p class="first"><cite>nwalkers</cite> is the number of walkers in the MCMC ensemble. The more the better</p>
+</li>
+<li><dl class="first docutils">
+<dt><cite>initialze</cite> =</dt>
+<dd><ul class="first last simple">
+<li>&#8216;rvs&#8217; will initialize the walkers at a random spot chosen from the priors</li>
+<li>&#8216;mean&#8217; will initialize the walkers tightly clustered around the mean of the priors.</li>
+<li>an (<cite>nwalkers</cite>,5) <cite>np.ndarray</cite> of whatever spots you want to initialize the walkers at.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first"><cite>threads</cite> is the number of threads to use for evaluating the log-posterior of the walkers. Be careful when using the CUDA log-likelihood function, because you&#8217;ll probably be bottle-necked there.</p>
+</li>
+</ul>
+</dd>
+<dt>Results:</dt>
+<dd><ul class="first last simple">
+<li>An <cite>emcee</cite> sampler object. Please see the <cite>emcee</cite> documentation for more information.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mcmc.burn_in">
+<code class="descclassname">mcmc.</code><code class="descname">burn_in</code><span class="sig-paren">(</span><em>sampler</em>, <em>positions</em>, <em>nsteps=100</em>, <em>timer=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mcmc.burn_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>Burn-in will run some MCMC, getting new positions, and then reset the sampler so that nothing has been sampled.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><cite>sampler</cite> is an <cite>emcee</cite> sampler</li>
+<li><cite>positions</cite> is the starting walker positions (maybe provided by <cite>biasd.mcmc.setup</cite>?)</li>
+<li><cite>nsteps</cite> is the integer number of MCMC steps to take</li>
+<li><cite>timer</cite> is a boolean for displaying the timing statistics</li>
+</ul>
+</dd>
+<dt>Results:</dt>
+<dd><ul class="first last simple">
+<li><cite>sampler</cite> is now a cleared <cite>emcee</cite> sampler where no steps have been made</li>
+<li><cite>positions</cite> is an array of the final walkers positions for use when starting a more randomized sampling</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mcmc.run">
+<code class="descclassname">mcmc.</code><code class="descname">run</code><span class="sig-paren">(</span><em>sampler</em>, <em>positions</em>, <em>nsteps</em>, <em>timer=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mcmc.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Acquire some MCMC samples, and keep them in the sampler</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><cite>sampler</cite> is an <cite>emcee</cite> sampler</li>
+<li><cite>positions</cite> is the starting walker positions (maybe provided by <cite>biasd.mcmc.setup</cite>?)</li>
+<li><cite>nsteps</cite> is the integer number of MCMC steps to take</li>
+<li><cite>timer</cite> is a boolean for displaying the timing statistics</li>
+</ul>
+</dd>
+<dt>Results:</dt>
+<dd><ul class="first last simple">
+<li><cite>sampler</cite> is the updated <cite>emcee</cite> sampler</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mcmc.continue_run">
+<code class="descclassname">mcmc.</code><code class="descname">continue_run</code><span class="sig-paren">(</span><em>sampler</em>, <em>nsteps</em>, <em>timer=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mcmc.continue_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Similar to <cite>biasd.mcmc.run</cite>, but you do not need to specify the initial positions, because they will be the last sampled positions in <cite>sampler</cite></p>
+</dd></dl>
+
+<p>Example use:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">biasd</span> <span class="kn">as</span> <span class="nn">b</span>
+
+<span class="c"># Load data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data.smd&#39;</span><span class="p">)</span>
+<span class="n">tau</span> <span class="o">=</span> <span class="mf">0.1</span>
+
+<span class="c"># Get a molecule and priors</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">FRET</span>
+<span class="n">priors</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">guess_priors</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">tau</span><span class="p">)</span>
+
+<span class="c"># Setup the sampler for this molecule</span>
+<span class="c"># Use 100 walkers, and 4 CPUs</span>
+<span class="n">sampler</span><span class="p">,</span> <span class="n">initial_positions</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">dy</span><span class="p">,</span> <span class="n">priors</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">initialize</span><span class="o">=</span><span class="s">&#39;rvs&#39;</span><span class="p">,</span> <span class="n">threads</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="c"># Burn-in 100 steps and then remove them, but keep the final positions</span>
+<span class="n">sampler</span><span class="p">,</span><span class="n">burned_positions</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">burn_in</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span><span class="n">initial_positions</span><span class="p">,</span><span class="n">nsteps</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="c"># Run 100 steps starting at the burned-in positions.</span>
+<span class="n">sampler</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span><span class="n">burned_positions</span><span class="p">,</span><span class="n">nsteps</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="c"># Continue on from step 100 for another 900 steps. Don&#39;t display timing</span>
+<span class="n">sampler</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">continue_run</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span><span class="mi">900</span><span class="p">,</span><span class="n">timer</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c"># Save the sampler data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">mcmc</span><span class="p">(</span><span class="n">sampler</span><span class="p">)</span>
+<span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data.smd&#39;</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-mcmc">
+<span id="analyze-mcmc-samples"></span><h2>Analyze MCMC samples<a class="headerlink" href="#module-mcmc" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-mcmc"></span><dl class="function">
+<dt id="mcmc.chain_statistics">
+<code class="descclassname">mcmc.</code><code class="descname">chain_statistics</code><span class="sig-paren">(</span><em>sampler</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mcmc.chain_statistics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the acceptance fraction and autocorrelation times of the samples in <cite>sampler</cite></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="mcmc.get_samples">
+<code class="descclassname">mcmc.</code><code class="descname">get_samples</code><span class="sig-paren">(</span><em>sampler</em>, <em>uncorrelated=True</em>, <em>culled=True</em><span class="sig-paren">)</span><a class="headerlink" href="#mcmc.get_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the samples from <cite>sampler</cite></p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><cite>sampler</cite> is an <cite>emcee</cite> sampler with samples in it</li>
+<li><cite>uncorrelated</cite> is a boolean for whether to provide all the samples, or every n&#8217;th sample, where n is the larges autocorrelation time of the dimensions.</li>
+<li><cite>culled</cite> is a boolean, where any sample with a log-probability less than 0 is removed. This is necessary because sometimes a few chains get very stuck, and their samples (not being representative of the posterior) mess up subsequent plots.</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd>An (N,5) <cite>np.ndarray</cite> of samples from the sampler</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mcmc.plot_corner">
+<code class="descclassname">mcmc.</code><code class="descname">plot_corner</code><span class="sig-paren">(</span><em>samples</em><span class="sig-paren">)</span><a class="headerlink" href="#mcmc.plot_corner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use the python package called corner &lt;<a class="reference external" href="https://github.com/dfm/corner.py">https://github.com/dfm/corner.py</a>&gt; to make some very nice corner plots (joints and marginalized) of posterior in the 5-dimensions used by the two-state BIASD posterior.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><cite>samples</cite> is a (N,5) <cite>np.ndarray</cite></li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd><ul class="first last simple">
+<li><cite>fig</cite> which is the handle to the figure containing the corner plot</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="mcmc.create_posterior_collection">
+<code class="descclassname">mcmc.</code><code class="descname">create_posterior_collection</code><span class="sig-paren">(</span><em>samples</em>, <em>priors</em><span class="sig-paren">)</span><a class="headerlink" href="#mcmc.create_posterior_collection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take the MCMC samples, marginalize them, and then calculate the first and second moments. Use these to moment-match to the types of distributions specified for each dimension in the priors. For instance, if the prior for <span class="math">\(\epsilon_1\)</span> was beta distributed, this will moment-match the posterior to as a beta distribution.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><cite>samples</cite> is a (N,5) <cite>np.ndarray</cite></li>
+<li><cite>priors</cite> is a <cite>biasd.distributions.parameter_collection</cite> that provides the distribution-forms to moment-match to</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd><ul class="first last simple">
+<li>A <cite>biasd.distributions.parameter_collection</cite> containing the marginalized, moment-matched posteriors</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Note, for the corner plot, you must have corner. Anyway, continuing on from the previous example...</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># ...</span>
+
+<span class="c"># Calculate auto-correlation times for each variable</span>
+<span class="n">largest_autocorrelation_time</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">chain_statistics</span><span class="p">(</span><span class="n">sampler</span><span class="p">)</span>
+
+<span class="c"># Collect uncorrelated samples from the sampler</span>
+<span class="n">samples</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">sampler</span><span class="p">)</span>
+
+<span class="c"># Plot the joint and marginalized distributions from the samples using corner, and then save the figure</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">plot_corner</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s">&#39;mcmc_test.pdf&#39;</span><span class="p">)</span>
+
+<span class="c"># Create a collection of the marginalized posterior distributions</span>
+<span class="n">posterior</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">create_posterior_collection</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span><span class="n">priors</span><span class="p">)</span>
+
+<span class="c"># View that collection</span>
+<span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">viewer</span><span class="p">(</span><span class="n">posterior</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="code_smd.html" class="btn btn-neutral float-right" title="SMD">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="code_likelihood.html" class="btn btn-neutral" title="Likelihood"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Colin Kinz-Thompson.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

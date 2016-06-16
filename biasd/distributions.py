@@ -3,8 +3,6 @@
 
 	:synopsis: Contains probability distributions for use with BIASD prior and posterior distributions
 
-.. moduleauthor:: Colin Kinz-Thompson <cdk2119@columbia.edu>
-
 
 """
 

@@ -13,7 +13,19 @@ Contents:
 	
 	getstarted
 	compileguide
-	code
+
+Code Documentation:
+===================
+.. toctree::
+	:maxdepth: 2
+	
+	code_distributions
+	code_laplace
+	code_likelihood
+	code_mcmc
+	code_smd
+	code_utils
+	
 
 .. Indices and tables
 .. ==================

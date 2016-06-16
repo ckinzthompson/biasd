@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Code &mdash; BIASD v0.1</title>
+  <title>Distributions &mdash; BIASD v0.1</title>
   
 
   
@@ -31,6 +31,7 @@
 
   
     <link rel="top" title="BIASD v0.1" href="index.html"/>
+        <link rel="next" title="Laplace" href="code_laplace.html"/>
         <link rel="prev" title="Compiling the Likelihood" href="compileguide.html"/> 
 
   
@@ -62,7 +63,7 @@
         
           
           
-              <ul class="current">
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="getstarted.html">Getting Started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="getstarted.html#biasd-mcmc">BIASD + MCMC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getstarted.html#plot-biasd-mcmc-results-using-corner">Plot BIASD-MCMC Results Using Corner</a></li>
@@ -77,13 +78,37 @@
 <li class="toctree-l2"><a class="reference internal" href="compileguide.html#testing-speed">Testing Speed</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Code</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#distributions">Distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#likelihood">Likelihood</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#smd">SMD</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#mcmc">MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#laplace">Laplace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#utils">Utils</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Distributions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-distributions">Some standard probability distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#convert-between-distributions">Convert between distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#distributions-can-be-collected-for-priors-or-posteriors">Distributions can be collected for priors or posteriors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#collections-can-be-visualized">Collections can be visualized</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-distributions">Finally, you can easily generate a few useful collections using</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_laplace.html">Laplace</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_laplace.html#laplace-approximation">Laplace Approximation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_likelihood.html">Likelihood</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#id1">Likelihood</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_mcmc.html">MCMC</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#id1">MCMC</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_smd.html">SMD</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd">Work with SMD data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.add">Add BIASD results to an SMD object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.read">Read BIASD results from an SMD object into a useful format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_utils.html">Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_utils.html#id1">Utils</a></li>
 </ul>
 </li>
 </ul>
@@ -110,10 +135,10 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>Code</li>
+    <li>Distributions</li>
       <li class="wy-breadcrumbs-aside">
         
-          <a href="_sources/code.txt" rel="nofollow"> View page source</a>
+          <a href="_sources/code_distributions.txt" rel="nofollow"> View page source</a>
         
       </li>
   </ul>
@@ -121,13 +146,11 @@
 </div>
           <div role="main" class="document">
             
-  <div class="section" id="code">
-<span id="id1"></span><h1>Code<a class="headerlink" href="#code" title="Permalink to this headline">¶</a></h1>
-<p>This page gives the details about the BIASD code.</p>
-<div class="section" id="distributions">
-<h2>Distributions<a class="headerlink" href="#distributions" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="distributions">
+<span id="code-distributions"></span><h1>Distributions<a class="headerlink" href="#distributions" title="Permalink to this headline">¶</a></h1>
+<p>This page gives the details about the code in biasd.distributions.</p>
 <div class="section" id="module-distributions">
-<span id="some-standard-probability-distributions"></span><h3>Some standard probability distributions<a class="headerlink" href="#module-distributions" title="Permalink to this headline">¶</a></h3>
+<span id="some-standard-probability-distributions"></span><h2>Some standard probability distributions<a class="headerlink" href="#module-distributions" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="distributions.beta">
 <em class="property">class </em><code class="descclassname">distributions.</code><code class="descname">beta</code><span class="sig-paren">(</span><em>alpha</em>, <em>beta</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.beta" title="Permalink to this definition">¶</a></dt>
@@ -161,7 +184,7 @@ Parameters are a (lower bound), and b (upper bound)</p>
 
 </div>
 <div class="section" id="convert-between-distributions">
-<h3>Convert between distributions<a class="headerlink" href="#convert-between-distributions" title="Permalink to this headline">¶</a></h3>
+<h2>Convert between distributions<a class="headerlink" href="#convert-between-distributions" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="distributions.convert_distribution">
 <code class="descclassname">distributions.</code><code class="descname">convert_distribution</code><span class="sig-paren">(</span><em>this</em>, <em>to_this_type_string</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.convert_distribution" title="Permalink to this definition">¶</a></dt>
@@ -201,7 +224,7 @@ Parameters are a (lower bound), and b (upper bound)</p>
 
 </div>
 <div class="section" id="distributions-can-be-collected-for-priors-or-posteriors">
-<h3>Distributions can be collected for priors or posteriors<a class="headerlink" href="#distributions-can-be-collected-for-priors-or-posteriors" title="Permalink to this headline">¶</a></h3>
+<h2>Distributions can be collected for priors or posteriors<a class="headerlink" href="#distributions-can-be-collected-for-priors-or-posteriors" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="distributions.parameter_collection">
 <em class="property">class </em><code class="descclassname">distributions.</code><code class="descname">parameter_collection</code><span class="sig-paren">(</span><em>e1</em>, <em>e2</em>, <em>sigma</em>, <em>k1</em>, <em>k2</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.parameter_collection" title="Permalink to this definition">¶</a></dt>
@@ -221,7 +244,7 @@ Parameters are a (lower bound), and b (upper bound)</p>
 
 </div>
 <div class="section" id="collections-can-be-visualized">
-<h3>Collections can be visualized<a class="headerlink" href="#collections-can-be-visualized" title="Permalink to this headline">¶</a></h3>
+<h2>Collections can be visualized<a class="headerlink" href="#collections-can-be-visualized" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="distributions.viewer">
 <em class="property">class </em><code class="descclassname">distributions.</code><code class="descname">viewer</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.viewer" title="Permalink to this definition">¶</a></dt>
@@ -252,7 +275,7 @@ Parameters are a (lower bound), and b (upper bound)</p>
 
 </div>
 <div class="section" id="module-distributions">
-<span id="finally-you-can-easily-generate-a-few-useful-collections-using"></span><h3>Finally, you can easily generate a few useful collections using<a class="headerlink" href="#module-distributions" title="Permalink to this headline">¶</a></h3>
+<span id="finally-you-can-easily-generate-a-few-useful-collections-using"></span><h2>Finally, you can easily generate a few useful collections using<a class="headerlink" href="#module-distributions" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="distributions.uninformative_prior">
 <code class="descclassname">distributions.</code><code class="descname">uninformative_prior</code><span class="sig-paren">(</span><em>data_range</em>, <em>timescale</em><span class="sig-paren">)</span><a class="headerlink" href="#distributions.uninformative_prior" title="Permalink to this definition">¶</a></dt>
@@ -293,333 +316,14 @@ Parameters are a (lower bound), and b (upper bound)</p>
 
 </div>
 </div>
-<div class="section" id="likelihood">
-<h2>Likelihood<a class="headerlink" href="#likelihood" title="Permalink to this headline">¶</a></h2>
-<p>Nothin&#8217; here yet.</p>
-</div>
-<div class="section" id="smd">
-<h2>SMD<a class="headerlink" href="#smd" title="Permalink to this headline">¶</a></h2>
-<p>The Single-Molecule Dataset (SMD) format is a standardized data format for use in time-resolved, single-molecule experiments (e.g, smFRET, force spectroscopy, etc.). It was published in collaboration between the <a class="reference external" href="http://www.columbia.edu/cu/chemistry/groups/gonzalez/index.html">Gonzalez</a> and <a class="reference external" href="http://cmgm.stanford.edu/herschlag/">Herschlag</a> labs (Greenfield, M <em>et al</em>. <em>BMC Bioinformatics</em> <strong>2015</strong>, <em>16</em>, 3. <a class="reference external" href="http://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-014-0429-4">DOI: 10.1186/s12859-014-0429-4</a>). A github page with some <a class="reference external" href="https://smdata.github.io">Matlab</a> and <a class="reference external" href="https://github.com/smdata/smd-python">Python</a> code exists.</p>
-<div class="section" id="module-smd">
-<span id="work-with-smd-data"></span><h3>Work with SMD data<a class="headerlink" href="#module-smd" title="Permalink to this headline">¶</a></h3>
-<dl class="function">
-<dt id="smd.new">
-<code class="descclassname">smd.</code><code class="descname">new</code><span class="sig-paren">(</span><em>time</em>, <em>data</em>, <em>channel_names=None</em><span class="sig-paren">)</span><a class="headerlink" href="#smd.new" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a new SMD structure. The structure is:</p>
-<dl class="docutils">
-<dt>SMD:</dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt>.attr </dt>
-<dd><ul class="first last simple">
-<li>.many</li>
-<li>.items</li>
-<li>.here</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>.data <code class="docutils literal"><span class="pre">(this</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">list)</span></code></dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt>[0] <code class="docutils literal"><span class="pre">(trace</span> <span class="pre">0)</span></code></dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt>.attr <code class="docutils literal"><span class="pre">(BIASD</span> <span class="pre">saves</span> <span class="pre">data</span> <span class="pre">in</span> <span class="pre">here)</span></code></dt>
-<dd><ul class="first last simple">
-<li>.many</li>
-<li>.here</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><p class="first">.id <code class="docutils literal"><span class="pre">(a</span> <span class="pre">unique</span> <span class="pre">number)</span></code></p>
-</li>
-<li><p class="first">.index <code class="docutils literal"><span class="pre">(time</span> <span class="pre">array)</span></code></p>
-</li>
-<li><dl class="first docutils">
-<dt>.values <code class="docutils literal"><span class="pre">(signal</span> <span class="pre">data</span> <span class="pre">is</span> <span class="pre">in</span> <span class="pre">here)</span></code></dt>
-<dd><ul class="first last simple">
-<li>.channel_1 <code class="docutils literal"><span class="pre">(e.g.</span> <span class="pre">Cy3)</span></code></li>
-<li>.channel_2</li>
-<li>.channel_etc</li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>[1] <code class="docutils literal"><span class="pre">(trace</span> <span class="pre">1)</span></code></dt>
-<dd><ul class="first last simple">
-<li>...</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><p class="first">...</p>
-</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>.id <code class="docutils literal"><span class="pre">(a</span> <span class="pre">unique</span> <span class="pre">number)</span></code></dt>
-<dd></dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>.types <code class="docutils literal"><span class="pre">(the</span> <span class="pre">datatypes</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">entries</span> <span class="pre">in</span> <span class="pre">values)</span></code></dt>
-<dd></dd>
-</dl>
-</li>
-</ul>
-</dd>
-<dt>Input:</dt>
-<dd><ul class="first simple">
-<li><cite>time</cite> is an <cite>np.ndarray</cite> of length T (number of datapoints). It marks the indexing time for each data point.</li>
-<li><cite>data</cite> is an NxDxT <cite>np.ndarray</cite>, because that ordering is consistent with original SMD...</li>
-</ul>
-<dl class="docutils">
-<dt>where: </dt>
-<dd><ul class="first last simple">
-<li>N: number traces</li>
-<li>D: data dimensionality i.e. number of channels</li>
-<li>T: number of time points</li>
-</ul>
-</dd>
-</dl>
-<ul class="last simple">
-<li><cite>channel_names</cite> is a list of strings, e.g. [&#8220;Cy3&#8221;,&#8221;Cy5&#8221;] of length D</li>
-</ul>
-</dd>
-<dt>Returns:</dt>
-<dd><ul class="first last simple">
-<li>an SMD object</li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="smd.load">
-<code class="descclassname">smd.</code><code class="descname">load</code><span class="sig-paren">(</span><em>filename</em>, <em>JSON=False</em>, <em>conversion=&lt;function _conversion_default&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#smd.load" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load an SMD file saved in JSON format into Python
-Input:</p>
-<blockquote>
-<div><ul class="simple">
-<li><cite>filename</cite> is a str with the path the SMD file you wish to open</li>
-</ul>
-</div></blockquote>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd><ul class="first last simple">
-<li>SMD in Python object form</li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="smd.save">
-<code class="descclassname">smd.</code><code class="descname">save</code><span class="sig-paren">(</span><em>filename</em>, <em>smd</em><span class="sig-paren">)</span><a class="headerlink" href="#smd.save" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save your SMD file. This has to save as JSON.... so all numpy things are turned into lists...
-Input:</p>
-<blockquote>
-<div><ul class="simple">
-<li><cite>filename</cite> is the output filename to save</li>
-<li><cite>smd</cite> is an SMD object that will be saved in <cite>filename</cite></li>
-</ul>
-</div></blockquote>
-</dd></dl>
-
-</div>
-<div class="section" id="module-smd.add">
-<span id="add-biasd-results-to-an-smd-object"></span><h3>Add BIASD results to an SMD object<a class="headerlink" href="#module-smd.add" title="Permalink to this headline">¶</a></h3>
-<p>Add a BIASD result to an SMD file. This includes functions for <cite>prior collections</cite>, <cite>posterior collections</cite>, <cite>Laplace posteriors</cite>, <cite>baseline corrections</cite>, and <cite>MCMC results</cite>.</p>
-<dl class="docutils">
-<dt>Input:</dt>
-<dd><ul class="first last simple">
-<li><cite>smd</cite> is the input SMD object where the data will be added</li>
-<li><cite>i</cite> is the number of the molecule to which to add the data</li>
-<li><cite>final argument</cite> is the data that will be added</li>
-</ul>
-</dd>
-<dt>Returns:</dt>
-<dd><ul class="first last simple">
-<li><cite>smd</cite> is an updated SMD object</li>
-</ul>
-</dd>
-</dl>
-<dl class="function">
-<dt id="smd.add.baseline">
-<code class="descclassname">smd.add.</code><code class="descname">baseline</code><span class="sig-paren">(</span><em>smd</em>, <em>i</em>, <em>p</em><span class="sig-paren">)</span><a class="headerlink" href="#smd.add.baseline" title="Permalink to this definition">¶</a></dt>
-<dd><p>Baseline result from biasd.utils.baseline</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="smd.add.laplace_posterior">
-<code class="descclassname">smd.add.</code><code class="descname">laplace_posterior</code><span class="sig-paren">(</span><em>smd</em>, <em>i</em>, <em>lp</em><span class="sig-paren">)</span><a class="headerlink" href="#smd.add.laplace_posterior" title="Permalink to this definition">¶</a></dt>
-<dd><p>Laplace posterior from biasd.laplace</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="smd.add.mcmc">
-<code class="descclassname">smd.add.</code><code class="descname">mcmc</code><span class="sig-paren">(</span><em>smd</em>, <em>i</em>, <em>sampler</em><span class="sig-paren">)</span><a class="headerlink" href="#smd.add.mcmc" title="Permalink to this definition">¶</a></dt>
-<dd><p>MCMC Result from biasd.mcmc</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="smd.add.posterior">
-<code class="descclassname">smd.add.</code><code class="descname">posterior</code><span class="sig-paren">(</span><em>smd</em>, <em>i</em>, <em>posterior</em><span class="sig-paren">)</span><a class="headerlink" href="#smd.add.posterior" title="Permalink to this definition">¶</a></dt>
-<dd><p>Posterior distribution collection from biasd.distributions</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="smd.add.priors">
-<code class="descclassname">smd.add.</code><code class="descname">priors</code><span class="sig-paren">(</span><em>smd</em>, <em>i</em>, <em>priors</em><span class="sig-paren">)</span><a class="headerlink" href="#smd.add.priors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Piror distribution collection from biasd.distributions</p>
-</dd></dl>
-
-</div>
-<div class="section" id="module-smd.read">
-<span id="read-biasd-results-from-an-smd-object-into-a-useful-format"></span><h3>Read BIASD results from an SMD object into a useful format<a class="headerlink" href="#module-smd.read" title="Permalink to this headline">¶</a></h3>
-<p>Read a BIASD result from an SMD file into a useful format. This includes functions for <cite>prior collections</cite>, <cite>posterior collections</cite>, <cite>Laplace posteriors</cite>, <cite>baseline corrections</cite>, and <cite>MCMC results</cite>.</p>
-<dl class="docutils">
-<dt>Input:</dt>
-<dd><ul class="first last simple">
-<li><cite>smd</cite> is the input SMD object from where the data will be read</li>
-<li><cite>i</cite> is the number of the molecule to from which to read the data</li>
-</ul>
-</dd>
-</dl>
-<dl class="function">
-<dt id="smd.read.baseline">
-<code class="descclassname">smd.read.</code><code class="descname">baseline</code><span class="sig-paren">(</span><em>smd</em>, <em>i</em><span class="sig-paren">)</span><a class="headerlink" href="#smd.read.baseline" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a baseline calculation from an SMD.</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd><ul class="first last simple">
-<li>a <cite>biasd.utils.baseline.params</cite></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="smd.read.laplace_posterior">
-<code class="descclassname">smd.read.</code><code class="descname">laplace_posterior</code><span class="sig-paren">(</span><em>smd</em>, <em>i</em><span class="sig-paren">)</span><a class="headerlink" href="#smd.read.laplace_posterior" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a Laplace posterior object from an SMD.</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd><ul class="first last simple">
-<li>a <cite>biasd.laplace._laplace_posterior</cite></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="smd.read.mcmc">
-<code class="descclassname">smd.read.</code><code class="descname">mcmc</code><span class="sig-paren">(</span><em>smd</em>, <em>i</em><span class="sig-paren">)</span><a class="headerlink" href="#smd.read.mcmc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a BIASD MCMC result from an SMD.</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd><ul class="first last simple">
-<li>a <cite>biasd.smd.read.mcmc.mcmc_result</cite></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="smd.read.posterior">
-<code class="descclassname">smd.read.</code><code class="descname">posterior</code><span class="sig-paren">(</span><em>smd</em>, <em>i</em><span class="sig-paren">)</span><a class="headerlink" href="#smd.read.posterior" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a BIASD posterior distribution collection from an SMD.</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd><ul class="first last simple">
-<li>a <cite>biasd.distributions.parameter_collection</cite></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="smd.read.priors">
-<code class="descclassname">smd.read.</code><code class="descname">priors</code><span class="sig-paren">(</span><em>smd</em>, <em>i</em><span class="sig-paren">)</span><a class="headerlink" href="#smd.read.priors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a BIASD prior distribution collection from an SMD.</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd><ul class="first last simple">
-<li>a <cite>biasd.distributions.parameter_collection</cite></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</div>
-</div>
-<div class="section" id="mcmc">
-<h2>MCMC<a class="headerlink" href="#mcmc" title="Permalink to this headline">¶</a></h2>
-<p>Markov chain Monte Carlo</p>
-<span class="target" id="module-mcmc"></span><span class="target" id="module-mcmc"></span><div class="section" id="helper-functions-for-running-affine-invariant-markov-chain-monte-carlo-on-biasd-posteriors">
-<h3>Helper functions for running affine invariant Markov chain Monte Carlo on BIASD posteriors<a class="headerlink" href="#helper-functions-for-running-affine-invariant-markov-chain-monte-carlo-on-biasd-posteriors" title="Permalink to this headline">¶</a></h3>
-<p>Uses the emcee package: &lt;<a class="reference external" href="http://dan.iel.fm/emcee/current/">http://dan.iel.fm/emcee/current/</a>&gt;</p>
-<p>As described in:
-emcee: The MCMC Hammer
-Daniel Foreman-Mackey, David W. Hogg, Dustin Lang, and Jonathan Goodman
-&lt;<a class="reference external" href="http://arxiv.org/abs/1202.3665">http://arxiv.org/abs/1202.3665</a>&gt;
-&lt;DOI:10.1086/670067&gt;</p>
-<p>Based upon:
-Ensemble samplers with affine invariance
-Jonathan Goodman and Jonathan Weare
-Comm. Appl. Math. Comp. Sci. 2010, 5(1), 65-80.
-&lt;DOI:10.2140/camcos.2010.5.65&gt;</p>
-</div>
-<div class="section" id="example-use">
-<h3>Example use:<a class="headerlink" href="#example-use" title="Permalink to this headline">¶</a></h3>
-<p>sampler,initial_positions = b.mcmc.setup(dy, priors, tau, 16, initialize=&#8217;rvs&#8217;, threads=20)</p>
-<p>sampler,burned_positions = b.mcmc.burn_in(sampler,initial_positions,nsteps=50)
-sampler = b.mcmc.run(sampler,burned_positions,nsteps=100,timer=False)
-sampler = b.mcmc.continue_run(sampler,900)</p>
-<p>largest_autocorrelation_time = b.mcmc.chain_statistics(sampler)</p>
-<p>samples = b.mcmc.get_samples(sampler)
-f = b.mcmc.plot_corner(samples)
-plt.savefig(&#8216;mcmc_test.png&#8217;)</p>
-<p>posterior = b.mcmc.create_posterior_collection(samples,priors)
-b.distributions.viewer(posterior)</p>
-</div>
-</div>
-<div class="section" id="laplace">
-<h2>Laplace<a class="headerlink" href="#laplace" title="Permalink to this headline">¶</a></h2>
-<p>Laplace Approximation</p>
-</div>
-<div class="section" id="utils">
-<h2>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="utils.baseline.remove_baseline">
-<code class="descclassname">utils.baseline.</code><code class="descname">remove_baseline</code><span class="sig-paren">(</span><em>d</em>, <em>R2=0.01</em>, <em>maxiter=1000</em>, <em>relative_threshold=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.baseline.remove_baseline" title="Permalink to this definition">¶</a></dt>
-<dd><p>Automated Maximum Likelihood Separation of Signal from Baseline in
-Noisy Quantal Data</p>
-<p>Bruno, WJ, Ullah, G, Mak, DD, Pearson JE
-Biophys J 2013, 105, 68-79.
-&#8212;&#8212;&#8212;&#8212;&#8211;</p>
-<p>d is a 1d array of the signal
-R2 is an initial guess for the ratio of the random walk&#8217;s variance to that of the noise variance of the underlying states.</p>
-</dd></dl>
-
-</div>
-</div>
 
 
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="code_laplace.html" class="btn btn-neutral float-right" title="Laplace">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="compileguide.html" class="btn btn-neutral" title="Compiling the Likelihood"><span class="fa fa-arrow-circle-left"></span> Previous</a>

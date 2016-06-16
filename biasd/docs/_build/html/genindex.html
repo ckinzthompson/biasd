@@ -77,13 +77,40 @@
 <li class="toctree-l2"><a class="reference internal" href="compileguide.html#testing-speed">Testing Speed</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="code.html">Code</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code.html#distributions">Distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code.html#likelihood">Likelihood</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code.html#smd">SMD</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code.html#mcmc">MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code.html#laplace">Laplace</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code.html#utils">Utils</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="code_distributions.html">Distributions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Some standard probability distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#convert-between-distributions">Convert between distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#distributions-can-be-collected-for-priors-or-posteriors">Distributions can be collected for priors or posteriors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#collections-can-be-visualized">Collections can be visualized</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Finally, you can easily generate a few useful collections using</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_laplace.html">Laplace</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_laplace.html#laplace-approximation">Laplace Approximation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_likelihood.html">Likelihood</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#switch-the-log-likelihood-function">Switch the log-likelihood function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#module-likelihood">Inference-related functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_mcmc.html">MCMC</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#markov-chain-monte-carlo">Markov chain Monte Carlo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Setup and Run MCMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Analyze MCMC samples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_smd.html">SMD</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd">Work with SMD data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.add">Add BIASD results to an SMD object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.read">Read BIASD results from an SMD object into a useful format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_utils.html">Utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_utils.html#id1">Utils</a></li>
 </ul>
 </li>
 </ul>
@@ -126,6 +153,7 @@
  <a href="#B"><strong>B</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
+ | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
@@ -133,6 +161,7 @@
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  
@@ -141,19 +170,23 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#smd.add.baseline">baseline() (in module smd.add)</a>
+  <dt><a href="code_smd.html#smd.add.baseline">baseline() (in module smd.add)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="code.html#smd.read.baseline">(in module smd.read)</a>
+  <dt><a href="code_smd.html#smd.read.baseline">(in module smd.read)</a>
   </dt>
 
       </dl></dd>
+      
+  <dt><a href="code_distributions.html#distributions.beta">beta (class in distributions)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#distributions.beta">beta (class in distributions)</a>
+  <dt><a href="code_mcmc.html#mcmc.burn_in">burn_in() (in module mcmc)</a>
   </dt>
 
   </dl></td>
@@ -163,7 +196,25 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#distributions.convert_distribution">convert_distribution() (in module distributions)</a>
+  <dt><a href="code_laplace.html#laplace.calc_hessian">calc_hessian() (in module laplace)</a>
+  </dt>
+
+      
+  <dt><a href="code_mcmc.html#mcmc.chain_statistics">chain_statistics() (in module mcmc)</a>
+  </dt>
+
+      
+  <dt><a href="code_mcmc.html#mcmc.continue_run">continue_run() (in module mcmc)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="code_distributions.html#distributions.convert_distribution">convert_distribution() (in module distributions)</a>
+  </dt>
+
+      
+  <dt><a href="code_mcmc.html#mcmc.create_posterior_collection">create_posterior_collection() (in module mcmc)</a>
   </dt>
 
   </dl></td>
@@ -173,7 +224,17 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#module-distributions">distributions (module)</a>, <a href="code.html#module-distributions">[1]</a>
+  <dt><a href="code_distributions.html#module-distributions">distributions (module)</a>, <a href="code_distributions.html#module-distributions">[1]</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="F">F</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="code_laplace.html#laplace.find_map">find_map() (in module laplace)</a>
   </dt>
 
   </dl></td>
@@ -183,13 +244,17 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#distributions.gamma">gamma (class in distributions)</a>
+  <dt><a href="code_distributions.html#distributions.gamma">gamma (class in distributions)</a>
+  </dt>
+
+      
+  <dt><a href="code_mcmc.html#mcmc.get_samples">get_samples() (in module mcmc)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#distributions.guess_prior">guess_prior() (in module distributions)</a>
+  <dt><a href="code_distributions.html#distributions.guess_prior">guess_prior() (in module distributions)</a>
   </dt>
 
   </dl></td>
@@ -199,19 +264,39 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#smd.add.laplace_posterior">laplace_posterior() (in module smd.add)</a>
+  <dt><a href="code_laplace.html#module-laplace">laplace (module)</a>
+  </dt>
+
+      
+  <dt><a href="code_laplace.html#laplace.laplace_approximation">laplace_approximation() (in module laplace)</a>
+  </dt>
+
+      
+  <dt><a href="code_smd.html#smd.add.laplace_posterior">laplace_posterior() (in module smd.add)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="code.html#smd.read.laplace_posterior">(in module smd.read)</a>
+  <dt><a href="code_smd.html#smd.read.laplace_posterior">(in module smd.read)</a>
   </dt>
 
       </dl></dd>
+      
+  <dt><a href="code_likelihood.html#module-likelihood">likelihood (module)</a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#smd.load">load() (in module smd)</a>
+  <dt><a href="code_smd.html#smd.load">load() (in module smd)</a>
+  </dt>
+
+      
+  <dt><a href="code_likelihood.html#likelihood.log_likelihood">log_likelihood() (in module likelihood)</a>
+  </dt>
+
+      
+  <dt><a href="code_likelihood.html#likelihood.log_posterior">log_posterior() (in module likelihood)</a>
   </dt>
 
   </dl></td>
@@ -221,18 +306,18 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#module-mcmc">mcmc (module)</a>, <a href="code.html#module-mcmc">[1]</a>
+  <dt><a href="code_mcmc.html#module-mcmc">mcmc (module)</a>, <a href="code_mcmc.html#module-mcmc">[1]</a>, <a href="code_mcmc.html#module-mcmc">[2]</a>, <a href="code_mcmc.html#module-mcmc">[3]</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#smd.add.mcmc">mcmc() (in module smd.add)</a>
+  <dt><a href="code_smd.html#smd.add.mcmc">mcmc() (in module smd.add)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="code.html#smd.read.mcmc">(in module smd.read)</a>
+  <dt><a href="code_smd.html#smd.read.mcmc">(in module smd.read)</a>
   </dt>
 
       </dl></dd>
@@ -243,13 +328,13 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#smd.new">new() (in module smd)</a>
+  <dt><a href="code_smd.html#smd.new">new() (in module smd)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#distributions.normal">normal (class in distributions)</a>
+  <dt><a href="code_distributions.html#distributions.normal">normal (class in distributions)</a>
   </dt>
 
   </dl></td>
@@ -259,28 +344,32 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#distributions.parameter_collection">parameter_collection (class in distributions)</a>
+  <dt><a href="code_distributions.html#distributions.parameter_collection">parameter_collection (class in distributions)</a>
   </dt>
 
       
-  <dt><a href="code.html#smd.add.posterior">posterior() (in module smd.add)</a>
+  <dt><a href="code_mcmc.html#mcmc.plot_corner">plot_corner() (in module mcmc)</a>
   </dt>
 
-      <dd><dl>
-        
-  <dt><a href="code.html#smd.read.posterior">(in module smd.read)</a>
-  </dt>
-
-      </dl></dd>
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#smd.add.priors">priors() (in module smd.add)</a>
+  <dt><a href="code_smd.html#smd.add.posterior">posterior() (in module smd.add)</a>
   </dt>
 
       <dd><dl>
         
-  <dt><a href="code.html#smd.read.priors">(in module smd.read)</a>
+  <dt><a href="code_smd.html#smd.read.posterior">(in module smd.read)</a>
+  </dt>
+
+      </dl></dd>
+      
+  <dt><a href="code_smd.html#smd.add.priors">priors() (in module smd.add)</a>
+  </dt>
+
+      <dd><dl>
+        
+  <dt><a href="code_smd.html#smd.read.priors">(in module smd.read)</a>
   </dt>
 
       </dl></dd>
@@ -291,7 +380,13 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#utils.baseline.remove_baseline">remove_baseline() (in module utils.baseline)</a>
+  <dt><a href="code_utils.html#utils.baseline.remove_baseline">remove_baseline() (in module utils.baseline)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="code_mcmc.html#mcmc.run">run() (in module mcmc)</a>
   </dt>
 
   </dl></td>
@@ -301,21 +396,35 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#smd.save">save() (in module smd)</a>
+  <dt><a href="code_smd.html#smd.save">save() (in module smd)</a>
   </dt>
 
       
-  <dt><a href="code.html#module-smd">smd (module)</a>
+  <dt><a href="code_mcmc.html#mcmc.setup">setup() (in module mcmc)</a>
+  </dt>
+
+      
+  <dt><a href="code_smd.html#module-smd">smd (module)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#module-smd.add">smd.add (module)</a>
+  <dt><a href="code_smd.html#module-smd.add">smd.add (module)</a>
   </dt>
 
       
-  <dt><a href="code.html#module-smd.read">smd.read (module)</a>
+  <dt><a href="code_smd.html#module-smd.read">smd.read (module)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="code_likelihood.html#likelihood.test_speed">test_speed() (in module likelihood)</a>
   </dt>
 
   </dl></td>
@@ -325,13 +434,13 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#distributions.uniform">uniform (class in distributions)</a>
+  <dt><a href="code_distributions.html#distributions.uniform">uniform (class in distributions)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#distributions.uninformative_prior">uninformative_prior() (in module distributions)</a>
+  <dt><a href="code_distributions.html#distributions.uninformative_prior">uninformative_prior() (in module distributions)</a>
   </dt>
 
   </dl></td>
@@ -341,7 +450,7 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="code.html#distributions.viewer">viewer (class in distributions)</a>
+  <dt><a href="code_distributions.html#distributions.viewer">viewer (class in distributions)</a>
   </dt>
 
   </dl></td>

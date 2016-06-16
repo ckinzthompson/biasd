@@ -141,16 +141,16 @@ You can also use the Laplace approximation to approximate the posterior distribu
 		lp = b.laplace.laplace_approximation(d,priors,tau)
 
 		# Add the priors and results to the SMD
-		data = b.utils.smd.add_priors(data,i,priors)
-		data = b.utils.smd.add_laplace_posterior(data,i,lp)
+		data = b.smd.add.priors(data,i,priors)
+		data = b.smd.add.laplace_posterior(data,i,lp)
 
 		# Calculate the moment-matched, marginalized posterior
 		# of the same form as the prior distributions
 		lp.transform(priors)
-		data = b.utils.smd.add_posterior(data,i,lp.posterior)
+		data = b.smd.add.posterior(data,i,lp.posterior)
 	
 	# Save the results
-	b.utils.smd.save('data.smd',data)
+	b.smd.save('data.smd',data)
 
 
 My Baseline and BIASD...
@@ -164,11 +164,11 @@ If your baseline is crazy, BIASD will not work very well. In the ``./utils`` dir
 	
 	# Let's remove the baseline of the first trace
 	d = data.data[0].values.FRET
-	baseline_result = b.utils.baseline.remove_baseline(d)
-	data = b.utils.smd.add_baseline(data,0,baseline_result)
+	baseline_result = b.baseline.remove_baseline(d)
+	data = b.smd.add.baseline(data,0,baseline_result)
 
 	# Save the results
-	b.utils.smd.save('data.smd',data)
+	b.smd.save('data.smd',data)
 
 	# Subtract off the baseline for use in some other calculation
 	d -= baseline_result.baseline 

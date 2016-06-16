@@ -1,3 +1,10 @@
+"""
+.. module:: laplace
+
+	:synopsis: Contains function to calculate the laplace approximation to the BIASD posterior probability distribution.
+
+"""
+
 import numpy as np
 from scipy.optimize import minimize
 from biasd.likelihood import log_posterior
@@ -5,13 +12,28 @@ from biasd.distributions import parameter_collection,normal,convert_distribution
 
 def calc_hessian(fxn,x,eps = np.sqrt(np.finfo(np.float64).eps)):
 	"""
-	Finite difference approximation of the Hessian
-	Using Abramowitz & Stegun Eqn. 25.3.23 (on-diagonal), and 25.3.26 (off-diagonal)
-
-	-- xij is the position to evaluate the function at
-	-- if i or j = 0, it's the starting postion, 1 or m1 are x + 1.*eps and x - 1.*eps, respetively
-	-- yij is the function evaluated at xij
+	Calculate the Hessian using the finite difference approximation.
+	
+	Finite difference formulas given in Abramowitz & Stegun
+	
+		- Eqn. 25.3.23 (on-diagonal)
+		- Eqn. 25.3.26 (off-diagonal)
+	
+	Input:
+		* `fxn` is a function that can be evaluated at x
+		* `x` is a 1D `np.ndarray`
+	
+	Returns:
+		* an NxN `np.ndarray`, where N is the size of `x`
+	
 	"""
+	
+	# Notes:
+	# xij is the position to evaluate the function at
+	# yij is the function evaluated at xij
+	#### if i or j = 0, it's the starting postion
+	#### 1 or m1 are x + 1.*eps and x - 1.*eps, respetively
+	
 	
 	h = np.zeros((x.size,x.size))
 	y00 = fxn(x)
@@ -78,12 +100,20 @@ class _laplace_posterior:
 		
 def find_map(data,prior,tau,meth='nelder-mead',xx=None,nrestarts=2):
 	'''
-	Use numerical minimization to find the maximum a posteriori estimate of the posterior
+	Use numerical minimization to find the maximum a posteriori estimate of a BIASD log-posterior distribution.
 	
+	Inputs:
+		* `data` is a 1D `np.ndarray` of the time series
+		* `prior` is a `biasd.distributions.parameter_collection` that contains the prior the BIASD Bayesian inference 
+		* `tau` is the measurement period
 	
-	Provide xx to force first theta initialization at that theta
-	meth is the method used by the minimizer - default to simplex
-	nrestarts is the number of restarts for the MAP
+	Optional:
+		* `meth` is the minimizer used to find the minimum of the negative posterior (i.e., the maximum). Defaults to simplex.
+		* `xx` will initialize the minimizer at this theta position. Defaults to mean of the priors.
+		* `nrestarts` is the number of times to try to find the minimum. Restarts initialize at a random variate chosen from prior distributions
+	
+	Returns:
+		* the minimizer dictionary
 	'''
 
 	ylist = []
@@ -114,7 +144,19 @@ def find_map(data,prior,tau,meth='nelder-mead',xx=None,nrestarts=2):
 
 def laplace_approximation(data,prior,tau,nrestarts=2,verbose=False):
 	'''
-	Perform the Laplace approximation on the posterior probability distribution of this trace
+	Perform the Laplace approximation on the BIASD posterior probability distribution of this trace.
+	
+	Inputs:
+		* `data` is a 1D `np.ndarray` of the time series
+		* `prior` is a `biasd.distributions.parameter_collection` that contains the prior the BIASD Bayesian inference 
+		* `tau` is the measurement period
+	
+	Optional:
+		* `nrestarts` is the number of times to try to find the MAP in `find_map`.
+		* `verbose` is a boolean that determines whether the evaluation time for each Hessian and minimization is printed.
+	
+	Returns:
+		* a `biasd.laplace._laplace_posterior` object, which has a `.mu` with the means, a `.covar` with the covariances, and a `.posterior` which is a marginalized `biasd.distributions.parameter_collection` of normal distributions.
 	'''
 
 	#Calculate the best MAP estimate

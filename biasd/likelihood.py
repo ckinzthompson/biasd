@@ -1,3 +1,10 @@
+"""
+.. module:: likelihood
+
+	:synopsis: Contains functions to calculate the likelihood function for BIASD
+
+"""
+
 import ctypes as _ctypes
 from sys import platform as _platform
 import os as _os
@@ -93,9 +100,15 @@ if _flag_cuda:
 if _flag_c:
 	def _log_likelihood_c(theta,data,tau):
 		"""
-		Calculate the log of the BIASD likelihood function at theta using the data data given the time period of the data as tau.
+		Calculate the log of the BIASD likelihood function at :math:`\\Theta`
 		
-		C Version
+		Input:
+			* `theta` is a `np.ndarray` of the parameters to evaluate
+			* `data is a 1D `np.ndarray` of the time series to analyze
+			* `tau` is the measurement period of each data point in `data`
+		
+		Returns:
+			* the sum of the log-likelihood for each data point in `data`
 		"""
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
@@ -168,7 +181,15 @@ def use_python_ll():
 	
 def test_speed(n,dpoints = 5000):
 	"""
-	Test how fast the BIASD integral (python-based or C-based) runs. C-based should be ~30 us. Python-based is ~30x that.
+	Test how fast the BIASD integral runs.
+	
+	Input:
+		* `n` is the number of times to repeat the test
+		* `dpoints` is the number of data points in each test
+	
+	Returns:
+		* The average amount of time per data point in seconds.
+	
 	"""
 	from time import time
 	d = _np.linspace(-2,1.2,dpoints)
@@ -194,9 +215,21 @@ else:
 	print "Defaulted to native Python log-likelihood"
 
 
-def log_posterior(params,data,prior_dists,tau):
-	lprior = prior_dists.lnpdf(params)
-	ll = log_likelihood(params,data,tau)
+def log_posterior(theta,data,prior_dists,tau):
+	"""
+	Calculate the log-posterior probability distribution at :math:`\\Theta`
+	
+	Input:
+		* `theta` is a vector of the parameters (i.e., :math:`\\theta`) where to evaluate the log-posterior
+		* `data` is a 1D `np.ndarray` of the time series to analyze
+		* `prior_dists` is a `biasd.distributions.parameter_collection` containing the prior probability distributions for the BIASD calculation
+		* `tau` is the measurement period of `data`
+	
+	Returns:
+		* The summed log posterior probability distribution, :math:`p(\\Theta \\vert data) \\propto p(data \\vert \\Theta) \cdot p(\\Theta)`
+	"""
+	lprior = prior_dists.lnpdf(theta)
+	ll = log_likelihood(theta,data,tau)
 	y = lprior + ll
 	
 	if _np.isnan(y):
