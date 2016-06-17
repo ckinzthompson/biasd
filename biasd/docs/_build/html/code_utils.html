@@ -110,7 +110,9 @@
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Utils</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id1">Utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#baseline-correction">Baseline Correction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fit-histograms-to-the-biasd-likelihood-function">Fit histograms to the BIASD likelihood function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#clustering-data">Clustering data</a></li>
 </ul>
 </li>
 </ul>
@@ -151,8 +153,193 @@
   <div class="section" id="utils">
 <span id="code-utils"></span><h1>Utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h1>
 <p>This page gives the details about the code in biasd.utils.</p>
-<div class="section" id="id1">
-<h2>Utils<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="baseline-correction">
+<h2>Baseline Correction<a class="headerlink" href="#baseline-correction" title="Permalink to this headline">¶</a></h2>
+<p>Code to correct for white-noise baseline drift. This type of drift will severely hinder the ability of BIASD to provide reasonable results.</p>
+<span class="target" id="module-utils.baseline"></span><dl class="function">
+<dt id="utils.baseline.remove_baseline">
+<code class="descclassname">utils.baseline.</code><code class="descname">remove_baseline</code><span class="sig-paren">(</span><em>d</em>, <em>R2=None</em>, <em>nstates=2</em>, <em>maxiter=1000</em>, <em>relative_threshold=1e-20</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.baseline.remove_baseline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the baseline sort of according to:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Title:</th><td class="field-body">Automated Maximum Likelihood Separation of Signal from Baseline in Noisy Quantal Data</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Authors:</th><td class="field-body">Bruno, WJ
+Ullah, G
+Mak, DD
+Pearson JE</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Citation:</th><td class="field-body">Biophys. J. 2013, 105, 68-79.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><cite>d</cite> is a 1D array of the signal</li>
+<li><cite>R2</cite> can be an initial guess for the ratio of the random walk&#8217;s variance to that of the noise variance of the underlying states.</li>
+<li><cite>nstates</cite> should probably be two for BIASD</li>
+<li><cite>maxiter</cite> the maximum number of times</li>
+<li><cite>relative_threshold</cite> is the convergence threshold for the releative change in the log-likelihood function. Smaller values are more rigorous.</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd><ul class="first last simple">
+<li><cite>baseline_results</cite> which is a <cite>biasd.utils.baseline.params</cite> object. You can access the baseline with <cite>baseline_results.basline</cite></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">biasd</span> <span class="kn">as</span> <span class="nn">b</span>
+
+<span class="c"># Load some data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;test.smd&#39;</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">FRET</span>
+
+<span class="c"># Calculate some fake baseline-drift and apply it to the data</span>
+<span class="n">baseline</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">baseline</span><span class="o">.</span><span class="n">simulate_diffusion</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">size</span><span class="p">,</span><span class="mf">1e-2</span><span class="p">)</span>
+<span class="n">dd</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">baseline</span>
+
+<span class="c"># Solve for the baseline</span>
+<span class="n">baseline_results</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">baseline</span><span class="o">.</span><span class="n">remove_baseline</span><span class="p">(</span><span class="n">dd</span><span class="p">)</span>
+
+<span class="c"># Plot the results</span>
+<span class="n">f</span><span class="p">,</span><span class="n">a</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">sharex</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dd</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">)</span>
+<span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">baseline_results</span><span class="o">.</span><span class="n">baseline</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dd</span> <span class="o">-</span> <span class="n">baseline_results</span><span class="o">.</span><span class="n">baseline</span><span class="p">,</span><span class="s">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c"># Add the results to the SMD and save</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">baseline</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">baseline_results</span><span class="p">)</span>
+<span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;test.smd&#39;</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="fit-histograms-to-the-biasd-likelihood-function">
+<h2>Fit histograms to the BIASD likelihood function<a class="headerlink" href="#fit-histograms-to-the-biasd-likelihood-function" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div>This might be useful for exploring data, or plotting.</div></blockquote>
+<span class="target" id="module-utils.fit_histogram"></span><span class="target" id="module-fit_histogram"></span><dl class="function">
+<dt id="utils.fit_histogram.fit">
+<code class="descclassname">utils.fit_histogram.</code><code class="descname">fit</code><span class="sig-paren">(</span><em>data</em>, <em>tau</em>, <em>guess=None</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.fit_histogram.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits a histogram of to the BIASD likelihood function.</p>
+<p>Input:</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><cite>data</cite> is a <cite>np.ndarray</cite></p>
+</li>
+<li><p class="first"><cite>tau</cite> is the measurement period</p>
+</li>
+<li><dl class="first docutils">
+<dt><cite>guess</cite> is an initial guess. This can be provided as:</dt>
+<dd><ul class="first last simple">
+<li>a <cite>biasd.distributions.parameter_collection</cite>, it will use the mean</li>
+<li>a <cite>np.ndarray</cite></li>
+<li><cite>Nothing...</cite>, in which case it will try to guess</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><ul class="first last simple">
+<li>the best-fit parameters, and the covariances</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils.fit_histogram.likelihood_one_at_a_time">
+<code class="descclassname">utils.fit_histogram.</code><code class="descname">likelihood_one_at_a_time</code><span class="sig-paren">(</span><em>theta</em>, <em>data</em>, <em>tau</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.fit_histogram.likelihood_one_at_a_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the likelihood (not log-likelihood) for each point in a string of data. This might be useful for plotting, for instance:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">biasd</span> <span class="kn">as</span> <span class="nn">b</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">,</span><span class="o">.</span><span class="mo">05</span><span class="p">,</span><span class="mf">3.</span><span class="p">,</span><span class="mf">8.</span><span class="p">))</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-.</span><span class="mi">5</span><span class="p">,</span><span class="mf">1.5</span><span class="p">,</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">fit_histogram</span><span class="o">.</span><span class="n">likelihood_one_at_a_time</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="clustering-data">
+<h2>Clustering data<a class="headerlink" href="#clustering-data" title="Permalink to this headline">¶</a></h2>
+<p>Here are some helper functions to perform clustering</p>
+<span class="target" id="module-utils.clustering"></span><dl class="function">
+<dt id="utils.clustering.GMM_EM_1D">
+<code class="descclassname">utils.clustering.</code><code class="descname">GMM_EM_1D</code><span class="sig-paren">(</span><em>x</em>, <em>k=2</em>, <em>maxiter=1000</em>, <em>relative_threshold=1e-06</em>, <em>init_kmeans=True</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.clustering.GMM_EM_1D" title="Permalink to this definition">¶</a></dt>
+<dd><p>One-dimensional, Gaussian Mixture Model Clustering with expectation-maximization algorithm.</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><cite>x</cite> is an (N,d) <cite>np.array</cite>, where N is the number of data points and d is the dimensionality of the data</li>
+<li><cite>nstates</cite> is the number of states</li>
+<li><cite>maxiter</cite> is the maximum number of iterations</li>
+<li><cite>relative_threshold</cite> is the convergence criteria for the relative change in the log-likelihood</li>
+<li><cite>init_kmeans</cite> is a boolean for whether to initialize the GMM with a K-means pass</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>a <cite>biasd.utils.clustering._results_gmm</cite> object that contains</dt>
+<dd><ul class="first last simple">
+<li><cite>pi_k</cite>, the probability of each state</li>
+<li><cite>r_nk</cite>, the responsibilities of each data point</li>
+<li><cite>mu_k</cite> the means</li>
+<li><cite>var_k</cite> the covariances</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils.clustering.kmeans">
+<code class="descclassname">utils.clustering.</code><code class="descname">kmeans</code><span class="sig-paren">(</span><em>x</em>, <em>nstates</em>, <em>nrestarts=1</em><span class="sig-paren">)</span><a class="headerlink" href="#utils.clustering.kmeans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Multidimensional, K-means Clustering</p>
+<dl class="docutils">
+<dt>Input:</dt>
+<dd><ul class="first last simple">
+<li><cite>x</cite> is an (N,d) <cite>np.array</cite>, where N is the number of data points and d is the dimensionality of the data</li>
+<li><cite>nstates</cite> is the K in K-means</li>
+<li><cite>nrestarts</cite> is the number of times to restart. The minimal variance results are provided</li>
+</ul>
+</dd>
+<dt>Returns:</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>a <cite>biasd.utils.clustering._results_kmeans</cite> object that contains</dt>
+<dd><ul class="first last simple">
+<li><cite>pi_k</cite>, the probability of each state</li>
+<li><cite>r_nk</cite>, the responsibilities of each data point</li>
+<li><cite>mu_k</cite> the means</li>
+<li><cite>var_k</cite> the covariances</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 </div>
 

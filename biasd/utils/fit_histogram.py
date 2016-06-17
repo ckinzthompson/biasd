@@ -1,32 +1,46 @@
-"""
-Fit histograms to the BIASD Likelihood function
-------------------
-	This might be useful for exploring data, or plotting
-"""
+'''
+.. module:: fit_histogram
+	:synopsis: allows you to fit histograms to the BIASD likelihood function
+'''
 
 import numpy as _np
 
-def likelihood_one_at_a_time(theta,d,tau):
+def likelihood_one_at_a_time(theta,data,tau):
 	"""
 	Calculate the likelihood (not log-likelihood) for each point in a string of data. This might be useful for plotting, for instance:
-	theta = _np.array((0.,1.,.05,3.,8.))
-	x = np.linspace(-.5,1.5,1000)
-	y = likelihood_one_at_a_time(theta,x,0.1)
-	plt.plot(x,y)
+	
+	.. code-block:: python
+	
+		import biasd as b
+		import numpy as np
+		import matplotlib.pyplot as plt
+	
+		theta = np.array((0.,1.,.05,3.,8.))
+		x = np.linspace(-.5,1.5,1000)
+		y = b.utils.fit_histogram.likelihood_one_at_a_time(theta,x,0.1)
+		plt.plot(x,y)
+		plt.show()
 	"""
 	from biasd.likelihood import log_likelihood
 	## hacks, terrible hacks, b/c I'm too lazy to rewrite the likelihood fxns to not return a sum
-	lny = map(lambda x: log_likelihood(theta,x,tau),d.tolist())
+	lny = map(lambda x: log_likelihood(theta,x,tau),data.tolist())
 	return _np.exp(lny)
 
 def fit(data,tau,guess=None):
 	"""
-	Fits a histogram of data (numpy.ndarray) to the BIASD likelihood function with time period tau.
-	The initial guess can be provided as:
-		- a BIASD parameter_collection --> it uses the mean
-		- a numpy.ndarray
-		- Nothing... in which case it will try to guess
-	Returns the best fitted parameters and the covariances
+	Fits a histogram of to the BIASD likelihood function.
+	
+	Input:
+	
+		* `data` is a `np.ndarray`
+		* `tau` is the measurement period
+		* `guess` is an initial guess. This can be provided as:
+			- a `biasd.distributions.parameter_collection`, it will use the mean
+			- a `np.ndarray`
+			- `Nothing...`, in which case it will try to guess
+	
+	Returns:
+		* the best-fit parameters, and the covariances
 	"""
 	from scipy.optimize import curve_fit
 

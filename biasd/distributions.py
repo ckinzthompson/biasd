@@ -612,63 +612,6 @@ def uninformative_prior(data_range,timescale):
 	return bd.parameter_collection(e1,e2,sigma,k1,k2)
 	
 #### Guess Priors
-class _results_gmm(object):
-	def __init__(self,nstates,pi,r,mu,var,ll):
-		self.nstates = nstates
-		self.pi = pi
-		self.r = r
-		self.mu = mu
-		self.var = var
-		self.ll = -_np.inf
-		self.ll_last = -_np.inf
-	
-	def sort(self):
-		xsort = _np.argsort(self.mu)
-		self.pi = self.pi[xsort]
-		self.r = self.r[:,xsort]
-		self.var = self.var[xsort]
-		self.mu = self.mu[xsort]
-		
-		
-
-def _GMM_EM_1D(x,k=2,maxiter=1000,relative_threshold=1e-6):
-
-	# Make sure x is proper
-	if not isinstance(x,_np.ndarray) or x.ndim != 1:
-		raise ValueError('Input is not really a 1D ndarray, is it?')
-		return None
-	
-	def Nk_gaussian(x,mu,var):
-		return 1./_np.sqrt(2.*_np.pi*var[None,:]) * _np.exp(-.5/var[None,:]*(x[:,None] - mu[None,:])**2.)
-		
-	# Initialize
-	mu_k = x[_np.random.randint(0,x.size,size=k)] # Pick random mu_k
-	var_k = _np.repeat(_np.var(x),k)
-	pi_k = _np.repeat(1./k,k)
-	theta = _results_gmm(k,pi_k,None,mu_k,var_k,None)
-	
-	iteration = 0
-	while iteration < maxiter:
-		# E step
-		r = theta.pi[None,:]*Nk_gaussian(x,theta.mu,theta.var)
-		theta.r = r/(r.sum(1)[:,None])
-		
-		# M step
-		n = _np.sum(theta.r,axis=0)
-		theta.mu = 1./n * _np.sum(theta.r*x[:,None],axis=0)
-		theta.var= 1./n * _np.sum(theta.r *(x[:,None]-theta.mu[None,:])**2.,axis=0)
-		theta.pi = n / n.sum()
-		
-		# Compute log-likelihood
-		theta.ll_last = theta.ll
-		theta.ll = _np.sum(_np.log(_np.sum(theta.pi[None,:] * Nk_gaussian(x,theta.mu,theta.var),axis=-1)))
-
-		# Check convergence
-		if _np.abs((theta.ll - theta.ll_last)/theta.ll_last) < relative_threshold:
-			break
-		iteration += 1
-	theta.sort()
-	return theta
 
 def _virtual_min(k1,k2,tau_c):
 	"""
@@ -706,9 +649,9 @@ def guess_prior(y,tau=1.):
 		* a guessed `biasd.distributions.parameter_collection`
 	"""
 
+	from .utils.clustering import GMM_EM_1D
 	
-	
-	theta = _GMM_EM_1D(y)
+	theta = GMM_EM_1D(y,2)
 
 	# Signal
 	m1,m2 = theta.mu

@@ -1,0 +1,56 @@
+\indexentry{distributions (module)|hyperpage}{9}
+\indexentry{beta (class in distributions)|hyperpage}{9}
+\indexentry{gamma (class in distributions)|hyperpage}{9}
+\indexentry{normal (class in distributions)|hyperpage}{9}
+\indexentry{uniform (class in distributions)|hyperpage}{9}
+\indexentry{convert\_distribution() (in module distributions)|hyperpage}{9}
+\indexentry{parameter\_collection (class in distributions)|hyperpage}{10}
+\indexentry{viewer (class in distributions)|hyperpage}{10}
+\indexentry{distributions (module)|hyperpage}{11}
+\indexentry{uninformative\_prior() (in module distributions)|hyperpage}{11}
+\indexentry{guess\_prior() (in module distributions)|hyperpage}{11}
+\indexentry{laplace (module)|hyperpage}{11}
+\indexentry{calc\_hessian() (in module laplace)|hyperpage}{11}
+\indexentry{find\_map() (in module laplace)|hyperpage}{11}
+\indexentry{laplace\_approximation() (in module laplace)|hyperpage}{12}
+\indexentry{test\_speed() (in module likelihood)|hyperpage}{13}
+\indexentry{likelihood (module)|hyperpage}{13}
+\indexentry{log\_likelihood() (in module likelihood)|hyperpage}{13}
+\indexentry{log\_posterior() (in module likelihood)|hyperpage}{13}
+\indexentry{mcmc (module)|hyperpage}{14}
+\indexentry{mcmc (module)|hyperpage}{14}
+\indexentry{setup() (in module mcmc)|hyperpage}{14}
+\indexentry{burn\_in() (in module mcmc)|hyperpage}{15}
+\indexentry{run() (in module mcmc)|hyperpage}{15}
+\indexentry{continue\_run() (in module mcmc)|hyperpage}{15}
+\indexentry{mcmc (module)|hyperpage}{16}
+\indexentry{mcmc (module)|hyperpage}{16}
+\indexentry{chain\_statistics() (in module mcmc)|hyperpage}{16}
+\indexentry{get\_samples() (in module mcmc)|hyperpage}{16}
+\indexentry{plot\_corner() (in module mcmc)|hyperpage}{16}
+\indexentry{create\_posterior\_collection() (in module mcmc)|hyperpage}{16}
+\indexentry{smd (module)|hyperpage}{17}
+\indexentry{new() (in module smd)|hyperpage}{17}
+\indexentry{load() (in module smd)|hyperpage}{18}
+\indexentry{save() (in module smd)|hyperpage}{18}
+\indexentry{smd.add (module)|hyperpage}{18}
+\indexentry{baseline() (in module smd.add)|hyperpage}{18}
+\indexentry{laplace\_posterior() (in module smd.add)|hyperpage}{18}
+\indexentry{mcmc() (in module smd.add)|hyperpage}{18}
+\indexentry{posterior() (in module smd.add)|hyperpage}{19}
+\indexentry{priors() (in module smd.add)|hyperpage}{19}
+\indexentry{smd.read (module)|hyperpage}{19}
+\indexentry{baseline() (in module smd.read)|hyperpage}{19}
+\indexentry{laplace\_posterior() (in module smd.read)|hyperpage}{19}
+\indexentry{mcmc() (in module smd.read)|hyperpage}{19}
+\indexentry{posterior() (in module smd.read)|hyperpage}{19}
+\indexentry{priors() (in module smd.read)|hyperpage}{19}
+\indexentry{utils.baseline (module)|hyperpage}{20}
+\indexentry{remove\_baseline() (in module utils.baseline)|hyperpage}{20}
+\indexentry{utils.fit\_histogram (module)|hyperpage}{21}
+\indexentry{fit\_histogram (module)|hyperpage}{21}
+\indexentry{fit() (in module utils.fit\_histogram)|hyperpage}{21}
+\indexentry{likelihood\_one\_at\_a\_time() (in module utils.fit\_histogram)|hyperpage}{22}
+\indexentry{utils.clustering (module)|hyperpage}{22}
+\indexentry{GMM\_EM\_1D() (in module utils.clustering)|hyperpage}{22}
+\indexentry{kmeans() (in module utils.clustering)|hyperpage}{22}
