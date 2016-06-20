@@ -108,7 +108,7 @@ def chain_statistics(sampler,verbose=True):
 	maxauto = _np.int(sampler.get_autocorr_time().max())+1
 	return maxauto
 	
-def get_samples(sampler,uncorrelated=True,culled=True):
+def get_samples(sampler,uncorrelated=True,culled=False):
 	"""
 	Get the samples from `sampler`
 	
