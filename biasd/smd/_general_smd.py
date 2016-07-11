@@ -139,9 +139,19 @@ def _conversion_default(smd):
 		s = smd['data'][i]
 		# Time Vector
 		s['index'] = array(s['index'])
-		for key,value in s['values'].items():
-			# Data Vectors
-			s['values'][key] = array(value)
+		if isinstance(s['values'],dict):
+			for key,value in s['values'].items():
+				# Data Vectors
+				s['values'][key] = array(value)
+		# Hack for ebFRET/smd-matlab loading.... ugh.
+		elif isinstance(s['values'],list):
+			s['values'] = array(s['values'])
+			
+		if isinstance(s['attr'],dict):
+			for key,value in s['attr'].items():
+				# Attr Vectors
+				if isinstance(s['attr'][key],list):
+					s['attr'][key] = array(value)
 	return smd
 
 def load(filename,JSON=False,conversion=_conversion_default):
