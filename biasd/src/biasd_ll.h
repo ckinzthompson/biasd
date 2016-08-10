@@ -15,6 +15,8 @@ void push(node_t ** head, fval_t *val);
 fval_t * pop(node_t ** head);
 void free_list(node_t ** head);
 
+double * log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau);
+
 double bessel_i0(double x);
 double bessel_i1(double x);
 double integrand(double f,ip * p);

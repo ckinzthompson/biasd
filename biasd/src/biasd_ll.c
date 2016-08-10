@@ -83,9 +83,12 @@ double simpson(int n, double * x, double * y){
 	return out;
 }
 
-double log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau) {
+double * log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau) {
+	
+	double *out;
+	out = (double *) malloc(N*sizeof(double));
 
-	double ll,lli;
+	double lli;
 	double* f;
 	double* integrand_vals;
 	int i,j;
@@ -103,7 +106,6 @@ double log_likelihood(int N, double * d, double ep1, double ep2, double sigma, d
 		f[i] = 1./(exp(-f[i]) + 1.);
 	}
 	
-	ll = 0.;
 	// Calculate Log-likelihood for each data point
 	for (i=0;i < N;i++) {
 		// Peak for state 1
@@ -119,10 +121,28 @@ double log_likelihood(int N, double * d, double ep1, double ep2, double sigma, d
 
 		// Log and get the prefactor
 		lli = log(lli) - .5 * log(2.* M_PI) - log(sigma); 
-		ll += lli;
+		out[i] = lli;
 	}
 	
 	free(f);
 	free(integrand_vals);
-	return lli;
+	
+	return out;
 }
+
+/*
+double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau) {
+	
+	int i = 0;
+	double sum = 0.;
+	double *ll;
+	ll = (double *) malloc(N*sizeof(double));
+	
+	log_likelihood(N,d,ll,ep1,ep2,sigma,k1,k2,tau);
+	for (i=0;i<N;i++) {
+		sum += ll[i];
+	}
+	free(ll);
+	return sum;
+}
+*/

@@ -3,21 +3,19 @@
 #include <math.h>
 #include <time.h>
 
+#include <cuda.h>
 
-
-#define n_integration_pts 501
-#define n_threads 1024
+#define n_integration_pts 751
 
 /* Compile with:
 nvcc -arch compute_50 cuda_biasd_simpson.c -o cuda_biasd_simpson
 */
 
 
-extern "C" double log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau);
+extern "C" double * log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau);
 __global__ void kernel_loglikelihood(int nf, double * f, int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double * ll);
 __device__ double integrand(double f, double ep1, double ep2, double sigma, double k1, double k2, double tau);
 __device__ double simpson(int N, double * x, double * y);
-
 
 __device__ double integrand(double f, double d, double ep1, double ep2, double sigma, double k1, double k2, double tau) {
 	double y, out;
@@ -70,22 +68,19 @@ __global__ void kernel_loglikelihood(int nf, double * f, int N, double * d, doub
 
 		out = log(out) - .5 * log(2.* M_PI) - log(sigma); // prefactor
 		ll[idx] = out; // transfer 
-
 	}
 }
 
 
-	
+double * log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau) {
 
-double log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau) {
-
-	double* f;
-	double* ll;
+	double * ll;
+	double * f;
 	int i;
 	int nf = n_integration_pts;
 	
-	f = (double *) malloc(nf*sizeof(double));
 	ll = (double *) malloc(N*sizeof(double));
+	f = (double *) malloc(nf*sizeof(double));
 
 	// Set up fraction, x, to range from 0 to 1 on a logit scale (1e-30 to 1e30) to make sure we hit the edges in the integration
 	double d1 = ((double)nf-1.) - 0.;
@@ -94,6 +89,13 @@ double log_likelihood(int N, double * d, double ep1, double ep2, double sigma, d
 		f[i] = (double)i /d1 * d2 - 30.0;
 		f[i] = 1./(exp(-f[i]) + 1.);
 	}
+	
+	
+	cudaSetDevice(0);
+	cudaDeviceProp deviceProp;
+	cudaGetDeviceProperties(&deviceProp, 0);
+	int threads = deviceProp.maxThreadsPerBlock;
+	int blocks = (N+threads-1)/threads;
 	
 	double * d_d;
 	double * f_d;
@@ -104,23 +106,16 @@ double log_likelihood(int N, double * d, double ep1, double ep2, double sigma, d
 	cudaMemcpy(d_d,d,N*sizeof(double),cudaMemcpyHostToDevice);
 	cudaMemcpy(f_d,f,nf*sizeof(double),cudaMemcpyHostToDevice);
 	
-	int threads = n_threads;
-	int blocks = (N+threads-1)/threads;
-	
 	// Evaluate integrand at f -> store in y.
 	kernel_loglikelihood<<<blocks,threads>>>(nf,f_d,N,d_d,ep1,ep2,sigma,k1,k2,tau,ll_d);
 	cudaMemcpy(ll,ll_d,N*sizeof(double),cudaMemcpyDeviceToHost);
 
-	double llout;
-	for (i=0;i<N;i++){
-		llout += ll[i]; 
-	}
 	cudaFree(d_d);
 	cudaFree(f_d);
 	cudaFree(ll_d);
 	
 	free(f);
-	free(ll);
-	return llout;
+	return ll;
 }
+
 
