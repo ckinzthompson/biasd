@@ -163,6 +163,80 @@ class beta(_distribution):
 	def _get_ranged_x(parameters,n):
 		l,h = beta._get_xlim(parameters)
 		return _np.linspace(l,h,int(n))
+		
+class dirichlet(_distribution):
+	"""
+	The dirichlet distribution is often used for probabilities or fractions.
+	
+	It is :math:`p(x\\vert \\vec {\\alpha}) = \\frac{1}{B(\\vec{\\alpha})}\\prod\\limits_{i=1}^k x_i ^{\\alpha_i -1}`
+	"""
+	def __init__(self,alpha):
+		self.name = 'dirichlet'
+		# initial loading/defining parameters
+		self.parameters = _np.array(alpha,dtype='f')
+		self.support_parameters = _np.array(((_distribution.__minimum__, _np.inf), (_distribution.__minimum__, _np.inf)))
+		self.support = _np.array((_distribution.__minimum__, 1.-_distribution.__minimum__))
+
+		self.label_parameters = [r"$\vec{\alpha}$"]
+		self.check_params()
+	
+	@staticmethod
+	def new(parameters):
+		return dirichlet(*parameters)
+		
+	# normal-specific things
+	@staticmethod
+	def _mean(parameters):
+		return parameters/parameters.sum()
+	
+	@staticmethod
+	def _variance(parameters):
+		a = parameters
+		a0 = parameters.sum()
+		return a *(a0-a)/(a0*a0*(a0+1.))
+	
+	@staticmethod
+	def _mode(parameters):
+		a = parameters
+		a0 = a.sum()
+		if _np.all(a > 1):
+			return (a-1.)/(a0-a.size)
+		else:
+			return _np.nan
+	
+	@staticmethod
+	def _lnpdf_fxn(x,parameters,support):
+		a = parameters
+		if isinstance(x,_np.ndarray):
+			if _np.all(a > 0) and _np.all(x >= 0.) and _np.all(x <= 1.) and x.sum() == 1.:
+				y = - (_np.sum(_special.gammaln(a)) - _special.gammaln(a.sum()))
+				y += _np.sum((a-1.)*_np.log(x))
+				if _np.isfinite(y):
+					return y
+		return -_np.inf
+	
+	@staticmethod
+	def _rvs_fxn(size,parameters):
+		a = parameters
+		return _np.random.dirichlet(a,size=size)
+		
+#	@staticmethod
+#	def _moment2param_fxn(first,second):
+#		variance = second - first**2.
+#		alpha = first*(first*(1.-first)/variance-1.)
+#		beta = (1.-first)*(first*(1.-first)/variance-1.)
+#		return _np.array([alpha,beta])
+	
+	@staticmethod
+	def _get_xlim(parameters):
+		l = 0.#_special.betaincinv(parameters[0],parameters[1],_distribution.__small__)
+		h = 1.#_special.betaincinv(parameters[0],parameters[1],1.-_distribution.__small__)
+		return _np.array((l,h))
+		
+	@staticmethod
+	def _get_ranged_x(parameters,n):
+		l,h = 0.,1.#beta._get_xlim(parameters)
+		return _np.linspace(l,h,int(n))
 
 class gamma(_distribution):
 	"""
