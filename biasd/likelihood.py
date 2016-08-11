@@ -45,6 +45,7 @@ try:
 		_ctypes.c_double,
 		_ctypes.c_double,
 		_ctypes.c_double,
+		_ctypes.c_double,
 		_ctypes.c_double ]
 	_lib_cuda.log_likelihood.restype  = _ctypes.POINTER(_ctypes.c_double)
 	print "Loaded CUDA Library:\n"+_sopath+".so"
@@ -58,12 +59,13 @@ try:
 	if _os.path.isfile(_lib_path+'biasd_ll_gsl.so'):
 		_sopath = _lib_path+'biasd_ll_gsl' 
 	else:
-		_sopath = _lib_path + 'biasd_ll' # Alternative is biasd_ll
+		_sopath = _lib_path + 'biasd_ll_adaptive' # Alternative is biasd_ll
 	_lib_c = _np.ctypeslib.load_library(_sopath, '.') ## future-self: the library has to end in .so ....
 	
 	_lib_c.log_likelihood.argtypes = [
 		_ctypes.c_int,
 		_np.ctypeslib.ndpointer(dtype = _np.double),
+		_ctypes.c_double,
 		_ctypes.c_double,
 		_ctypes.c_double,
 		_ctypes.c_double,
@@ -79,7 +81,7 @@ except:
 
 
 if _flag_cuda:
-	def _log_likelihood_cuda(theta,data,tau):
+	def _log_likelihood_cuda(theta,data,tau,epsilon=1e-10):
 		"""
 		Calculate the log of the BIASD likelihood function at theta using the data data given the time period of the data as tau.
 		
@@ -89,7 +91,7 @@ if _flag_cuda:
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
-		llp = _lib_cuda.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau)
+		llp = _lib_cuda.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 		return _np.ctypeslib.as_array(llp,shape=data.shape)
 	
 	def use_cuda_ll():
@@ -100,7 +102,7 @@ if _flag_cuda:
 	
 
 if _flag_c:
-	def _log_likelihood_c(theta,data,tau):
+	def _log_likelihood_c(theta,data,tau,epsilon=1e-10):
 		"""
 		Calculate the individual values of the log of the BIASD likelihood function at :math:`\\Theta`
 		
@@ -108,6 +110,7 @@ if _flag_c:
 			* `theta` is a `np.ndarray` of the parameters to evaluate
 			* `data is a 1D `np.ndarray` of the time series to analyze
 			* `tau` is the measurement period of each data point in `data`
+			* `epsilon` is the precision for the numerical integration
 		
 		Returns:
 			* A 1D `np.ndarray` of the log-likelihood for each data point in `data`
@@ -115,7 +118,7 @@ if _flag_c:
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
-		llp = _lib_c.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau)
+		llp = _lib_c.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 		return _np.ctypeslib.as_array(llp,shape=data.shape)
 	
 	def use_c_ll():

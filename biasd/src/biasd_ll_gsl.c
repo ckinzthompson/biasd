@@ -4,7 +4,7 @@
 #include <gsl/gsl_errno.h>
 
 struct fxn_params {double d; double tau; double ep1; double ep2; double sigma; double k1; double k2;}; 
-struct integration_params {gsl_integration_workspace *w; gsl_function *F; double * result; double * error;};
+struct integration_params {gsl_integration_workspace *w; gsl_function *F; double * result; double * error; double epsilon;};
 
 double integrand(double f, void * param_pointer) {
 	struct fxn_params p = *(struct fxn_params *)param_pointer;
@@ -29,7 +29,7 @@ double point_ll(struct integration_params * p) {
 	// Peak for state 2
 	lli += t.k1/(t.k1+t.k2) * exp(-t.k2*t.tau - .5 * pow((t.d-t.ep2)/t.sigma,2.));
 	// Add in the contribution from the numerical integration
-	gsl_integration_qags(p->F,0.,1.,0.,1e-6,1000,p->w,p->result,p->error); // compute to relative error
+	gsl_integration_qags(p->F,0.,1.,0.,p->epsilon,5000,p->w,p->result,p->error); // compute to relative error
 	lli += 2.*t.k1*t.k2/(t.k1+t.k2)*t.tau * *(p->result);
 	// Log and get the prefactor
 	lli = log(lli) - .5 * log(2.* M_PI) - log(t.sigma);
@@ -37,7 +37,7 @@ double point_ll(struct integration_params * p) {
 	return lli;
 }
 
-double * log_likelihood(int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau) {
+double * log_likelihood(int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon) {
 	
 	double *out;
 	out = (double *) malloc(N*sizeof(double));
@@ -53,7 +53,7 @@ double * log_likelihood(int N, double *d, double ep1, double ep2, double sigma, 
 	theta.k2 = k2;
 	theta.tau = tau;
 	
-	gsl_integration_workspace * w = gsl_integration_workspace_alloc (1000);
+	gsl_integration_workspace * w = gsl_integration_workspace_alloc (5000);
 	gsl_set_error_handler_off();
 	
 	gsl_function F;
@@ -65,6 +65,7 @@ double * log_likelihood(int N, double *d, double ep1, double ep2, double sigma, 
 	p.F = &F;
 	p.result = &result;
 	p.error = &error;
+	p.epsilon = epsilon;
 	
 	for (i = 0; i < N; i++){
 		theta.d = d[i];

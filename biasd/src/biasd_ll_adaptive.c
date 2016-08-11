@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "biasd_ll.h"
+#include "biasd_adaptive.h"
 
 
 // #############################################################################
@@ -107,9 +107,9 @@ double integrand(double f, ip * p) {
 	y = 2.*p->tau*sqrt(p->k1*p->k2*f*(1.-f));
 	
 	if (f == 0.){
-		out = p->k1 * p->k2 / (p->k1 + p->k2) * p->tau *exp(-1. * p->k2 * p->tau) * (2.+ p->k1 * p->tau); // Limits
+		out = exp(-1. * p->k2 * p->tau) * (1.+ p->k1 * p->tau / 2.) * exp(-.5 * pow((p->d - p->ep2)/p->sigma,2.)); // Limits
 	} else if (f == 1.){
-		out = p->k1 * p->k2 / (p->k1 + p->k2) * p->tau *exp(-1. * p->k1 * p->tau) * (2.+ p->k2 * p->tau); //Limits
+		out = exp(-1. * p->k1 * p->tau) * (1.+ p->k2 * p->tau / 2.) * exp(-.5 * pow((p->d - p->ep1)/p->sigma,2.)); //Limits
 	} else if ((f > 0.) && (f < 1.)){
 		out = exp(-(p->k1*f+p->k2*(1.-f))*p->tau)
 			* exp(-.5*pow((p->d - (p->ep1 * f +
@@ -191,7 +191,7 @@ double adaptive_quad(double epsilon, ip * args){
 // #############################################################################
 // #############################################################################
 
-double * log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau) {
+double * log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon) {
 	
 	double * out;
 	out = (double *) malloc(N*sizeof(double));
@@ -210,7 +210,7 @@ double * log_likelihood(int N, double * d, double ep1, double ep2, double sigma,
 
 		// Add in the contribution from the numerical integration
 		p.d = d[i];
-		lli += 2.*k1 * k2/(k1 + k2) * tau * adaptive_quad(1e-10,&p);
+		lli += 2.*k1 * k2/(k1 + k2) * tau * adaptive_quad(epsilon,&p);
 
 		// Log and get the prefactor
 		lli = log(lli) - .5 * log(2.* M_PI) - log(sigma); 
