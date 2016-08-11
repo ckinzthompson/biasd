@@ -20,6 +20,7 @@ double bessel_i1(double x);
 double integrand(double f,ip * p);
 cs_out check_simpson(fval_t * va, fval_t * vb, double epsilon, ip * args);
 double adaptive_quad(double epsilon, ip * args);
-double * log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon);
+void log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * out);
+double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon);
 
 #endif 

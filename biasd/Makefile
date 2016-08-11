@@ -1,10 +1,10 @@
 all: biasd_gsl biasd_cuda  biasd_adaptive
 
-biasd_adaptive: ./src/biasd_ll_adaptive.c ./src/biasd_ll.h
+biasd_adaptive: ./src/biasd_ll_adaptive.c ./src/biasd_adaptive.h
 	mkdir -p lib
 	gcc -shared -fPIC -O3 -o ./lib/biasd_ll_adaptive.so ./src/biasd_ll_adaptive.c -lm
 
-biasd_cuda: ./src/biasd_ll_cuda.cu ./src/biasd_ll.h
+biasd_cuda: ./src/biasd_ll_cuda.cu 
 	mkdir -p lib
 	nvcc --shared --compiler-options '-fPIC' -D_FORCE_INLINES -Xcompiler "-O3" ./src/biasd_ll_cuda.cu -o ./lib/biasd_ll_cuda.so 
 

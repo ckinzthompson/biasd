@@ -110,15 +110,15 @@ double integrand(double f, ip * p) {
 		out = exp(-1. * p->k2 * p->tau) * (1.+ p->k1 * p->tau / 2.) * exp(-.5 * pow((p->d - p->ep2)/p->sigma,2.)); // Limits
 	} else if (f == 1.){
 		out = exp(-1. * p->k1 * p->tau) * (1.+ p->k2 * p->tau / 2.) * exp(-.5 * pow((p->d - p->ep1)/p->sigma,2.)); //Limits
-	} else if ((f > 0.) && (f < 1.)){
+	} else {//if ((f > 0.) && (f < 1.)){
 		out = exp(-(p->k1*f+p->k2*(1.-f))*p->tau)
 			* exp(-.5*pow((p->d - (p->ep1 * f +
 				p->ep2 * (1.-f)))/p->sigma,2.))
 			* (bessel_i0(y) + (p->k2*f+p->k1*(1.-f))*p->tau
 				* bessel_i1(y)/y); // Full Expression
-	} else {
-		out = NAN;
-	}
+	} //else {
+	//	out = NAN;
+	//}
 	return out;
 }
 
@@ -164,7 +164,7 @@ double adaptive_quad(double epsilon, ip * args){
 	fval_t * v1, * v2;
 	
 	int i;
-	for (i = 0; i < 2000; i++) { // max iterations = 2000
+	while(head != NULL) {
 		v1 = pop(&head);
 		v2 = pop(&head);
 	
@@ -174,16 +174,16 @@ double adaptive_quad(double epsilon, ip * args){
 				// printf("%e, %e   =   %e\n",v1->x,v2->x,check.integral );
 				integral += check.integral;
 				push(&head,v2);
+				free(v1);
 			} else {
 				push(&head,v2);
 				push(&head,new_fval(check.x_mid,check.y_mid));
 				push(&head,v1);
 			}
 		}
-		else {
-			break;
-		}
 	}
+	free(v1);
+	free(v2);
 	free_list(&head);
 	return integral;
 }
@@ -191,10 +191,7 @@ double adaptive_quad(double epsilon, ip * args){
 // #############################################################################
 // #############################################################################
 
-double * log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon) {
-	
-	double * out;
-	out = (double *) malloc(N*sizeof(double));
+void log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * out) {
 	
 	ip p = {0.,ep1,ep2,sigma,k1,k2,tau};
 	
@@ -216,5 +213,33 @@ double * log_likelihood(int N, double * d, double ep1, double ep2, double sigma,
 		lli = log(lli) - .5 * log(2.* M_PI) - log(sigma); 
 		out[i] = lli;
 	}
-	return out;
 }
+
+double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon) {
+	
+	int i = 0;
+	double sum = 0.;
+		
+	double * ll;
+	ll = (double *) malloc(N*sizeof(double));
+	
+	log_likelihood(N,d,ep1,ep2,sigma,k1,k2,tau,epsilon,ll);
+	for (i=0;i<N;i++) {
+		sum += ll[i];
+	}
+	free(ll);
+	return sum;
+}
+
+/*
+int main(){
+	double d[50] = {0.87755042,  0.90101722,  0.88297422,  0.90225072,  0.91185969,        0.88479424,  0.64257305,  0.23650566,  0.17532272,  0.24785572,        0.77647345,  0.12143413,  0.04994399,  0.19918067,  0.09625039,
+        0.14283554,  0.30052487,  0.8937437 ,  0.90544194,  0.87350816,        0.62315481,  0.48258872,  0.77018322,  0.42989469,  0.69183523,        0.35556625,  0.90622313,  0.12529433,  0.74309849,  0.8860914 ,        0.8335358 ,  0.56208782,  0.45287218,  0.79373139,  0.42808399,        0.86643919,  0.70459052,  0.09161765,  0.53514735,  0.06578612,        0.09050594,  0.14923124,  0.8579178 ,  0.884698  ,  0.8745358 ,        0.89191605,  0.57743238,  0.80656044,  0.9069933 ,  0.65817311};
+        
+	double sum = 0;
+	
+	sum = sum_log_likelihood(50,d,0.,1.,.05,3.,8.,.1,1e-6);
+	
+	printf("%f\n",sum);       
+}
+*/

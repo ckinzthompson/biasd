@@ -12,10 +12,15 @@ double integrand(double f, void * param_pointer) {
 	
 	y = 2.*p.tau*sqrt(p.k1*p.k2*f*(1.-f));
 	
-	out = exp(-(p.k1*f+p.k2*(1.-f))*p.tau)
-		* exp(-.5*pow((p.d - (p.ep1*f + p.ep2*(1.-f)))/p.sigma,2.))
-		* (gsl_sf_bessel_I0(y) + (p.k2*f+p.k1*(1.-f))*p.tau * gsl_sf_bessel_I1(y)/y);
-		
+	if (f == 0.){
+		out = exp(-p.k2*p.tau) * (1.+p.k1*p.tau / 2.) * exp(-.5 * pow((p.d-p.ep2)/p.sigma,2.)); // Limits
+	} else if (f == 1.){
+		out = exp(-p.k1 * p.tau) * (1.+ p.k2 * p.tau / 2.) * exp(-.5 * pow((p.d - p.ep1)/p.sigma,2.)); //Limits
+	} else {
+		out = exp(-(p.k1*f+p.k2*(1.-f))*p.tau)
+			* exp(-.5*pow((p.d - (p.ep1*f + p.ep2*(1.-f)))/p.sigma,2.))
+			* (gsl_sf_bessel_I0(y) + (p.k2*f+p.k1*(1.-f))*p.tau * gsl_sf_bessel_I1(y)/y);
+	}
 	return out;
 }
 
@@ -37,10 +42,7 @@ double point_ll(struct integration_params * p) {
 	return lli;
 }
 
-double * log_likelihood(int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon) {
-	
-	double *out;
-	out = (double *) malloc(N*sizeof(double));
+void log_likelihood(int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * out) {
 	
 	int i;
 	double result, error;
@@ -73,22 +75,21 @@ double * log_likelihood(int N, double *d, double ep1, double ep2, double sigma, 
 	}
 	
 	gsl_integration_workspace_free (w);
-	return out;
 }
 
-/*
-double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau) {
+
+double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon) {
 	
 	int i = 0;
 	double sum = 0.;
-	double *ll;
+	double * ll;
 	ll = (double *) malloc(N*sizeof(double));
 	
-	log_likelihood(N,d,ll,ep1,ep2,sigma,k1,k2,tau);
+	log_likelihood(N,d,ep1,ep2,sigma,k1,k2,tau,epsilon,ll);
 	for (i=0;i<N;i++) {
 		sum += ll[i];
 	}
 	free(ll);
 	return sum;
 }
-*/
+
