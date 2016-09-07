@@ -124,7 +124,7 @@ if _flag_cuda:
 #		llp = _lib_cuda.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		return _np.ctypeslib.as_array(llp,shape=data.shape)
 	
-	def _nosum_log_likelihood_cuda(theta,data,tau,epsilon=1e-10):
+	def _nosum_log_likelihood_cuda(theta,data,tau,epsilon=1e-6):
 	
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
