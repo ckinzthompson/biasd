@@ -110,7 +110,7 @@ except:
 
 
 if _flag_cuda:
-	def _log_likelihood_cuda(theta,data,tau,epsilon=1e-6):
+	def _log_likelihood_cuda(theta,data,tau,epsilon=1e-10):
 		"""
 		Calculate the log of the BIASD likelihood function at theta using the data data given the time period of the data as tau.
 		
@@ -124,7 +124,7 @@ if _flag_cuda:
 #		llp = _lib_cuda.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		return _np.ctypeslib.as_array(llp,shape=data.shape)
 	
-	def _nosum_log_likelihood_cuda(theta,data,tau,epsilon=1e-6):
+	def _nosum_log_likelihood_cuda(theta,data,tau,epsilon=1e-10):
 	
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
@@ -142,7 +142,7 @@ if _flag_cuda:
 	
 
 if _flag_c:
-	def _log_likelihood_c(theta,data,tau,epsilon=1e-6):
+	def _log_likelihood_c(theta,data,tau,epsilon=1e-10):
 		"""
 		Calculate the individual values of the log of the BIASD likelihood function at :math:`\\Theta`
 		
@@ -162,7 +162,7 @@ if _flag_c:
 #		llp = _lib_c.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		return _np.ctypeslib.as_array(llp,shape=data.shape)
 
-	def _nosum_log_likelihood_c(theta,data,tau,epsilon=1e-6):
+	def _nosum_log_likelihood_c(theta,data,tau,epsilon=1e-10):
 	
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
