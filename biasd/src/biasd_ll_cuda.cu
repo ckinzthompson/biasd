@@ -50,9 +50,7 @@ __device__ double adaptive_quad(int idx, double * d, double ep1, double ep2, dou
 	ay = integrand(ax,d[idx],ep1,ep2,sigma,k1,k2,tau);
 	by[0] = integrand(bx[0],d[idx],ep1,ep2,sigma,k1,k2,tau);
 	
-	int iters = 0;
-	while (i >= 0 && iters < maxiter) {
-		iters++;
+	while (i >= 0) {
 		h = (bx[i] - ax)/2.;
 		mx = ax + h;
 		my = integrand(mx,d[idx],ep1,ep2,sigma,k1,k2,tau); // Calc f(mid-point)
@@ -68,10 +66,15 @@ __device__ double adaptive_quad(int idx, double * d, double ep1, double ep2, dou
 			ax = bx[i];
 			ay = by[i];
 			i -= 1;
-		} else { // Failure, so add midpoint to list
+		} else { // Failure, so add midpoint to list if
 			i += 1;
-			bx[i] = mx;
-			by[i] = my;
+			if (i < maxiter - 1) { // there is space left in buffer
+				bx[i] = mx;
+				by[i] = my;
+			} else { // there's no space in the buffer
+				bx[maxiter - 1] = mx;
+				by[maxiter - 1] = my;
+			}
 		}
 	}
 	return ival;
@@ -141,6 +144,21 @@ double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma
 }
 
 
+// This is for testing... the value is -45.312935111611729
+// Compile with nvcc ./biasd_ll_cuda.cu -o test
+// Run with $ ./test
+
+// Python code to double check is:
+/*
+import biasd as b
+b.likelihood.use_python_ll()
+d = np.array((0.87755042,  0.90101722,  0.88297422,  0.90225072,  0.91185969,        0.88479424,  0.64257305,  0.23650566,  0.17532272,  0.24785572,        0.77647345,  0.12143413,  0.04994399,  0.19918067,  0.09625039,
+        0.14283554,  0.30052487,  0.8937437 ,  0.90544194,  0.87350816,        0.62315481,  0.48258872,  0.77018322,  0.42989469,  0.69183523,        0.35556625,  0.90622313,  0.12529433,  0.74309849,  0.8860914 ,        0.8335358 ,  0.56208782,  0.45287218,  0.79373139,  0.42808399,        0.86643919,  0.70459052,  0.09161765,  0.53514735,  0.06578612,        0.09050594,  0.14923124,  0.8579178 ,  0.884698  ,  0.8745358 ,        0.89191605,  0.57743238,  0.80656044,  0.9069933 ,  0.65817311))
+theta = np.array((0.,1.,.05,3.,8.))
+tau = 0.1
+print b.likelihood.log_likelihood(theta,d,tau)
+*/
+
 /*
 int main(){
 	double d[50] = {0.87755042,  0.90101722,  0.88297422,  0.90225072,  0.91185969,        0.88479424,  0.64257305,  0.23650566,  0.17532272,  0.24785572,        0.77647345,  0.12143413,  0.04994399,  0.19918067,  0.09625039,
@@ -148,9 +166,12 @@ int main(){
         
 	double sum = 0;
 	
-	sum = sum_log_likelihood(50,d,0.,1.,.05,3.,8.,.1,1e-6);
-	
-	printf("%f\n",sum);       
+	sum = sum_log_likelihood(50,d,0.,1.,.05,3.,8.,.1,1e-20);
+	double truth = -45.312935111611729;
+
+	printf("Real : %.10f\n",truth);
+	printf("Calcd: %.10f\n",sum);
+	printf("%%Diff: %.10f\n",abs((truth-sum)/truth)*100.);
 }
 */
 
