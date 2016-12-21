@@ -678,12 +678,12 @@ def uninformative_prior(data_range,timescale):
 		* a flat `biasd.distributions.parameter_collection`
 	"""
 	lower,upper = data_range
-	e1 = bd.uniform(lower,(upper-lower)/2.+lower)
-	e2 = bd.uniform((upper-lower)/2.+lower,upper)
-	sigma = bd.gamma(1,1./((upper-lower)/10.))
-	k1 = bd.gamma(1.,timescale)
-	k2 = bd.gamma(1.,timescale)
-	return bd.parameter_collection(e1,e2,sigma,k1,k2)
+	e1 = uniform(lower,(upper-lower)/2.+lower)
+	e2 = uniform((upper-lower)/2.+lower,upper)
+	sigma = gamma(1,1./((upper-lower)/10.))
+	k1 = gamma(1.,timescale)
+	k2 = gamma(1.,timescale)
+	return parameter_collection(e1,e2,sigma,k1,k2)
 	
 #### Guess Priors
 
