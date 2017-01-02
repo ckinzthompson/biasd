@@ -220,12 +220,12 @@ class dirichlet(_distribution):
 		a = parameters
 		return _np.random.dirichlet(a,size=size)
 		
-#	@staticmethod
-#	def _moment2param_fxn(first,second):
-#		variance = second - first**2.
-#		alpha = first*(first*(1.-first)/variance-1.)
-#		beta = (1.-first)*(first*(1.-first)/variance-1.)
-#		return _np.array([alpha,beta])
+	# @staticmethod
+	# def _moment2param_fxn(first,second):
+	# 	variance = second - first**2.
+	# 	alpha = first*(first*(1.-first)/variance-1.)
+	# 	beta = (1.-first)*(first*(1.-first)/variance-1.)
+	# 	return _np.array([alpha,beta])
 	
 	@staticmethod
 	def _get_xlim(parameters):
@@ -238,6 +238,46 @@ class dirichlet(_distribution):
 		l,h = 0.,1.#beta._get_xlim(parameters)
 		return _np.linspace(l,h,int(n))
 
+class empty(_distribution):
+	def __init__(self,a=None):
+		self.name = 'empty'
+		self.parameters = _np.array([a])
+		self.support_parameters = _np.array([[None,None]])
+		self.support = _np.array([None,None])
+		self.label_parameters = ["None"]
+		self.okay = True
+	
+	def check_params(self):
+		self.okay = True
+		
+	@staticmethod
+	def new(parameters):
+		return empty()
+	@staticmethod
+	def _mean(parameters):
+		return 0.
+	@staticmethod
+	def _variance(parameters):
+		return 0.
+	@staticmethod
+	def _mode(parameters):
+		return 0.
+	@staticmethod
+	def _lnpdf_fxn(x,parameters,support):
+		return x*0.
+	@staticmethod
+	def _rvs_fxn(size,parameters):
+		return _np.random.rand(size)
+	@staticmethod
+	def _moment2param_fxn(first,second):
+		return _np.array([0.,0.])
+	@staticmethod
+	def _get_xlim(parameters):
+		return _np.array((0.,1.))
+	@staticmethod
+	def _get_ranged_x(parameters,n):
+		return _np.linspace(0.,1.,int(n))
+		
 class gamma(_distribution):
 	"""
 	The gamma distribution is often used for compounded times.
@@ -459,6 +499,7 @@ class uniform(_distribution):
 	def _get_ranged_x(parameters,n):
 		return _np.linspace(parameters[0],parameters[1],int(n))
 
+
 def convert_distribution(this,to_this_type_string):
 	""" 
 	Converts `this` distribution to `to_this_type_string` distribution
@@ -497,7 +538,6 @@ def convert_distribution(this,to_this_type_string):
 	
 	return to_this_type(*params)
 	
-
 class parameter_collection(object):
 	"""
 	A collection of distribution functions that are used for the BIASD two-state model as parameters for Bayesian inference. parameter_collection's are used as priors for BIASD.
@@ -556,17 +596,39 @@ class parameter_collection(object):
 	def variance(self):
 		return _np.array((self.e1.variance(),self.e2.variance(),self.sigma.variance(),self.k1.variance(),self.k2.variance()))
 		
-	def format_for_smd(self):
-		names = [d.name for d in [self.e1,self.e2,self.sigma,self.k1,self.k2]]
-		params = [d.parameters.tolist() for d in [self.e1,self.e2,self.sigma,self.k1,self.k2]]
-		return names,params
-
-	@staticmethod
-	def new_from_smd(names,parameters):
-		dist_dict = {'beta':beta, 'gamma':gamma, 'normal':normal, 'uniform':uniform}
-		p = [dist_dict[name](*params) for name,params in zip(names,parameters)]
-		return parameter_collection(*p)
+	# def format_for_smd(self):
+	# 	names = [d.name for d in [self.e1,self.e2,self.sigma,self.k1,self.k2]]
+	# 	params = [d.parameters.tolist() for d in [self.e1,self.e2,self.sigma,self.k1,self.k2]]
+	# 	return names,params
+	#
+	# @staticmethod
+	# def new_from_smd(names,parameters):
+	# 	dist_dict = {'beta':beta, 'dirichlet':dirichlet, 'empty':empty,'gamma':gamma, 'normal':normal, 'uniform':uniform}
+	# 	p = [dist_dict[name](*params) for name,params in zip(names,parameters)]
+	# 	return parameter_collection(*p)
 		
+class empty_parameter_collection(parameter_collection):
+	'''A fake collection of distribution functions for facilitating use of BIASD without any priors.'''
+	def __init__(self):
+		super(empty_parameter_collection,self).__init__(*[empty() for _ in range(5)])
+		self.okay = True
+		
+	# Overload to separate e1 and e2 s.t. e1 < e2....
+	def rvs(self,n=1):
+		# if self.okay and isinstance(n,int):
+			rout = _np.zeros((5,n))
+			rout[0] = self.e1.rvs(n) - 1.
+			rout[1] = self.e2.rvs(n) + 1.
+			rout[2] = self.sigma.rvs(n)
+			rout[3] = self.k1.rvs(n)
+			rout[4] = self.k2.rvs(n)
+			return rout
+	def lnpdf(self,theta):
+		if theta.ndim == 1:
+			return 0.
+		else:
+			return np.zeros((theta.shape[1]))
+
 class viewer(object):
 	"""
 	Allows you to view BIASD parameter probability distributions
@@ -684,7 +746,7 @@ def uninformative_prior(data_range,timescale):
 	k1 = gamma(1.,timescale)
 	k2 = gamma(1.,timescale)
 	return parameter_collection(e1,e2,sigma,k1,k2)
-	
+
 #### Guess Priors
 
 def _virtual_min(k1,k2,tau_c):
@@ -711,6 +773,76 @@ def _virtual_min(k1,k2,tau_c):
 	else:
 		return None
 
+
+class _results_kmeans(object):
+	def __init__(self,nstates,pi,r,mu,var):
+		self.nstates = nstates
+		self.pi = pi
+		self.r = r
+		self.mu = mu
+		self.var = var
+	
+	def sort(self):
+		# xsort = self.pi.argsort()[::-1]
+		xsort = _np.argsort(self.mu,0)
+		self.pi = self.pi[xsort]
+		self.r = self.r[:,xsort]
+		self.var = self.var[xsort]
+		self.mu = self.mu[xsort]
+		
+
+def kmeans(x,nstates,nrestarts=1):
+	"""
+	Multidimensional, K-means Clustering. A perk... in case you need it.
+	
+	Input:
+		* `x` is an (N,d) `np.array`, where N is the number of data points and d is the dimensionality of the data
+		* `nstates` is the K in K-means
+		* `nrestarts` is the number of times to restart. The minimal variance results are provided
+
+	Returns:
+		* a `_results_kmeans` object that contains
+			- `pi` - k - the probability of each state
+			- `r` - Nk -  the responsibilities of each data point
+			- `mu` - kd - the means
+			- `var_k` - kdd - the covariances
+	"""
+
+	if x.ndim == 1:
+		x = x[:,None]
+
+	jbest = _np.inf
+	mbest = None
+	rbest = None
+	for nr in range(nrestarts):
+		mu_k = x[_np.random.randint(0,x.shape[0],size=nstates)]
+		j_last = _np.inf
+		for i in range(500):
+			dist = _np.sqrt(_np.sum(_np.square(x[:,None,:] - mu_k[None,...]),axis=2))
+			r_nk = (dist == dist.min(1)[:,None]).astype('i')
+			j = (r_nk.astype('f') * dist).sum()
+			mu_k = (r_nk[:,:,None].astype('f')*x[:,None,:]).sum(0)/(r_nk.astype('f').sum(0)[:,None]+1e-16)
+			if _np.abs(j - j_last)/j <= 1e-100:
+				if j < jbest:
+					jbest = j
+					mbest = mu_k
+					rbest = r_nk
+				break
+			else:
+				j_last = j
+	mu_k = mbest
+	r_nk = rbest
+	sig_k = _np.empty((nstates,x.shape[1],x.shape[1]))
+	for k in range(nstates):
+		sig_k[k] = _np.cov(x[r_nk[:,k]==1.].T)
+	pi_k = (r_nk.sum(0)).astype('f')
+	pi_k /= pi_k.sum()
+
+	#pi_k is fraction, r_nk is responsibilities, mu_k is means, sig_k is variances
+	results = _results_kmeans(nstates,pi_k,r_nk,mu_k,sig_k**2.)
+	results.sort()
+	return results
+
 def guess_prior(y,tau=1.):
 	"""
 	Generate a guess for the prior probability distribution for BIASD. This approach uses a Gaussian mixture model to learn both states and the noise, then it idealizes the trace, and calculates the transition probabilities. Rate constants are then calculated, and an attempt is made to correct these with virtual states.
@@ -722,14 +854,13 @@ def guess_prior(y,tau=1.):
 	Returns:
 		* a guessed `biasd.distributions.parameter_collection`
 	"""
-
-	from .utils.clustering import GMM_EM_1D
 	
-	theta = GMM_EM_1D(y,2)
+
+	theta = kmeans(y,2)
 
 	# Signal
 	m1,m2 = theta.mu
-	s1 = _np.min(theta.var**.5)
+	s1 = _np.max(theta.var**.5)
 	s2 = s1
 
 	# Noise
@@ -755,10 +886,12 @@ def guess_prior(y,tau=1.):
 	b1 = 2./k12
 	a2 = 2.
 	b2 = 2./k21
-	
+
 	e1 = normal(m1,s1)
 	e2 = normal(m2,s2)
 	sigma = gamma(a,b)
 	k1 = gamma(a1,b1)
 	k2 = gamma(a2,b2)
 	return parameter_collection(e1,e2,sigma,k1,k2)
+
+

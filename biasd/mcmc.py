@@ -170,3 +170,26 @@ def create_posterior_collection(samples,priors):
 	k2 = priors.k2.new(_np.around(priors.k2._moment2param_fxn(first[4], second[4]),4))
 	
 	return parameter_collection(e1,e2,sigma,k1,k2)
+
+class _mcmc_result(object):
+	"""
+	Holds the results of a MCMC sampler of the posterior probability distribution from BIASD
+	Input:
+		* `mcmc_input` is either an `emcee.sampler.Sampler` or child, or a list of `[acor, chain, lnprobability, iterations, naccepted, nwalkers, dim]`
+	"""
+	def __init__(self, mcmc_input):
+		try:
+			if mcmc_input.__dict__.has_key('lnprobfn'):
+				if not mcmc_input.__dict__.has_key('acor'):
+					mcmc_input.get_autocorr_time()
+				self.acor = mcmc_input.acor
+				self.chain = mcmc_input.chain
+				self.lnprobability = mcmc_input.lnprobability
+				self.iterations = mcmc_input.iterations
+				self.naccepted = mcmc_input.naccepted
+				self.nwalkers = mcmc_input.k
+				self.dim = mcmc_input.dim
+			else:
+				self.acor, self.chain, self.lnprobability, self.iterations, self.naccepted,self.nwalkers,self.dim = mcmc_input
+		except:
+			raise Exception("Couldn't initialize _mcmc_result")

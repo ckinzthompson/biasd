@@ -137,9 +137,10 @@ if _flag_cuda:
 	def use_cuda_ll():
 		global log_likelihood
 		global ll_version
+		global nosum_log_likelihood
 		ll_version = "CUDA"
 		log_likelihood = _log_likelihood_cuda
-	
+		nosum_log_likelihood = _nosum_log_likelihood_cuda
 
 if _flag_c:
 	def _log_likelihood_c(theta,data,tau,epsilon=1e-10):
@@ -175,9 +176,10 @@ if _flag_c:
 	def use_c_ll():
 		global log_likelihood
 		global ll_version
+		global nosum_log_likelihood
 		ll_version = "C"
 		log_likelihood = _log_likelihood_c
-	
+		nosum_log_likelihood = _nosum_log_likelihood_c
 
 from scipy.integrate import quad as _quad
 from scipy import special as _special
@@ -208,7 +210,7 @@ _python_integral = _np.vectorize(_python_integral)
 def _p_gauss(x,mu,sigma):
 	return 1./_np.sqrt(2.*_np.pi*sigma**2.) * _np.exp(-.5*((x-mu)/sigma)**2.)
 
-def _log_likelihood_python(theta,data,tau):
+def _nosum_log_likelihood_python(theta,data,tau):
 	"""
 	Calculate the log of the BIASD likelihood function at theta using the data data given the time period of the data as tau.
 
@@ -225,15 +227,18 @@ def _log_likelihood_python(theta,data,tau):
 	out += p2*peak2*_np.exp(-k2*tau)
 
 	#Don't use -infinity
-	return _np.log(out).sum()
+	return _np.log(out)
+
+def _log_likelihood_python(theta,data,tau):
+	return _np.sum(_nosum_log_likelihood_python(theta,data,tau))
 
 def use_python_ll():
 	global log_likelihood
-	global sum_log_likelihood
+	global nosum_log_likelihood
 	global ll_version
 	ll_version = "Python"
 	log_likelihood = _log_likelihood_python
-	
+	nosum_log_likelihood = _nosum_log_likelihood_python
 	
 def test_speed(n,dpoints = 5000):
 	"""
@@ -261,6 +266,7 @@ def test_speed(n,dpoints = 5000):
 	
 ### Default to Python implementation
 log_likelihood = _log_likelihood_python
+nosum_log_likelihood = _nosum_log_likelihood_python
 if _flag_cuda:
 	print "Using CUDA log-likelihood"
 	use_cuda_ll()
@@ -348,3 +354,51 @@ def log_posterior(theta,data,prior_dists,tau):
 		return -_np.inf
 	else:
 		return y
+
+
+def fit_histogram(data,tau,guess=None):
+	"""
+	Fits a histogram of to the BIASD likelihood function.
+	
+	Input:
+	
+		* `data` is a `np.ndarray`
+		* `tau` is the measurement period
+		* `guess` is an initial guess. This can be provided as:
+			- a `biasd.distributions.parameter_collection`, it will use the mean
+			- a `np.ndarray`
+			- `Nothing...`, in which case it will try to guess
+	
+	Returns:
+		* the best-fit parameters, and the covariances
+	"""
+	from scipy.optimize import curve_fit
+	from .distributions import guess_prior
+	
+	if isinstance(guess,_np.ndarray):
+		guess = guess
+	else:
+		guess = guess_prior(data,tau=tau).mean()
+		
+	hy,hx = _np.histogram(data,bins=int(data.size**.5),normed=True)
+	hx = .5*(hx[1:] + hx[:-1])
+	
+	fitted_params,covars = curve_fit(lambda x,e1,e2,sig,k1,k2: _np.exp(nosum_log_likelihood(_np.array((e1,e2,sig,k1,k2)),x,tau)),hx,hy,p0=guess)
+	return fitted_params,covars
+
+def predictive_from_samples(x,samples,tau):
+	'''
+	Returns the posterior predictive distribution calculated from samples -- the average value of the likelihood function evaluated at `x` marginalized from the samples of BIASD parameters given in `samples`.
+	
+	Samples can be generated from a posterior probability distribution. For instance, after a Laplace approximation, just draw random variates from the multivariate-normal distribution -- i.e., given results in `r`, try `samples = np.random.multivariate_normal(r.mu,r.covar,100)`. Alternatively, some posteriors might already have samples (e.g., from MCMC).
+	
+	Input:
+		* `x` a `np.ndarry` where to evaluate the likelihood at (e.g., [-.2 ... 1.2] for FRET)
+		* `samples` is a (N,5) `np.ndarray` containing `N` samples of BIASD parameters (e.g. \Theta)
+		* `tau` the time period with which to evaluate the likelihood function 
+	Returns:
+		* `y` a `np.ndarray` the same size as `x` containing the marginalized likelihood function evaluated at x
+	'''
+	n = samples.shape[0]
+	y = reduce(lambda x,y: x+y, [_np.exp(nosum_log_likelihood(samples[i],x,tau)) for i in xrange(n)])/n
+	return y

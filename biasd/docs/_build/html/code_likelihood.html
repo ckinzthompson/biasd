@@ -104,7 +104,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="code_smd.html">SMD</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd">Work with SMD data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#work-with-smd-data">Work with SMD data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.add">Add BIASD results to an SMD object</a></li>
 <li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.read">Read BIASD results from an SMD object into a useful format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="code_smd.html#examples">Examples</a></li>
@@ -199,19 +199,20 @@
 <span id="inference-related-functions"></span><h2>Inference-related functions<a class="headerlink" href="#module-likelihood" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="likelihood.log_likelihood">
-<code class="descclassname">likelihood.</code><code class="descname">log_likelihood</code><span class="sig-paren">(</span><em>theta</em>, <em>data</em>, <em>tau</em><span class="sig-paren">)</span><a class="headerlink" href="#likelihood.log_likelihood" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the log of the BIASD likelihood function at <span class="math">\(\Theta\)</span></p>
+<code class="descclassname">likelihood.</code><code class="descname">log_likelihood</code><span class="sig-paren">(</span><em>theta</em>, <em>data</em>, <em>tau</em>, <em>epsilon=1e-10</em><span class="sig-paren">)</span><a class="headerlink" href="#likelihood.log_likelihood" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the individual values of the log of the BIASD likelihood function at <span class="math">\(\Theta\)</span></p>
 <dl class="docutils">
 <dt>Input:</dt>
 <dd><ul class="first last simple">
 <li><cite>theta</cite> is a <cite>np.ndarray</cite> of the parameters to evaluate</li>
 <li><cite>data is a 1D `np.ndarray</cite> of the time series to analyze</li>
 <li><cite>tau</cite> is the measurement period of each data point in <cite>data</cite></li>
+<li><cite>epsilon</cite> is the precision for the numerical integration</li>
 </ul>
 </dd>
 <dt>Returns:</dt>
 <dd><ul class="first last simple">
-<li>the sum of the log-likelihood for each data point in <cite>data</cite></li>
+<li>A 1D <cite>np.ndarray</cite> of the log-likelihood for each data point in <cite>data</cite></li>
 </ul>
 </dd>
 </dl>

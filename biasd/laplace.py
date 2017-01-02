@@ -83,7 +83,7 @@ def calc_hessian(fxn,x,eps = np.sqrt(np.finfo(np.float64).eps)):
 	
 class _laplace_posterior:
 	"""
-	Holds the results of a laplace approximation of the posterior probability distribution from BIASD
+	Holds the results of a Laplace approximation of the posterior probability distribution from BIASD
 	"""
 	def __init__(self,mean,covar,prior=None):
 		self.mu = mean
@@ -96,6 +96,9 @@ class _laplace_posterior:
 		self.posterior.sigma = convert_distribution(self.posterior.sigma,prior.sigma.name)
 		self.posterior.k1 = convert_distribution(self.posterior.k1,prior.k1.name)
 		self.posterior.k2 = convert_distribution(self.posterior.k2,prior.k2.name)
+	
+	def samples(self,n):
+		return np.random.multivariate_normal(self.mu,self.covar,n)
 		
 		
 def find_map(data,prior,tau,meth='nelder-mead',xx=None,nrestarts=2):

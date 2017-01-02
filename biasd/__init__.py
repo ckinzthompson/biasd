@@ -5,8 +5,7 @@ import likelihood
 import laplace
 import distributions
 import mcmc
-import utils
 import smd
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
