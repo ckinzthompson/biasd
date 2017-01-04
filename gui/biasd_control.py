@@ -146,15 +146,19 @@ class biasd_control(QWidget):
 		qs = QShortcut(self)
 		qs.setKey("Ctrl+Q")
 		qs.activated.connect(self.parent().close)
+		qs = QShortcut(self)
+		qs.setKey("o")
+		qs.activated.connect(self.load_smd)
+		qs = QShortcut(self)
+		qs.setKey("p")
+		qs.activated.connect(self.launch_priors)
+		qs = QShortcut(self)
+		qs.setKey("t")
+		qs.activated.connect(self.launch_traces)
 	
 	
 	def launch_traces(self):
 		if self.filename != "":
-			# try:
-			# 	if not self.ui_traces.isVisible():
-			# 		self.ui_traces.setVisible(True)
-			# 	self.ui_traces.raise_()
-			# except:
 			self.ui_traces = ui_traces(self)
 		
 	
