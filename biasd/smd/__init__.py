@@ -41,6 +41,5 @@ try:
 	from .smd_hdf5 import new, load, save, loadtxt
 	from . import add
 	from . import read
-	from .viewer import smd_view as viewer
 except:
 	print "SMD failed to load - Make sure h5py is installed"
