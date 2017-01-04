@@ -18,7 +18,7 @@ from preferences import ui_preferences
 from traces import ui_traces, ui_set_tau
 
 # BIASD Path
-biasd_path = '/Users/colin/Desktop/20161220 biasd_release/biasd'
+biasd_path = '../'
 sys.path.append(biasd_path)
 import biasd as b
 
@@ -70,7 +70,7 @@ class biasd_control(QWidget):
 		bprefs = QPushButton('Preferences')
 		btest = QPushButton('test')
 		self.btraces = QPushButton('Traces')
-		bset_tau = QPushButton(u'&Set τ')
+#		bset_tau = QPushButton(u'&Set τ')
 
 		# Overall Layout
 		vbox = QVBoxLayout()
@@ -84,7 +84,7 @@ class biasd_control(QWidget):
 		vbox.addWidget(qtemp)
 		
 		# Middle Buttons
-		vbox.addWidget(bset_tau)
+#		vbox.addWidget(bset_tau)
 		vbox.addWidget(self.btraces)
 		vbox.addWidget(btest)
 		vbox.addWidget(self.bprior)
@@ -107,7 +107,7 @@ class biasd_control(QWidget):
 		bprefs.clicked.connect(self.launch_preferences)
 		breset.clicked.connect(self.reset)
 		self.btraces.clicked.connect(self.launch_traces)
-		bset_tau.clicked.connect(self.launch_set_tau)
+#		bset_tau.clicked.connect(self.launch_set_tau)
 		
 		self.bprior.setEnabled(False)
 		self.btraces.setEnabled(False)
@@ -206,13 +206,13 @@ class biasd_control(QWidget):
 			self.ui_prefs = ui_preferences(self)
 			self.ui_prefs.show()
 	
-	def launch_set_tau(self):
-		try:
-			self.ui_tau.close()
-		except:
-			pass
-		self.ui_tau = ui_set_tau(self)
-		self.ui_tau.setParent(self)
+#	def launch_set_tau(self):
+#		try:
+#			self.ui_tau.close()
+#		except:
+#			pass
+#		self.ui_tau = ui_set_tau(self)
+#		self.ui_tau.setParent(self)
 		
 	
 	def test(self):
@@ -241,7 +241,7 @@ class gui(QMainWindow):
 		
 		self.setWindowTitle("BIASD - 0.1.1")
 		self.setWindowIcon(QIcon('biasd_icon-01.png'))
-		# self.setGeometry(50,50,250,150)
+		self.setGeometry(250,250,250,150)
 		self.show()
 	
 	def closeEvent(self,event):

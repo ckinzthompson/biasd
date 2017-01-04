@@ -11,10 +11,10 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 
 import sys
-biasd_path = '/Users/colin/Desktop/20161220 biasd_release/biasd'
+#biasd_path = '/Users/colin/Desktop/20161220 biasd_release/biasd'
+biasd_path = '../'
 sys.path.append(biasd_path)
 import biasd as b
-
 
 class prefs(QWidget):
 	def __init__(self,parent):
@@ -148,16 +148,19 @@ class prefs(QWidget):
 			QMessageBox.critical(None,"Could Not Save","Could not save file: %s\n."%(oname[0]))
 	
 	def speed_tester(self):
-		sb = self.parent().parent().parent().statusBar()
-		p = self.parent().parent().prefs
-		sb.showMessage('Testing Speed...')
-		time = b.likelihood.test_speed(p.speed_n,p.speed_d)
-		sout = str(time)+u' μsec/datapoint'
-		self.lavg.setText(sout)
-		self.parent().parent().log.new('Speed Test - '
-			+ b.likelihood.ll_version 
-			+ '\n%d, %d, %s'%(p.speed_n, p.speed_d,sout))
-		sb.showMessage('Test Complete')
+		try:
+			sb = self.parent().parent().parent().statusBar()
+			p = self.parent().parent().prefs
+			sb.showMessage('Testing Speed...')
+			time = b.likelihood.test_speed(p.speed_n,p.speed_d)
+			sout = str(time)+u' μsec/datapoint'
+			self.lavg.setText(sout)
+			self.parent().parent().log.new('Speed Test - '
+				+ b.likelihood.ll_version 
+				+ '\n%d, %d, %s'%(p.speed_n, p.speed_d,sout))
+			sb.showMessage('Test Complete')
+		except:
+			pass
 	
 	def test_likelihood(self):
 		## Be careful so that you don't lock up people's computers for too long
@@ -172,14 +175,13 @@ class prefs(QWidget):
 		proceed = True
 		if et > 10.:
 			really = QMessageBox.question(self,"Long Time",
-			"This might take a long time (~ %.0f sec). "+
-			"Are you sure you want to perform this test?"%(et))
+			"This might take a long time (~ %.0f sec). "%(et)+
+			"Are you sure you want to perform this test?")
 			if not really == QMessageBox.Yes:
 				proceed = False
 		if proceed:
 			self.speed_tester()
-			
-	
+		
 	def change_ll(self,enable):
 		try:
 			if self.rbs[0].isChecked():
@@ -192,8 +194,8 @@ class prefs(QWidget):
 				b.likelihood.use_cuda_ll()
 		except:
 			QMessageBox.critical(self,"Can't Find %s Library"%(failure),
-				"Can't find or load the %s library." +
-				"Check that it is compiled."%(failure))
+				"Can't find or load the %s library."%(failure) +
+				"Check that it is compiled.")
 		for i,t in zip(range(3),['Python','C','CUDA']):
 			if b.likelihood.ll_version == t:
 				self.rbs[i].setChecked(True)

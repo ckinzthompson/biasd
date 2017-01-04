@@ -15,7 +15,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvas
 import matplotlib.pyplot as plt
 
 import sys
-biasd_path = '/Users/colin/Desktop/20161220 biasd_release/biasd'
+#biasd_path = '/Users/colin/Desktop/20161220 biasd_release/biasd'
+biasd_path = '../'
 sys.path.append(biasd_path)
 import biasd as b
 
@@ -67,11 +68,12 @@ class ui_set_tau(QMainWindow):
 		self.initialize()
 
 	def initialize(self):
-		p = self.parent().prefs
+		p = self.parent().parent().parent().prefs
 		tau = p.tau
 		
 		self.statusBar()
-		qwtemp = QWidget()
+		
+		qw = QWidget()
 		hbox = QHBoxLayout()
 		
 		ltau = QLabel(u"τ (s):")
@@ -85,8 +87,8 @@ class ui_set_tau(QMainWindow):
 		bset.clicked.connect(self.update_tau)
 		
 		[hbox.addWidget(bb) for bb in [ltau,self.le_tau,bset]]
-		qwtemp.setLayout(hbox)
-		self.setCentralWidget(qwtemp)
+		qw.setLayout(hbox)
+		self.setCentralWidget(qw)
 		
 		self.setWindowTitle('Set tau')
 		self.show()
@@ -96,15 +98,17 @@ class ui_set_tau(QMainWindow):
 			self.close()
 	
 	def closeEvent(self,event):
-		self.update_tau()
+		self.parent().setFocus()
+		event.accept()
+
 	
 	def update_tau(self):
 		try:
-			p = self.parent().prefs
+			p = self.parent().parent().parent().prefs
 			new_tau = float(self.le_tau.text())
 			if p.tau != new_tau:
 				p.tau = new_tau
-				self.parent().log.new('Updated tau = '+str(p.tau))
+				self.parent().parent().parent().log.new('Updated tau = '+str(p.tau))
 				self.close()
 			else:
 				self.statusBar().showMessage("There's no change...")
@@ -152,6 +156,10 @@ class traces(QWidget):
 		qwtemp.setLayout(hbox2)
 		vbox.addWidget(qwtemp)
 		
+		bset_tau = QPushButton(u'&Set τ')
+		bset_tau.clicked.connect(self.launch_set_tau)
+		vbox.addWidget(bset_tau)
+		
 		vbox.addStretch(1)
 		
 		vbox.addWidget(bappend)
@@ -163,11 +171,20 @@ class traces(QWidget):
 		self.fig = trace_plotter(self)
 		hbox.addWidget(self.fig)
 		self.stretcher = hbox.addStretch(1)
-
+		
+		self.buttons = [badd,btranspose,bprev,bnext,bappend,bset_tau]
+		
 		self.setLayout(hbox)
 		self.setWindowTitle('Add Traces')
 		self.setFocus()
 		self.show()
+	
+	def launch_set_tau(self):
+		try:
+			self.ui_tau.close()
+		except:
+			pass
+		self.ui_tau = ui_set_tau(self)
 	
 	def transpose_traces(self):
 		try:
@@ -273,6 +290,10 @@ class traces(QWidget):
 	
 	def keyPressEvent(self,event):
 		if event.key() == Qt.Key_Escape:
+			for b in self.buttons:
+				if b.hasFocus():
+					self.setFocus()
+					return
 			self.close()
 			self.parent().close()
 		elif event.key() == Qt.Key_Right:
