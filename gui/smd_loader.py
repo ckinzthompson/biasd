@@ -2,46 +2,18 @@
 GUI written in QT5 to explore HDF5 SMD Files
 '''
 from h5py import File
-from PyQt5.QtWidgets import QApplication, QColumnView, QWidget, QVBoxLayout, QHBoxLayout, QPushButton
+from PyQt5.QtWidgets import QApplication, QColumnView, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow,QMessageBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtCore import Qt
 
-def apply_dark_theme(qApp):
-	# Adapted from https://gist.github.com/lschmierer/443b8e21ad93e2a2d7eb
-	from PyQt5.QtGui import QPalette,QColor
-	from PyQt5.QtCore import Qt
 
-	dark_palette = QPalette()
-
-	dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
-	dark_palette.setColor(QPalette.WindowText, Qt.white)
-	dark_palette.setColor(QPalette.Base, QColor(25, 25, 25))
-	dark_palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
-	dark_palette.setColor(QPalette.ToolTipBase, Qt.white)
-	dark_palette.setColor(QPalette.ToolTipText, Qt.white)
-	dark_palette.setColor(QPalette.Text, Qt.white)
-	dark_palette.setColor(QPalette.Button, QColor(53, 53, 53))
-	dark_palette.setColor(QPalette.ButtonText, Qt.black)
-	dark_palette.setColor(QPalette.BrightText, Qt.red)
-	dark_palette.setColor(QPalette.Link, QColor(42, 130, 218))
-	dark_palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
-	dark_palette.setColor(QPalette.HighlightedText, Qt.black)
-
-	qApp.setPalette(dark_palette)
-
-	qApp.setStyleSheet("QToolTip { color: #ffffff; background-color: #2a82da; border: 1px solid white; }")
-
-class smd_view(QWidget):
-	def __init__(self,parent=None):
-		if type(parent == str):
-			self.filename = parent
-			parent = None
+class smd_load(QWidget):
+	def __init__(self,parent=None,select = True):
 		super(QWidget,self).__init__(parent)
-		
-		if not self.parent() is None:
-			self.filename = self.parent().get_smd_filename
-		self.initialize(self.filename)
+		self.filename = self.parent().parent().get_smd_filename()
+		self.initialize(self.filename,select)
 
-	def initialize(self,filename):
+	def initialize(self,filename,select):
 		
 		### Don't forget to add a return function from the parent.
 		### This'll do `self.return_fxn(location)` picked....
@@ -51,19 +23,18 @@ class smd_view(QWidget):
 		
 		self.viewer = QColumnView()#QTreeView()#QListView()
 
-		b = QPushButton("Select")
-		b.clicked.connect(self.select_this)
-		bget = QPushButton("Print Path")
+		if select:
+			b = QPushButton("Select")
+			b.clicked.connect(self.select_this)
+		bget = QPushButton("Information")
 		bget.clicked.connect(self.print_path)
-		bprint = QPushButton("Print Value")
-		bprint.clicked.connect(self.print_selection)
 		hbox = QHBoxLayout()
 
 		hbox.addWidget(bget)
-		hbox.addWidget(bprint)
+		if select:
+			hbox.addWidget(b)
 		hbox.addStretch(1)
-		hbox.addWidget(b)
-			
+		
 		vbox = QVBoxLayout()
 		vbox.addWidget(self.viewer)
 		vbox.addLayout(hbox)
@@ -75,15 +46,25 @@ class smd_view(QWidget):
 			self.viewer.setModel(self.model)
 			self.show()
 	
-	def return_fxn(self,location):
-		pass
-	
-	def print_selection(self):
-		try:
-			print self.viewer.selectedIndexes()[0].data()
-		except:
-			pass
+	def closeEvent(self,event):
+		self.parent().parent().raise_()
+		
+	def keyPressEvent(self,event):
+		if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return:
+			self.select_this()
+		elif event.key() == Qt.Key_Escape:
+			self.parent().close()
 			
+	def print_path(self):
+
+		o1 = self.viewer.selectedIndexes()[0].data()
+		o2 = self.get_selection(print_it=False)
+		if o2 is None:
+			o2 = "None"
+		else:
+			o2 = "['" + o2 + "']"
+		QMessageBox.information(self,"Information","Path:\n%s\n\nData:\n%s"%(o2,o1))
+
 	def get_current_path(self):
 		try:
 			s = self.viewer.selectedIndexes()
@@ -103,15 +84,14 @@ class smd_view(QWidget):
 	
 	def get_selection(self,print_it=False):
 		path,child = self.get_current_path()
-
-		if path.count('attrs') > 0:
-			path = path[:path.index('attrs')]
-			child = ""
 		
 		if len(path) > 1:
 			if child is None:
 				child = path[-1]
 				path = path[:-1]
+			if path.count('attrs') > 0:
+				path = path[:path.index('attrs')]
+				child = ""
 			
 			location = ''.join([pp+'/' for pp in path[1:]])[:-1]
 			
@@ -123,22 +103,22 @@ class smd_view(QWidget):
 	def select_this(self):
 		location = self.get_selection()
 		if not location is None:
-			try:
-				self.return_fxn(location)
-			except:
-				print "Sending: '"+location+"'"
+			self.parent().parent().select_callback(location)
 	
-	def print_path(self):
-		self.get_selection(print_it=True)
+	
 
 	
 	def new_model(self,filename):
 		def add_group(group,si):
 			attrs = group.attrs.items()
 			attr_si = QStandardItem('attrs')
+			attr_si.setEditable(False)
 			for i in range(len(attrs)):
 				attr_child = QStandardItem(attrs[i][0])
-				attr_child.setChild(0,QStandardItem(str(attrs[i][1])))
+				attr_child.setEditable(False)
+				val = QStandardItem(str(attrs[i][1]))
+				val.setEditable(False)
+				attr_child.setChild(0,val)
 				attr_si.setChild(i,attr_child)
 			si.setChild(0,attr_si)
 	
@@ -146,12 +126,15 @@ class smd_view(QWidget):
 			# Add 1 b/c attributes is 0
 			for i in range(len(groups)):
 				newthing = QStandardItem(groups[i][0])
+				newthing.setEditable(False)
 				try:
 					add_group(groups[i][1],newthing)
 					si.setChild(i+1,newthing)
 				except:
 					try:
-						newthing.setChild(0,QStandardItem("Dataset - shape: "+str(groups[i][1].value.shape)))
+						val = QStandardItem("Dataset - shape: "+str(groups[i][1].value.shape))
+						val.setEditable(False)
+						newthing.setChild(0,val)
 						si.setChild(i+1,newthing)
 					except:
 						print groups[i][0]
@@ -160,19 +143,33 @@ class smd_view(QWidget):
 		try:
 			f = File(filename,'r')
 			dataset = QStandardItem(f.filename)
+			dataset.setEditable(False)
 			add_group(f,dataset)
 			f.close()
 			self.model.appendRow(dataset)
 			
 		except:
-			print "couldn't load file"
+			pass
 			
+class ui_loader(QMainWindow):
+	def __init__(self,parent=None,select = True):
+		super(QMainWindow,self).__init__(parent)
+		self.ui = smd_load(self,select=select)
+		self.setCentralWidget(self.ui)
+		self.show()
+	
+	def closeEvent(self,event):
+		self.parent().activateWindow()
+		self.parent().raise_()
+		self.parent().setFocus()
+
 
 if __name__ == '__main__':
 	import sys
 	fn = '/Users/colin/Desktop/20161220 biasd_release/biasd/example_dataset.hdf5'
 	app = QApplication(sys.argv)
-	apply_dark_theme(app)
+	# apply_dark_theme(app)
 	
-	w = smd_view(fn)
+	# w = smd_load(fn)
+	w = ui_loader(None)
 	sys.exit(app.exec_())

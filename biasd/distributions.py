@@ -239,12 +239,12 @@ class dirichlet(_distribution):
 		return _np.linspace(l,h,int(n))
 
 class empty(_distribution):
-	def __init__(self,a=None):
+	def __init__(self,a=None,b=None):
 		self.name = 'empty'
-		self.parameters = _np.array([a])
-		self.support_parameters = _np.array([[None,None]])
+		self.parameters = _np.array([a,b])
+		self.support_parameters = _np.array([[None,None],[None,None]])
 		self.support = _np.array([None,None])
-		self.label_parameters = ["None"]
+		self.label_parameters = ["None","None"]
 		self.okay = True
 	
 	def check_params(self):
@@ -264,7 +264,7 @@ class empty(_distribution):
 		return 0.
 	@staticmethod
 	def _lnpdf_fxn(x,parameters,support):
-		return x*0.
+		return x*-_np.inf
 	@staticmethod
 	def _rvs_fxn(size,parameters):
 		return _np.random.rand(size)
@@ -596,10 +596,10 @@ class parameter_collection(object):
 	def variance(self):
 		return _np.array((self.e1.variance(),self.e2.variance(),self.sigma.variance(),self.k1.variance(),self.k2.variance()))
 		
-	# def format_for_smd(self):
-	# 	names = [d.name for d in [self.e1,self.e2,self.sigma,self.k1,self.k2]]
-	# 	params = [d.parameters.tolist() for d in [self.e1,self.e2,self.sigma,self.k1,self.k2]]
-	# 	return names,params
+	def format(self):
+		names = [d.name for d in [self.e1,self.e2,self.sigma,self.k1,self.k2]]
+		params = [d.parameters.tolist() for d in [self.e1,self.e2,self.sigma,self.k1,self.k2]]
+		return names,params
 	#
 	# @staticmethod
 	# def new_from_smd(names,parameters):
@@ -654,8 +654,10 @@ class viewer(object):
 		v = bd.viewer(d)
 	"""
 	import matplotlib.pyplot as plt
+	
 	class mpl_button(object):
 		from matplotlib.widgets import Button
+		
 		def __init__(self,identity,name,x_loc,y_loc,viewer):
 			self.height = .1
 			self.width = .2
@@ -676,6 +678,7 @@ class viewer(object):
 		else:
 			self.data = data
 			self.f = viewer.plt.figure("Parameter Probability Distribution Function Viewer", 				figsize=(8,6))
+			
 			self.e1 = self.mpl_button("e1",r"$\varepsilon_1$",0.0,0.9,self)
 			self.e2 = self.mpl_button("e2",r"$\varepsilon_2$",0.2,0.9,self)
 			self.sigma = self.mpl_button("sigma",r"$\sigma$",0.4,0.9,self)

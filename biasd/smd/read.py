@@ -25,11 +25,11 @@ def parameter_collection(group,label='BIASD parameter collection'):
 		* a `biasd.distributions.parameter_collection`
 	"""
 	assert group.attrs['description'] == label
-	from ..distributions import parameter_collection
+	from ..distributions import parameter_collection,beta,dirichlet,empty,gamma,normal,uniform
 
 	l = ['e1','e2','sigma','k1','k2']
 	dist_dict = {'beta':beta, 'dirichlet':dirichlet, 'empty':empty, 'gamma':gamma, 'normal':normal, 'uniform':uniform}
-
+	
 	return parameter_collection(*[dist_dict[group.attrs[ll+' distribution type']](*group.attrs[ll + ' parameters']) for ll in l])
 
 @_safely

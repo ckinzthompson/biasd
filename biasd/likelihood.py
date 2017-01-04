@@ -12,6 +12,8 @@ import numpy as _np
 _np.seterr(all="ignore")
 _lib_path = _os.path.dirname(_os.path.abspath(__file__)) + "/lib/"
 
+# Relative error for numerical integration
+_eps = 1e-10
 
 ###########
 ### The C functions are for the log-likelihood of N datapoints.
@@ -110,13 +112,14 @@ except:
 
 
 if _flag_cuda:
-	def _log_likelihood_cuda(theta,data,tau,epsilon=1e-10):
+	def _log_likelihood_cuda(theta,data,tau):
 		"""
-		Calculate the log of the BIASD likelihood function at theta using the data data given the time period of the data as tau.
+		Calculate the log of the BIASD likelihood function at `theta` using the data `data` given the time period of the data as `tau`.
 		
 		CUDA Version
 		"""
-
+		global _eps
+		epsilon = _eps
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
@@ -124,8 +127,9 @@ if _flag_cuda:
 #		llp = _lib_cuda.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		return _np.ctypeslib.as_array(llp,shape=data.shape)
 	
-	def _nosum_log_likelihood_cuda(theta,data,tau,epsilon=1e-10):
-	
+	def _nosum_log_likelihood_cuda(theta,data,tau):
+		global _eps
+		epsilon = _eps
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
@@ -143,7 +147,7 @@ if _flag_cuda:
 		nosum_log_likelihood = _nosum_log_likelihood_cuda
 
 if _flag_c:
-	def _log_likelihood_c(theta,data,tau,epsilon=1e-10):
+	def _log_likelihood_c(theta,data,tau):
 		"""
 		Calculate the individual values of the log of the BIASD likelihood function at :math:`\\Theta`
 		
@@ -151,11 +155,12 @@ if _flag_c:
 			* `theta` is a `np.ndarray` of the parameters to evaluate
 			* `data is a 1D `np.ndarray` of the time series to analyze
 			* `tau` is the measurement period of each data point in `data`
-			* `epsilon` is the precision for the numerical integration
 		
 		Returns:
 			* A 1D `np.ndarray` of the log-likelihood for each data point in `data`
 		"""
+		global _eps
+		epsilon = _eps
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
@@ -163,8 +168,9 @@ if _flag_c:
 #		llp = _lib_c.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		return _np.ctypeslib.as_array(llp,shape=data.shape)
 
-	def _nosum_log_likelihood_c(theta,data,tau,epsilon=1e-10):
-	
+	def _nosum_log_likelihood_c(theta,data,tau):
+		global _eps
+		epsilon = _eps
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
