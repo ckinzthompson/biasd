@@ -82,16 +82,17 @@ class ui_set_tau(QMainWindow):
 		self.le_tau.setValidator(QDoubleValidator(1e-300,1e300,100))
 		self.le_tau.editingFinished.connect(self.update_tau)
 		self.le_tau.setText(str(tau))
-		
+
 		bset = QPushButton('Set')
 		bset.clicked.connect(self.update_tau)
 		
 		[hbox.addWidget(bb) for bb in [ltau,self.le_tau,bset]]
 		qw.setLayout(hbox)
 		self.setCentralWidget(qw)
-		
 		self.setWindowTitle('Set tau')
 		self.show()
+		
+		self.le_tau.selectAll()
 	
 	def keyPressEvent(self,event):
 		if event.key() == Qt.Key_Escape:
@@ -100,7 +101,6 @@ class ui_set_tau(QMainWindow):
 	def closeEvent(self,event):
 		self.parent().setFocus()
 		event.accept()
-
 	
 	def update_tau(self):
 		try:
@@ -109,12 +109,13 @@ class ui_set_tau(QMainWindow):
 			if p.tau != new_tau:
 				p.tau = new_tau
 				self.parent().parent().parent().log.new('Updated tau = '+str(p.tau))
-				self.parent().update()
 				self.close()
 			else:
 				self.statusBar().showMessage("There's no change...")
+			self.parent().update()
 		except:
 			pass
+		self.setFocus()
 
 	
 class traces(QWidget):
