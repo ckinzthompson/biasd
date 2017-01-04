@@ -129,7 +129,7 @@ class traces(QWidget):
 		qwbuttons = QWidget()
 		vbox = QVBoxLayout()
 		
-		badd = QPushButton('Load')
+		badd = QPushButton('Import')
 		btranspose = QPushButton('Transpose')
 		bprev = QPushButton('<<')
 		bnext = QPushButton('>>')
@@ -175,7 +175,7 @@ class traces(QWidget):
 		self.buttons = [badd,btranspose,bprev,bnext,bappend,bset_tau]
 		
 		self.setLayout(hbox)
-		self.setWindowTitle('Add Traces')
+		self.setWindowTitle('Import Traces')
 		self.setFocus()
 		self.show()
 	

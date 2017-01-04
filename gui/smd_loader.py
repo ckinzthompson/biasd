@@ -12,7 +12,8 @@ class smd_load(QWidget):
 		super(QWidget,self).__init__(parent)
 		self.filename = self.parent().parent().get_smd_filename()
 		self.initialize(self.filename,select)
-
+		self.select_type = select
+		
 	def initialize(self,filename,select):
 		
 		### Don't forget to add a return function from the parent.
@@ -23,7 +24,7 @@ class smd_load(QWidget):
 		
 		self.viewer = QColumnView()#QTreeView()#QListView()
 
-		if select:
+		if self.select_type:
 			b = QPushButton("Select")
 			b.clicked.connect(self.select_this)
 		bget = QPushButton("Information")
@@ -51,7 +52,8 @@ class smd_load(QWidget):
 		
 	def keyPressEvent(self,event):
 		if event.key() == Qt.Key_Enter or event.key() == Qt.Key_Return:
-			self.select_this()
+			if self.select_type:
+				self.select_this()
 		elif event.key() == Qt.Key_Escape:
 			self.parent().close()
 			
