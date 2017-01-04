@@ -4,8 +4,13 @@ GUI written in QT5 to explore HDF5 SMD Files
 from h5py import File
 from PyQt5.QtWidgets import QApplication, QColumnView, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow,QMessageBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal, QObject, QItemSelection
 
+class selectChangeSignal(QObject):
+	signal = pyqtSignal(QItemSelection,QItemSelection)
+	
+	def sc(self,s,d):
+		self.signal.emit(s,d)
 
 class smd_load(QWidget):
 	def __init__(self,parent=None,select = True):
@@ -13,7 +18,7 @@ class smd_load(QWidget):
 		self.filename = self.parent().parent().get_smd_filename()
 		self.select_type = select
 		self.initialize(self.filename,select)
-		
+	
 	def initialize(self,filename,select):
 		
 		### Don't forget to add a return function from the parent.
@@ -42,10 +47,38 @@ class smd_load(QWidget):
 		
 		self.setLayout(vbox)
 		
+		self.scs = selectChangeSignal()
+		self.viewer.selectionChanged = self.scs.sc
+		self.scs.signal.connect(self.select_change)
+		
 		self.new_model(filename)
 		if not self.model is None:
 			self.viewer.setModel(self.model)
 			self.show()
+	
+	def select_change(self,selected,deselected):
+		try:
+			index = selected.indexes()[0]
+			ii = self.model.itemFromIndex(index)
+			if not ii.data() is None:
+				f = File(self.filename,'r')
+				self.selected_dataset = f[ii.data()].value
+				f.close()
+			else:
+				self.selected_dataset = None
+		except:
+			self.selected_dataset = None
+			try:
+				f.close()
+			except:
+				pass
+		self.update_figure()
+		
+	def update_figure(self):
+		try:
+			print self.selected_dataset.shape
+		except:
+			pass
 	
 	def closeEvent(self,event):
 		self.parent().parent().raise_()
@@ -107,9 +140,6 @@ class smd_load(QWidget):
 		if not location is None:
 			self.parent().parent().select_callback(location)
 	
-	
-
-	
 	def new_model(self,filename):
 		def add_group(group,si):
 			attrs = group.attrs.items()
@@ -127,7 +157,11 @@ class smd_load(QWidget):
 			groups  = group.items()
 			# Add 1 b/c attributes is 0
 			for i in range(len(groups)):
-				newthing = QStandardItem(groups[i][0])
+				gname = groups[i][0]
+				## Add leading zeros for nicer sorting...
+				#if gname.startswith('trajectory'):
+				#	gname = "trajectory %06d"%(int(gname.split(' ')[-1]))
+				newthing = QStandardItem(gname)
 				newthing.setEditable(False)
 				try:
 					add_group(groups[i][1],newthing)
@@ -135,6 +169,7 @@ class smd_load(QWidget):
 				except:
 					try:
 						val = QStandardItem("Dataset - shape: "+str(groups[i][1].value.shape))
+						val.setData(groups[i][1].ref)
 						val.setEditable(False)
 						newthing.setChild(0,val)
 						si.setChild(i+1,newthing)
