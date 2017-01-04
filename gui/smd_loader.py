@@ -2,9 +2,11 @@
 GUI written in QT5 to explore HDF5 SMD Files
 '''
 from h5py import File
-from PyQt5.QtWidgets import QApplication, QColumnView, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow,QMessageBox
+from PyQt5.QtWidgets import QApplication, QColumnView, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow,QMessageBox,QSizePolicy
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, pyqtSignal, QObject, QItemSelection
+
+from plotter import trace_plotter
 
 class selectChangeSignal(QObject):
 	signal = pyqtSignal(QItemSelection,QItemSelection)
@@ -20,14 +22,16 @@ class smd_load(QWidget):
 		self.initialize(self.filename,select)
 	
 	def initialize(self,filename,select):
-		
-		### Don't forget to add a return function from the parent.
-		### This'll do `self.return_fxn(location)` picked....
-		
 		self.setWindowTitle('HDF5 SMD Viewer')
 		self.setMinimumSize(800,0)
 		
 		self.viewer = QColumnView()#QTreeView()#QListView()
+		self.viewer.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Fixed)
+		
+		self.fig = trace_plotter(self)
+		self.fig.a.set_title('')
+		self.fig.setVisible(False)
+		self.fig.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
 
 		if self.select_type:
 			b = QPushButton("Select")
@@ -39,12 +43,15 @@ class smd_load(QWidget):
 		hbox.addWidget(bget)
 		if select:
 			hbox.addWidget(b)
+
 		hbox.addStretch(1)
 		
 		vbox = QVBoxLayout()
 		vbox.addWidget(self.viewer)
-		vbox.addLayout(hbox)
 		
+		vbox.addLayout(hbox)
+		vbox.addWidget(self.fig)
+		vbox.addStretch(1)
 		self.setLayout(vbox)
 		
 		self.scs = selectChangeSignal()
@@ -55,6 +62,8 @@ class smd_load(QWidget):
 		if not self.model is None:
 			self.viewer.setModel(self.model)
 			self.show()
+			self.adjustSize()
+			self.parent().adjustSize()
 	
 	def select_change(self,selected,deselected):
 		try:
@@ -76,9 +85,18 @@ class smd_load(QWidget):
 		
 	def update_figure(self):
 		try:
-			print self.selected_dataset.shape
+			d = self.selected_dataset
+			if d.ndim == 1:
+				self.fig.plot_trace(None,d,'')
+				self.fig.a.set_xlabel('Frames')
+				self.fig.draw()
+			self.fig.setVisible(True)
+			self.adjustSize()
+			self.parent().adjustSize()
 		except:
-			pass
+			self.fig.setVisible(False)
+			self.adjustSize()
+			self.parent().adjustSize()
 	
 	def closeEvent(self,event):
 		self.parent().parent().raise_()

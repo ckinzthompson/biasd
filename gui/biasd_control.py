@@ -6,7 +6,7 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 
 # PyQt5 imports
-from PyQt5.QtWidgets import QApplication, QColumnView, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow, QFileDialog, QLabel, QMessageBox
+from PyQt5.QtWidgets import QApplication, QColumnView, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow, QFileDialog, QLabel, QMessageBox, QAction, QShortcut
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PyQt5.QtCore import Qt, QTimer
 
@@ -68,9 +68,10 @@ class biasd_control(QWidget):
 		bexplore = QPushButton("Explore")
 		breset = QPushButton("Reset")
 		bprefs = QPushButton('Preferences')
-		btest = QPushButton('test')
 		self.btraces = QPushButton('Traces')
-#		bset_tau = QPushButton(u'&Set τ')
+		self.blaplace = QPushButton('Laplace')
+		self.bmcmc = QPushButton("MCMC")
+		self.bposterior = QPushButton("View Posterior")
 
 		# Overall Layout
 		vbox = QVBoxLayout()
@@ -84,10 +85,16 @@ class biasd_control(QWidget):
 		vbox.addWidget(qtemp)
 		
 		# Middle Buttons
-#		vbox.addWidget(bset_tau)
 		vbox.addWidget(self.btraces)
-		vbox.addWidget(btest)
 		vbox.addWidget(self.bprior)
+		
+		# box analysis
+		qtemp = QWidget()
+		hbox3 = QHBoxLayout()
+		[hbox3.addWidget(bbb) for bbb in [self.blaplace,self.bmcmc]]
+		qtemp.setLayout(hbox3)
+		vbox.addWidget(qtemp)
+		vbox.addWidget(self.bposterior)
 		
 		# Box 2
 		qtemp = QWidget()
@@ -96,6 +103,12 @@ class biasd_control(QWidget):
 		qtemp.setLayout(hbox2)
 		vbox.addWidget(qtemp)
 		
+		### TESTING PURPOSES
+		btest = QPushButton('... print log ...')
+		vbox.addWidget(btest)
+		btest.clicked.connect(self.test)
+		
+		
 		self.setLayout(vbox)
 		
 		## Connect the buttons
@@ -103,20 +116,37 @@ class biasd_control(QWidget):
 		bnew.clicked.connect(self.new_smd)
 		bload.clicked.connect(self.load_smd)
 		bexplore.clicked.connect(self.explore_smd)
-		btest.clicked.connect(self.test)
 		bprefs.clicked.connect(self.launch_preferences)
 		breset.clicked.connect(self.reset)
 		self.btraces.clicked.connect(self.launch_traces)
-#		bset_tau.clicked.connect(self.launch_set_tau)
+		self.blaplace.clicked.connect(self.launch_laplace)
+		self.bmcmc.clicked.connect(self.launch_mcmc)
+		self.bposterior.clicked.connect(self.launch_posterior)
 		
-		self.bprior.setEnabled(False)
-		self.btraces.setEnabled(False)
+		[bbb.setEnabled(False) for bbb in [self.blaplace,self.bmcmc,self.bposterior,self.bprior,self.btraces]]
 		
 		self.priors = b.distributions.empty_parameter_collection()
 		self.log = _logfile()
 		self.prefs = prefs()
 		
+		self.init_shortcuts()
+		
 		self.filename = ''
+	
+	def launch_laplace(self):
+		pass
+	def launch_mcmc(self):
+		pass
+	def launch_posterior(self):
+		pass
+		
+	
+	def init_shortcuts(self):
+		# quit
+		qs = QShortcut(self)
+		qs.setKey("Ctrl+Q")
+		qs.activated.connect(self.parent().close)
+	
 	
 	def launch_traces(self):
 		if self.filename != "":
@@ -137,9 +167,17 @@ class biasd_control(QWidget):
 			self.ui_priors.close()
 		except:
 			pass
+		try:
+			self.ui_traces.close()
+		except:
+			pass
+		try:
+			self.ui_prefs.close()
+		except:
+			pass
+		self.filename = ""
 		self.priors = b.distributions.empty_parameter_collection()
-		self.bprior.setEnabled(False)
-		self.btraces.setEnabled(False)
+		[bbb.setEnabled(False) for bbb in [self.blaplace,self.bmcmc,self.bposterior,self.bprior,self.btraces]]
 		self.parent().statusBar().showMessage('Reset')
 
 		self.log.new('Reset GUI')
@@ -154,8 +192,7 @@ class biasd_control(QWidget):
 			b.smd.save(f)
 			self.reset()
 			self.set_filename(oname[0])
-			self.bprior.setEnabled(True)
-			self.btraces.setEnabled(True)
+			[bbb.setEnabled(True) for bbb in [self.blaplace,self.bmcmc,self.bposterior,self.bprior,self.btraces]]
 		except:
 			QMessageBox.critical(None,"Could Not Make New File","Could not make new file: %s\n."%(oname[0]))
 		
@@ -172,8 +209,7 @@ class biasd_control(QWidget):
 		if data:
 			self.reset()
 			self.set_filename(fname)
-			self.bprior.setEnabled(True)
-			self.btraces.setEnabled(True)
+			[bbb.setEnabled(True) for bbb in [self.blaplace,self.bmcmc,self.bposterior,self.bprior,self.btraces]]
 			
 	def set_filename(self,fname):
 		self.filename = fname
@@ -194,6 +230,7 @@ class biasd_control(QWidget):
 		except:
 			pass
 		self.ui_explore = ui_loader(parent = self, select = False)
+		self.ui_explore.setWindowTitle('Explore')
 		self.ui_explore.show()
 		
 	
@@ -204,16 +241,9 @@ class biasd_control(QWidget):
 			self.ui_prefs.raise_()
 		except:
 			self.ui_prefs = ui_preferences(self)
+			self.ui_prefs.setWindowTitle('Preferences')
 			self.ui_prefs.show()
 	
-#	def launch_set_tau(self):
-#		try:
-#			self.ui_tau.close()
-#		except:
-#			pass
-#		self.ui_tau = ui_set_tau(self)
-#		self.ui_tau.setParent(self)
-		
 	
 	def test(self):
 		# self.ui_priors.ui.update_dists()
@@ -227,6 +257,7 @@ class biasd_control(QWidget):
 			self.ui_priors.raise_()
 		except:
 			self.ui_priors = ui_priors(self)
+			self.ui_priors.setWindowTitle('Priors')
 			self.ui_priors.show()
 	
 class gui(QMainWindow):
@@ -240,7 +271,7 @@ class gui(QMainWindow):
 		self.statusBar().showMessage("Ready")
 		
 		self.setWindowTitle("BIASD - 0.1.1")
-		self.setWindowIcon(QIcon('biasd_icon-01.png'))
+		self.setWindowIcon(QIcon('b_arrows-01.png'))
 		self.setGeometry(250,250,250,150)
 		self.show()
 	
@@ -255,6 +286,6 @@ class gui(QMainWindow):
 if __name__ == '__main__':
 	app = QApplication(sys.argv)
 	app.setStyle('fusion')
-	app.setWindowIcon(QIcon('b_arrows-01.png'))
+#	app.setWindowIcon(QIcon('b_arrows-01.png'))
 	g = gui()
 	sys.exit(app.exec_())
