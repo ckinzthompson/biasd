@@ -11,8 +11,8 @@ class smd_load(QWidget):
 	def __init__(self,parent=None,select = True):
 		super(QWidget,self).__init__(parent)
 		self.filename = self.parent().parent().get_smd_filename()
-		self.initialize(self.filename,select)
 		self.select_type = select
+		self.initialize(self.filename,select)
 		
 	def initialize(self,filename,select):
 		
