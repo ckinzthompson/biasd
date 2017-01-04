@@ -109,6 +109,7 @@ class ui_set_tau(QMainWindow):
 			if p.tau != new_tau:
 				p.tau = new_tau
 				self.parent().parent().parent().log.new('Updated tau = '+str(p.tau))
+				self.parent().update()
 				self.close()
 			else:
 				self.statusBar().showMessage("There's no change...")
@@ -220,6 +221,9 @@ class traces(QWidget):
 		title = str(self.trace_index) + "/"+str(self.imported_data.shape[0]-1)
 		self.fig.plot_trace(np.arange(d.size)*tau,d,title=title)
 		self.setFocus()
+	
+	def update(self):
+		self.update_figure()
 	
 	def get_safe_tau(self):
 		try:
