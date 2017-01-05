@@ -239,7 +239,7 @@ class dirichlet(_distribution):
 		return _np.linspace(l,h,int(n))
 
 class empty(_distribution):
-	def __init__(self,a=None,b=None):
+	def __init__(self,a=0,b=0):
 		self.name = 'empty'
 		self.parameters = _np.array([a,b])
 		self.support_parameters = _np.array([[None,None],[None,None]])
