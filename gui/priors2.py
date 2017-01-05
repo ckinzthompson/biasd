@@ -3,7 +3,7 @@
 GUI written in QT5 to setup independent prior distributions
 '''
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QLineEdit, QMessageBox, QMainWindow, QSizePolicy, QTabWidget, QFileDialog
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtGui import QStandardItemModel, QStandardItem, QDoubleValidator
 from PyQt5.QtCore import Qt
 
 # Make sure that we are using QT5
@@ -128,9 +128,12 @@ class distribution(QWidget):
 		
 		self.prior_type = QComboBox()
 		[self.prior_type.addItem(i) for i in self.dist_types]
+#		self.prior_type.activated.connect(self.setFocus)
 		
 		self.param1 = QLineEdit()
 		self.param2 = QLineEdit()
+		[p.setValidator(QDoubleValidator(-1e300,1e300,100)) for p in [self.param1,self.param2]]
+		[p.returnPressed.connect(self.setFocus) for p in [self.param1,self.param2]]
 		
 		self.hbox.addStretch(1)
 		self.hbox.addWidget(distlabel)
@@ -223,10 +226,7 @@ class priors(QWidget):
 	
 	def load_prior(self):
 		try:
-			if self.load.ui.filename == self.get_smd_filename():
-				self.loader.setVisible(True)
-				self.loader.raise_()
-				return
+			self.loader.close()
 		except:
 			pass
 		

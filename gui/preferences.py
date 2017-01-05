@@ -137,6 +137,7 @@ class prefs(QWidget):
 		
 	
 	def save_log(self):
+		print self.parent().parent().log.format()
 		oname = QFileDialog.getSaveFileName(self,"Save Log file",'./','*.txt')
 		try:
 			if not oname[0]:

@@ -16,6 +16,7 @@ from priors2 import ui_priors
 from smd_loader import ui_loader
 from preferences import ui_preferences
 from traces import ui_traces, ui_set_tau
+from laplace import ui_laplace
 
 # BIASD Path
 biasd_path = '../'
@@ -62,16 +63,16 @@ class biasd_control(QWidget):
 
 	def initialize(self):
 
-		self.bprior = QPushButton("Priors")	
-		bnew = QPushButton("New")
-		bload = QPushButton("Open")
-		bexplore = QPushButton("Explore")
+		self.bprior = QPushButton("&Priors")	
+		bnew = QPushButton("&New")
+		bload = QPushButton("&Open")
+		bexplore = QPushButton("&Explore")
 		breset = QPushButton("Reset")
-		bprefs = QPushButton('Preferences')
-		self.btraces = QPushButton('Traces')
-		self.blaplace = QPushButton('Laplace')
-		self.bmcmc = QPushButton("MCMC")
-		self.bposterior = QPushButton("View Posterior")
+		bprefs = QPushButton('Pre&ferences')
+		self.btraces = QPushButton('&Traces')
+		self.blaplace = QPushButton('&Laplace')
+		self.bmcmc = QPushButton("&MCMC")
+		self.bposterior = QPushButton("&View Posterior")
 
 		# Overall Layout
 		vbox = QVBoxLayout()
@@ -104,9 +105,9 @@ class biasd_control(QWidget):
 		vbox.addWidget(qtemp)
 		
 		### TESTING PURPOSES
-		btest = QPushButton('... print log ...')
-		vbox.addWidget(btest)
-		btest.clicked.connect(self.test)
+		#btest = QPushButton('... print log ...')
+		#vbox.addWidget(btest)
+		#btest.clicked.connect(self.test)
 		
 		
 		self.setLayout(vbox)
@@ -134,30 +135,41 @@ class biasd_control(QWidget):
 		self.filename = ''
 	
 	def launch_laplace(self):
-		pass
+		try:
+			self.ui_laplace.close()
+		except:
+			pass
+		self.ui_laplace = ui_laplace(self)
+		self.ui_laplace.show()
+
+		
 	def launch_mcmc(self):
 		pass
 	def launch_posterior(self):
 		pass
 		
+	def make_shortcut(self,key,fxn):
+		qs = QShortcut(self)
+		qs.setKey(key)
+		qs.activated.connect(fxn)
 	
+	def quit_wrapper(self):
+		reply = QMessageBox.question(self,'Quit',"Are you sure you want to quit?")
+		if reply == QMessageBox.Yes:
+			self.parent().close()
+		
 	def init_shortcuts(self):
 		# quit
-		qs = QShortcut(self)
-		qs.setKey("Ctrl+Q")
-		qs.activated.connect(self.parent().close)
-		qs = QShortcut(self)
-		qs.setKey("o")
-		qs.activated.connect(self.load_smd)
-		qs = QShortcut(self)
-		qs.setKey("p")
-		qs.activated.connect(self.launch_priors)
-		qs = QShortcut(self)
-		qs.setKey("t")
-		qs.activated.connect(self.launch_traces)
-		qs = QShortcut(self)
-		qs.setKey("e")
-		qs.activated.connect(self.explore_smd)
+		self.make_shortcut("Ctrl+Q",self.quit_wrapper)
+		self.make_shortcut("o",self.load_smd)
+		self.make_shortcut("p",self.launch_priors)
+		self.make_shortcut("t",self.launch_traces)
+		self.make_shortcut("e",self.explore_smd)
+		self.make_shortcut("f",self.launch_preferences)
+		self.make_shortcut("l",self.launch_laplace)
+		self.make_shortcut("m",self.launch_mcmc)
+		self.make_shortcut("v",self.launch_posterior)
+
 	
 	def launch_traces(self):
 		if self.filename != "":
@@ -279,16 +291,9 @@ class gui(QMainWindow):
 		self.setWindowTitle("BIASD - 0.1.1")
 		self.setWindowIcon(QIcon('b_arrows-01.png'))
 		# self.setGeometry(250,250,250,150)
+#		self.move(0,0)
 		self.show()
 	
-	def closeEvent(self,event):
-		event.accept()
-		# reply = QMessageBox.question(self,'Quit',"Are you sure you want to quit?")
-		# if reply == QMessageBox.Yes:
-			# event.accept()
-		# else:
-			# event.ignore()
-		
 
 if __name__ == '__main__':
 	app = QApplication(sys.argv)

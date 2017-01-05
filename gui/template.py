@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-®
 '''
-GUI written in QT5 to setup preferences
+GUI written in QT5 to perform ...
 '''
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QLineEdit, QMessageBox, QMainWindow
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QLineEdit, QMessageBox, QMainWindow, QShortcut
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt
 
@@ -11,40 +11,47 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 
 import sys
-biasd_path = '/Users/colin/Desktop/20161220 biasd_release/biasd'
+biasd_path = '../'
 sys.path.append(biasd_path)
 import biasd as b
 
-
-class prefs(QWidget):
+class temp(QWidget):
 	def __init__(self,parent):
 		super(QWidget,self).__init__(parent=parent)
 		self.initialize()
 
 	def initialize(self):
-		self.setWindowTitle('Set Preferences')
-		# self.setGeometry(200,200,500,300)
+		self.setWindowTitle('')
 		self.show()
 		
 	def keyPressEvent(self,event):
 		if event.key() == Qt.Key_Escape:
 			self.parent().close()
+	
+	def make_shortcut(self,key,fxn):
+		qs = QShortcut(self)
+		qs.setKey(key)
+		qs.activated.connect(fxn)
+			
+	def init_shortcuts(self):
+		#self.make_shortcut("o",self.dothis)
 			
 
-class ui_preferences(QMainWindow):
+class ui_temp(QMainWindow):
 	def __init__(self,parent=None):
 		super(QMainWindow,self).__init__(parent)
-		self.ui = prefs(self)
+		self.ui = temp(self)
 		self.setCentralWidget(self.ui)
-		self.setGeometry(100,100,400,300)
 		self.show()
 	
 	def closeEvent(self,event):
-		pass
+		self.parent().activateWindow()
+		self.parent().raise_()
+		self.parent().setFocus()
 
 		
 if __name__ == '__main__':
 	import sys
 	app = QApplication(sys.argv)
-	w = ui_preferences()
+	w = ui_temp()
 	sys.exit(app.exec_())

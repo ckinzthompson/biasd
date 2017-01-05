@@ -85,7 +85,8 @@ class trace_plotter(FigureCanvas):
 				self.a.set_xlim(0,distx[-1])
 			else:
 				self.a.set_xlim(distx[0],distx[-1])
-			self.a.set_ylim(0.,disty.max()*1.2)
+			if dist.name != 'empty':
+				self.a.set_ylim(0.,disty[np.isfinite(disty)].max()*1.2)		
 			self.a.set_ylabel('Probability',fontsize=18)
 			self.a.set_xlabel(xlabels[dist_index],fontsize=18)
 			self.a.set_title(dist.label_parameters[0]+": "+str(dist.parameters[0])+", "+dist.label_parameters[1]+": "+str(dist.parameters[1])+r", $E[x] = $"+str(dist.mean()))
