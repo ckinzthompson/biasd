@@ -2,7 +2,7 @@
 '''
 GUI written in QT5 to setup independent prior distributions
 '''
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QLineEdit, QMessageBox, QMainWindow
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QLineEdit, QMessageBox, QMainWindow, QSizePolicy, QTabWidget, QFileDialog
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt
 
@@ -17,6 +17,97 @@ sys.path.append(biasd_path)
 import biasd as b
 
 from smd_loader import ui_loader
+from plotter import trace_plotter
+
+
+class previewer(QWidget):
+	def __init__(self,parent=None,dists = None):
+		super(QWidget,self).__init__(parent)
+		self.dists = dists
+		self.dist_names = [u'ϵ_1',u'ϵ_2',u'  σ',u'k_1',u'k_2']
+		
+		if not dists is None:
+			self.initialize()
+		else:
+			self.parent().close()
+	
+	def initialize(self):
+		vbox = QVBoxLayout()
+		hbox = QHBoxLayout()
+		self.cb = QComboBox()
+		[self.cb.addItem(i) for i in self.dist_names]
+		self.cb.setCurrentIndex(0)
+		self.cb.currentIndexChanged.connect(self.update_plot)
+
+		hbox.addWidget(self.cb)
+		bsave = QPushButton('Save Figure')
+		bsave.clicked.connect(self.savefig)
+		hbox.addWidget(bsave)
+		hbox.addStretch(1)
+		vbox.addLayout(hbox)
+		
+		self.fig = trace_plotter()
+		vbox.addWidget(self.fig)
+		self.update_plot()
+		
+		self.cb.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
+		self.fig.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+		
+		self.setLayout(vbox)
+		self.setFocus()
+		self.show()
+	
+	def savefig(self):
+
+		oname = QFileDialog.getSaveFileName(self,"Save Figure",'./','jpg (*.jpg);;png (*.png);;pdf (*.pdf);;eps (*.eps)')
+		self.setFocus()
+		try:
+			self.fig.f.savefig(oname[0])
+		except:
+			QMessageBox.critical(None,"Could Not Save","Could not save file: %s\n."%(oname[0]))
+	
+	def update_plot(self):
+		i = self.cb.currentIndex()
+		self.fig.plot_dist(i,self.dists)
+	
+	def jump(self,di):
+		i = self.cb.currentIndex() + di
+		if i >= self.cb.count():
+			i = self.cb.count() - 1
+		elif i < 0:
+			i = 0
+		self.cb.setCurrentIndex(i)
+		self.update_plot()
+		
+	def keyPressEvent(self,event):
+		if event.key() == Qt.Key_Escape:
+			self.parent().close()
+		elif event.key() == Qt.Key_Left:
+			self.jump(-1)
+		elif event.key() == Qt.Key_Right:
+			self.jump(1)
+		elif event.key() == Qt.Key_S:
+			self.savefig()
+		
+
+class ui_preview(QMainWindow):
+	def __init__(self,parent=None,dists=None):
+		super(QMainWindow,self).__init__(parent)
+		self.ui = previewer(self,dists)
+		self.setCentralWidget(self.ui)
+		self.show()
+		
+	def keyPressEvent(self,event):
+		self.ui.keyPressEvent(event)
+	
+	def closeEvent(self,event):
+		self.ui.close()
+		self.parent().setFocus()
+		self.parent().raise_()
+		self.parent().activateWindow()
+		self.close()
+		
+
 
 class distribution(QWidget):
 	def __init__(self,dist_name):
@@ -64,39 +155,55 @@ class distribution(QWidget):
 class priors(QWidget):
 	def __init__(self,parent):
 		super(QWidget,self).__init__(parent=parent)
-		self.priors_dists = [u'ϵ_1',u'ϵ_2',u'σ',u'k_1',u'k_2']
+		self.priors_dists = [u'ϵ_1',u'ϵ_2',u'  σ',u'k_1',u'k_2']
 		self.initialize()
 
 	def initialize(self):
 		self.setWindowTitle('Set Priors')
-		
+
+		qw = QWidget()
 		vbox = QVBoxLayout()
 		hbox = QHBoxLayout()
-		hbox.addStretch(1)
 		
 		bload = QPushButton("Load")
 		bcheck = QPushButton("Check")
-		bview = QPushButton("View")
 		bset = QPushButton("Set")
+		bview = QPushButton("View")
 
 		bload.clicked.connect(self.load_prior)
 		bcheck.clicked.connect(lambda:self.check_dist(warn=True))
-		bview.clicked.connect(self.view_dist)
 		bset.clicked.connect(self.set_dist)
+		bview.clicked.connect(self.view_dist)
+
+		hbox.addStretch(1)
+		[hbox.addWidget(i) for i in [bload,bcheck,bset]]
+		hbox.addWidget(bview)
 		
-		[hbox.addWidget(i) for i in [bload,bcheck,bview,bset]]
-		
-		vbox.addStretch(1)
 		vbox.addLayout(hbox)
 		
 		self.dists = [distribution(self.priors_dists[i]) for i in range(5)]
 		[vbox.addWidget(self.dists[i]) for i in range(5)]
-		
 		self.update_dists()
+		
+		vbox.addStretch(1)
+		self.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Expanding)
+		# qw.adjustSize()
+		# qw.setLayout(vbox)
 		self.setLayout(vbox)
-		self.setGeometry(200,200,500,300)
-		self.show()
 
+		# hbox2 = QHBoxLayout()
+		# hbox2.addWidget(qw)
+		# self.fig = trace_plotter(self)
+		# self.fig.clear_plot()
+		# self.fig.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+		# self.fig.setVisible(False)
+		# hbox2.addWidget(self.fig)
+		# hbox2.addStretch(1)
+		# self.setLayout(hbox2)
+
+		self.parent().adjustSize()
+		self.show()
+		
 	def update_dists(self):
 		try:
 			p = self.parent().parent().priors
@@ -187,14 +294,14 @@ class priors(QWidget):
 		return None
 		
 	def view_dist(self):
-		params = self.check_dist(warn=False)
-		if not params is None:
+		d = self.check_dist(warn=False)
+		if not d is None:
 			try:
-				self.viewer.f.clf()
-				self.viewer = None
+				self.ui_preview.close()
 			except:
 				pass
-			self.viewer = b.distributions.viewer(params)
+			self.ui_preview = ui_preview(self,d)
+			self.ui_preview.show()
 				
 	def set_dist(self):
 		params = self.check_dist(warn=False)
@@ -212,6 +319,14 @@ class priors(QWidget):
 	def keyPressEvent(self,event):
 		if event.key() == Qt.Key_Escape:
 			self.parent().close()
+		elif event.key() == Qt.Key_L:
+			self.load_prior()
+		elif event.key() == Qt.Key_V:
+			self.view_dist()
+		elif event.key() == Qt.Key_C:
+			self.check_dist()
+		elif event.key() == Qt.Key_S:
+			self.set_dist()
 			
 
 class ui_priors(QMainWindow):
@@ -219,7 +334,6 @@ class ui_priors(QMainWindow):
 		super(QMainWindow,self).__init__(parent)
 		self.ui = priors(self)
 		self.setCentralWidget(self.ui)
-		self.setGeometry(100,100,400,300)
 		self.show()
 	
 	def closeEvent(self,event):

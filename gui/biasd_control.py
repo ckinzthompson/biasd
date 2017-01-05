@@ -155,7 +155,9 @@ class biasd_control(QWidget):
 		qs = QShortcut(self)
 		qs.setKey("t")
 		qs.activated.connect(self.launch_traces)
-	
+		qs = QShortcut(self)
+		qs.setKey("e")
+		qs.activated.connect(self.explore_smd)
 	
 	def launch_traces(self):
 		if self.filename != "":
@@ -276,20 +278,21 @@ class gui(QMainWindow):
 		
 		self.setWindowTitle("BIASD - 0.1.1")
 		self.setWindowIcon(QIcon('b_arrows-01.png'))
-		self.setGeometry(250,250,250,150)
+		# self.setGeometry(250,250,250,150)
 		self.show()
 	
 	def closeEvent(self,event):
-		reply = QMessageBox.question(self,'Quit',"Are you sure you want to quit?")
-		if reply == QMessageBox.Yes:
-			event.accept()
-		else:
-			event.ignore()
+		event.accept()
+		# reply = QMessageBox.question(self,'Quit',"Are you sure you want to quit?")
+		# if reply == QMessageBox.Yes:
+			# event.accept()
+		# else:
+			# event.ignore()
 		
 
 if __name__ == '__main__':
 	app = QApplication(sys.argv)
 	app.setStyle('fusion')
-#	app.setWindowIcon(QIcon('b_arrows-01.png'))
 	g = gui()
+	app.setWindowIcon(g.windowIcon())
 	sys.exit(app.exec_())

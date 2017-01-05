@@ -54,8 +54,11 @@ class ui_set_tau(QMainWindow):
 			self.close()
 	
 	def closeEvent(self,event):
+		# self.ui.close()
 		self.parent().setFocus()
-		event.accept()
+		self.parent().raise_()
+		self.parent().activateWindow()
+		self.close()
 	
 	def update_tau(self):
 		try:
@@ -272,6 +275,15 @@ class traces(QWidget):
 				self.jump_trace(d)
 			except:
 				pass
+		
+		elif event.key() == Qt.Key_I:
+			self.add_traces()
+		elif event.key() == Qt.Key_C:
+			self.append_to_smd()
+		elif event.key() == Qt.Key_S:
+			self.launch_set_tau()
+		elif event.key() == Qt.Key_T:
+			self.transpose_traces()
 
 class ui_traces(QMainWindow):
 	def __init__(self,parent=None):
@@ -291,6 +303,7 @@ class ui_traces(QMainWindow):
 		self.parent().activateWindow()
 		self.parent().raise_()
 		self.parent().setFocus()
+		self.close()
 		
 if __name__ == '__main__':
 	import sys
