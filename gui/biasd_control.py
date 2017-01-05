@@ -17,6 +17,7 @@ from smd_loader import ui_loader
 from preferences import ui_preferences
 from traces import ui_traces, ui_set_tau
 from laplace import ui_laplace
+from mcmc import ui_mcmc
 
 # BIASD Path
 biasd_path = '../'
@@ -141,10 +142,15 @@ class biasd_control(QWidget):
 			pass
 		self.ui_laplace = ui_laplace(self)
 		self.ui_laplace.show()
-
 		
 	def launch_mcmc(self):
-		pass
+		try:
+			self.ui_mcmc.close()
+		except:
+			pass
+		self.ui_mcmc = ui_mcmc(self)
+		self.ui_mcmc.show()
+		
 	def launch_posterior(self):
 		pass
 		

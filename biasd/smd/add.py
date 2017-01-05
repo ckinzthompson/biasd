@@ -63,7 +63,7 @@ def mcmc(parent,mcmc_result,label='result'):
 	"""
 	# acor ,chain,lnprobability,iterations,naccepted,nwalkers,dim
 
-	group = parent.create_croup(label)
+	group = parent.create_group(label)
 	_addhash(group)
 	group.attrs['description'] = 'BIASD MCMC result'
 	group.attrs['autocorrelation times'] = mcmc_result.acor

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-®
 '''
-GUI written in QT5 to perform the Laplace Approximation
+GUI written in QT5 to perform MCMC
 '''
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QComboBox, QLabel, QLineEdit, QMessageBox, QMainWindow, QShortcut, QGroupBox,QFormLayout,QSpinBox
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -18,7 +18,7 @@ import biasd as b
 
 from smd_loader import ui_loader
 
-class laplace(QWidget):
+class mcmc(QWidget):
 	def __init__(self,parent):
 		super(QWidget,self).__init__(parent=parent)
 		self.initialize()
@@ -32,10 +32,23 @@ class laplace(QWidget):
 		self.bbatch = QPushButton("Batch all like this")
 		gb = QGroupBox('Options')
 		form = QFormLayout()
-		self.sb_nrestarts = QSpinBox()
-		self.sb_nrestarts.setRange(1,100)
-		self.sb_nrestarts.setValue(5)
-		form.addRow("Number of Restarts",self.sb_nrestarts)
+
+		self.sb_burn = QSpinBox()
+		self.sb_burn.setRange(0,1000000000)
+		self.sb_burn.setValue(100)
+
+		self.sb_steps = QSpinBox()
+		self.sb_steps.setRange(1,1000000000)
+		self.sb_steps.setValue(1000)
+
+		self.sb_nwalkers = QSpinBox()
+		self.sb_nwalkers.setRange(10,1000000)
+		self.sb_nwalkers.setValue(30)
+		
+		form.addRow("Number of Walkers",self.sb_nwalkers)
+		form.addRow("Number of Burn-in Steps",self.sb_burn)
+		form.addRow("Number of Production Steps",self.sb_steps)
+		
 		gb.setLayout(form)
 		
 		bload.clicked.connect(self.load_trajectory)
@@ -53,7 +66,7 @@ class laplace(QWidget):
 		vbox.addStretch(1)
 		self.setLayout(vbox)
 		self.setFocus()
-		self.setWindowTitle('Laplace Approximation')
+		self.setWindowTitle('Ensemble Markov chain Monte Carlo')
 		self.show()
 	
 	def get_smd_filename(self):
@@ -100,41 +113,67 @@ class laplace(QWidget):
 	def run(self,prompt=True):
 		if not self.tloc is None:
 			priors = self.parent().parent().priors
-			nr = self.sb_nrestarts.value()
+			nburn = self.sb_burn.value()
+			nsteps = self.sb_steps.value()
+			nwalkers = self.sb_nwalkers.value()
+			nthreads = self.parent().parent().prefs.n_threads
+			
 			if prompt:
 				reply = QMessageBox.question(self,'Run?',"Are you sure you want to run this?")
 			else:
 				reply = QMessageBox.Yes
 			if reply == QMessageBox.Yes:
-				try:
+				# try:
+				if 1:
 					self.parent().parent().parent().statusBar().showMessage("Running %d/%d...."%(self.currenttraj,self.totaltraj))
+					
 					fn = self.get_smd_filename()
 					f = b.smd.load(fn)
 					g = f[self.tloc]
-					gname = 'Laplace Analysis '+time.ctime()
+					gname = 'MCMC Analysis '+time.ctime()
 					gg = g.create_group(gname)
 					b.smd.add.parameter_collection(gg,priors,label='Priors')
 					gg.attrs['completed'] = 'False'
 					gg.attrs['program'] = 'BIASD GUI'
+					gg.attrs['number of walkers'] = nwalkers
+					gg.attrs['number of burn-in steps'] = nburn
+					gg.attrs['number of production steps'] = nsteps
+					gg.attrs['number of threads'] = nthreads
 					traj = g['data/'+self.dname].value
 					traj = traj[np.isfinite(traj)]
 					b.smd.save(f)
-					result = b.laplace.laplace_approximation(traj, priors, self.tau, nrestarts=nr)
+					
+					sampler, ip = b.mcmc.setup(traj, priors, self.tau, nwalkers, initialize='rvs', threads=nthreads)
+					
+					t0 = time.time()
+					if nburn > 0:
+						self.parent().parent().parent().statusBar().showMessage("MCMC Burning in %d/%d...."%(self.currenttraj,self.totaltraj))
+						sampler, burned = b.mcmc.burn_in(sampler,ip,nsteps=nburn,timer=False)
+					else:
+						burned = ip
+
+					t1 = time.time()
+					self.parent().parent().parent().statusBar().showMessage("MCMC Production %d/%d...."%(self.currenttraj,self.totaltraj))
+					sampler = b.mcmc.run(sampler,burned,nsteps=nsteps,timer=False)
+					t2 = time.time()
+
 					f = b.smd.load(fn)
 					g = f[self.tloc+'/'+gname]
-					b.smd.add.laplace_posterior(g,result,label='Posterior')
+					b.smd.add.mcmc(g,b.mcmc._mcmc_result(sampler), label='Posterior')
+					g.attrs['time burn in'] = t1-t0
+					g.attrs['time production'] = t2-t1
 					g.attrs['completed'] = 'True'
-					g.attrs['number of restarts'] = nr
 					b.smd.save(f)
-				except:
-					try:
-						f.close()
-					except:
-						pass
-					self.parent().parent().parent().statusBar().showMessage("Laplace Crashed...")
-					self.parent().parent().log.new('Crashed Laplace Approximation on %s/data/%s'%(self.tloc,self.dname))
-				self.parent().parent().parent().statusBar().showMessage("Completed Laplace on %s"%(self.tloc))
-				self.parent().parent().log.new('Completed Laplace Approximation on %s/data/%s'%(self.tloc,self.dname))
+					
+				# except:
+				# 	try:
+				# 		f.close()
+				# 	except:
+				# 		pass
+					self.parent().parent().parent().statusBar().showMessage("MCMC Crashed...")
+					self.parent().parent().log.new('Crashed MCMC on %s/data/%s'%(self.tloc,self.dname))
+				self.parent().parent().parent().statusBar().showMessage("Completed MCMC on %s"%(self.tloc))
+				self.parent().parent().log.new('Completed MCMC on %s/data/%s'%(self.tloc,self.dname))
 				
 	def batch(self):
 		reply = QMessageBox.question(self,'Run?',"Are you sure you want to process all of the trajectories like this?")
@@ -154,7 +193,7 @@ class laplace(QWidget):
 				except:
 					pass
 			t1 = time.time()
-			self.parent().parent().parent().statusBar().showMessage("Completed batch mode Laplace...")
+			self.parent().parent().parent().statusBar().showMessage("Completed batch mode MCMC...")
 			QMessageBox.information(self,"Complete","Batch mode complete in %f seconds"%((t1-t0)))
 
 	def keyPressEvent(self,event):
@@ -164,10 +203,10 @@ class laplace(QWidget):
 			self.load_trajectory()
 	
 
-class ui_laplace(QMainWindow):
+class ui_mcmc(QMainWindow):
 	def __init__(self,parent=None):
 		super(QMainWindow,self).__init__(parent)
-		self.ui = laplace(self)
+		self.ui = mcmc(self)
 		self.setCentralWidget(self.ui)
 		self.show()
 
@@ -180,5 +219,5 @@ class ui_laplace(QMainWindow):
 if __name__ == '__main__':
 	import sys
 	app = QApplication(sys.argv)
-	w = ui_laplace()
+	w = ui_mcmc()
 	sys.exit(app.exec_())
