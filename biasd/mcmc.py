@@ -189,7 +189,13 @@ class _mcmc_result(object):
 				self.naccepted = mcmc_input.naccepted
 				self.nwalkers = mcmc_input.k
 				self.dim = mcmc_input.dim
-			else:
-				self.acor, self.chain, self.lnprobability, self.iterations, self.naccepted,self.nwalkers,self.dim = mcmc_input
+				return
 		except:
-			raise Exception("Couldn't initialize _mcmc_result")
+			pass
+		try:
+			self.acor, self.chain, self.lnprobability, self.iterations, self.naccepted,self.nwalkers,self.dim = mcmc_input
+			return
+		except:
+			pass
+		raise Exception("Couldn't initialize _mcmc_result")
+		

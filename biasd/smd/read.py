@@ -77,7 +77,7 @@ def mcmc(group,label='BIASD MCMC result'):
 	p = [group.attrs[i] for i in keys]
 	p.insert(1,group['sampler chain'].value)
 	p.insert(2,group['log probability'].value)
-	return _mcmc_result(*p)
+	return _mcmc_result(p)
 
 @_safely
 def kmeans(group,label="K-means result"):

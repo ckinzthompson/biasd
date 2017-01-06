@@ -58,7 +58,6 @@ class previewer(QWidget):
 		self.show()
 	
 	def savefig(self):
-
 		oname = QFileDialog.getSaveFileName(self,"Save Figure",'./','jpg (*.jpg);;png (*.png);;pdf (*.pdf);;eps (*.eps)')
 		self.setFocus()
 		try:

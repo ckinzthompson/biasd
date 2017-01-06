@@ -18,6 +18,7 @@ from preferences import ui_preferences
 from traces import ui_traces, ui_set_tau
 from laplace import ui_laplace
 from mcmc import ui_mcmc
+from posterior import ui_posterior
 
 # BIASD Path
 biasd_path = '../'
@@ -152,7 +153,12 @@ class biasd_control(QWidget):
 		self.ui_mcmc.show()
 		
 	def launch_posterior(self):
-		pass
+		try:
+			self.ui_posterior.close()
+		except:
+			pass
+		self.ui_posterior = ui_posterior(self)
+		self.ui_posterior.show()
 		
 	def make_shortcut(self,key,fxn):
 		qs = QShortcut(self)
