@@ -59,7 +59,7 @@ def baseline(parent,params,label='result'):
 
 def mcmc(parent,mcmc_result,label='result'):
 	"""
-	Add a `_mcmc_result` from `biasd.mcmc` to a HDF5 group
+	Add a `mcmc_result` from `biasd.mcmc` to a HDF5 group
 	"""
 	# acor ,chain,lnprobability,iterations,naccepted,nwalkers,dim
 

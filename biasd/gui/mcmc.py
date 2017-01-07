@@ -12,8 +12,7 @@ matplotlib.use('Qt5Agg')
 
 import numpy as np
 import sys
-biasd_path = '../'
-sys.path.append(biasd_path)
+
 import biasd as b
 
 from smd_loader import ui_loader
@@ -159,7 +158,7 @@ class mcmc(QWidget):
 
 					f = b.smd.load(fn)
 					g = f[self.tloc+'/'+gname]
-					b.smd.add.mcmc(g,b.mcmc._mcmc_result(sampler), label='Posterior')
+					b.smd.add.mcmc(g,b.mcmc.mcmc_result(sampler), label='Posterior')
 					g.attrs['time burn in'] = t1-t0
 					g.attrs['time production'] = t2-t1
 					g.attrs['completed'] = 'True'

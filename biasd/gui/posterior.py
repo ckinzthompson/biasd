@@ -13,8 +13,6 @@ from matplotlib.backends.backend_qt5agg import FigureCanvas
 
 
 import sys
-biasd_path = '../'
-sys.path.append(biasd_path)
 import biasd as b
 import numpy as np
 

@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Getting Started &mdash; BIASD v0.1</title>
+  <title>Getting Started &mdash; BIASD v0.1.1</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="BIASD v0.1" href="index.html"/>
+    <link rel="top" title="BIASD v0.1.1" href="index.html"/>
         <link rel="next" title="Compiling the Likelihood" href="compileguide.html"/>
         <link rel="prev" title="Bayesian Inference for the Analysis of Sub-temporal-resolution Data" href="index.html"/> 
 
@@ -65,17 +65,24 @@
           
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#biasd-mcmc">BIASD + MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#plot-biasd-mcmc-results-using-corner">Plot BIASD-MCMC Results Using Corner</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#plot-biasd-mcmc-results-using-viewer">Plot BIASD-MCMC Results Using Viewer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#biasd-laplace-approximation">BIASD + Laplace Approximation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#my-baseline-and-biasd">My Baseline and BIASD...</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#software-requirements">Software Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-biasd-to-the-python-path">Adding BIASD to the Python Path</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="compileguide.html">Compiling the Likelihood</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="compileguide.html#background">Background</a></li>
 <li class="toctree-l2"><a class="reference internal" href="compileguide.html#how-to-compile">How to Compile</a></li>
 <li class="toctree-l2"><a class="reference internal" href="compileguide.html#testing-speed">Testing Speed</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">BIASD Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#creating-a-new-smd-file">Creating a new SMD file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#sample-the-posterior-with-mcmc">Sample the posterior with MCMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#laplace-approximation-and-computing-the-predictive-posterior">Laplace approximation and computing the predictive posterior</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">BIASD GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui.html#functionality">Functionality</a></li>
 </ul>
 </li>
 </ul>
@@ -105,15 +112,9 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="code_smd.html">SMD</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="code_smd.html#work-with-smd-data">Work with SMD data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#add-biasd-results-to-an-smd-object">Add BIASD results to an SMD object</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#read-biasd-results-from-an-smd-object-into-a-useful-format">Read BIASD results from an SMD object into a useful format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.add">Add BIASD results to an SMD object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.read">Read BIASD results from an SMD object into a useful format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="code_smd.html#examples">Examples</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_utils.html">Utils</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_utils.html#baseline-correction">Baseline Correction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_utils.html#fit-histograms-to-the-biasd-likelihood-function">Fit histograms to the BIASD likelihood function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_utils.html#clustering-data">Clustering data</a></li>
 </ul>
 </li>
 </ul>
@@ -153,156 +154,34 @@
             
   <div class="section" id="getting-started">
 <span id="getstarted"></span><h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
-<p>Here&#8217;re some quick examples to get you started using BIASD. In general, BIASD uses the SMD data format (DOI: 10.1186/s12859-014-0429-4) for data storage, though this is not required. It also uses <cite>emcee</cite> (arXiv:1202.3665) to perform the Markov chain Monte Carlo (MCMC), though the Laplace approximation is also provided, which does not use emcee.</p>
-<p>You can install <code class="docutils literal"><span class="pre">emcee</span></code> with</p>
-<div class="highlight-bash"><div class="highlight"><pre>pip install emcee
+<p>In general, BIASD uses the SMD data format (DOI: 10.1186/s12859-014-0429-4) for data storage, though this is not required. It also uses <cite>emcee</cite> (arXiv:1202.3665) to perform the Markov chain Monte Carlo (MCMC), though the Laplace approximation is also provided, which does not use emcee. To start using BIASD, you will need to first install some Python packages, and maybe compile some libraries if your want reasonable computational performance.</p>
+<div class="section" id="software-requirements">
+<h2>Software Requirements<a class="headerlink" href="#software-requirements" title="Permalink to this headline">¶</a></h2>
+<p>Most of BIASD is written in Python. In general, you can run a Python script (.py) from a terminal with</p>
+<div class="highlight-bash"><div class="highlight"><pre>python myscript.py
 </pre></div>
 </div>
-<p>You might also want to get <code class="docutils literal"><span class="pre">corner</span></code> for plotting purposes. Use</p>
-<div class="highlight-bash"><div class="highlight"><pre>pip install corner
+<p>BIASD depends upon several Python packages, which must be installed. These can easily be obtained with the <cite>conda</cite> package manager, which is most efficiently obtained by installing <a class="reference external" href="http://conda.pydata.org/miniconda.html">Continuum Analytics&#8217; Miniconda</a>. After installing <cite>Miniconda</cite> (the 64 bit, Python 2.7 version), you can then get the Python packages you will need.</p>
+<p>You will need to use <cite>conda</cite> to install <cite>pip</cite> (version 9.0), <cite>numpy</cite> (version 1.11), <cite>scipy</cite> (verison 0.18), and <cite>matplotlib</cite> (version 1.5). For saving in the HDF5 SMD format, you will also need <cite>h5py</cite> (version 2.6) &#8211; these versions are up-to-date as of writing. In a terminal, install these packages with</p>
+<div class="highlight-bash"><div class="highlight"><pre>conda install pip numpy scipy matplotlib h5py
 </pre></div>
 </div>
-<div class="section" id="biasd-mcmc">
-<h2>BIASD + MCMC<a class="headerlink" href="#biasd-mcmc" title="Permalink to this headline">¶</a></h2>
-<p>BIASD uses <cite>emcee</cite>, which is a seriously awesome, affine invariant Markov chain Monte Carlo sample. Read about it <a class="reference external" href="http://dan.iel.fm/emcee/current/">here</a>.</p>
-<div class="highlight-Python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">biasd</span> <span class="kn">as</span> <span class="nn">b</span>
-
-<span class="c"># Load some SMD format data</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data.smd&#39;</span><span class="p">)</span>
-
-<span class="c"># Setup prior distributions</span>
-<span class="n">e1</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mf">9.</span><span class="p">)</span>
-<span class="n">e2</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="mf">9.2</span><span class="p">,</span><span class="o">.</span><span class="mi">8</span><span class="p">)</span>
-<span class="n">sigma</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span><span class="mf">1.</span><span class="o">/</span><span class="mf">4.8</span><span class="p">)</span>
-<span class="n">k1</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">k2</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span><span class="mf">1.</span><span class="o">/</span><span class="mf">8.</span><span class="p">)</span>
-
-<span class="c"># Collect the distributions</span>
-<span class="n">priors</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">parameter_collection</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span><span class="n">e2</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">k1</span><span class="p">,</span><span class="n">k2</span><span class="p">)</span>
-
-<span class="c"># Loop over all the traces</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">n_traces</span><span class="p">):</span>
-
-        <span class="c"># Log the priors for this molecule in the SMD</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">priors</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">priors</span><span class="p">)</span>
-
-        <span class="c"># Setup the MCMC sampler with 50 walkers and 8 CPUs on the FRET data</span>
-        <span class="n">nwalkers</span> <span class="o">=</span> <span class="mi">50</span>
-        <span class="n">sampler</span><span class="p">,</span> <span class="n">initial_positions</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">FRET</span><span class="p">,</span>
-                <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">priors</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">i</span><span class="p">),</span> <span class="n">tau</span><span class="p">,</span>
-                <span class="n">nwalkers</span><span class="p">,</span> <span class="n">initialize</span><span class="o">=</span><span class="s">&#39;rvs&#39;</span><span class="p">,</span> <span class="n">threads</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-
-        <span class="c"># Run the MCMC: burn-in first, then production</span>
-        <span class="n">sampler</span><span class="p">,</span> <span class="n">burned_positions</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">burn_in</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span>
-                <span class="n">initial_positions</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-        <span class="n">sampler</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span><span class="n">burned_positions</span><span class="p">,</span><span class="n">nsteps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span><span class="n">timer</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-
-        <span class="c"># Calculate acceptance ratio and autocorrelation times</span>
-        <span class="n">largest_autocorrelation_time</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">chain_statistics</span><span class="p">(</span><span class="n">sampler</span><span class="p">)</span>
-
-        <span class="c"># Save this data</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">mcmc</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">sampler</span><span class="p">)</span>
-        <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data.smd&#39;</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
+<p>Once you have <cite>pip</cite> installed, you can install <cite>emcee</cite> for MCMC and <cite>corner</cite> for plotting purposes from a terminal window with</p>
+<div class="highlight-bash"><div class="highlight"><pre>pip install emcee corner
 </pre></div>
 </div>
 </div>
-<div class="section" id="plot-biasd-mcmc-results-using-corner">
-<h2>Plot BIASD-MCMC Results Using Corner<a class="headerlink" href="#plot-biasd-mcmc-results-using-corner" title="Permalink to this headline">¶</a></h2>
-<p>Use corner to plot the 5-D space of the posterior sampled by MCMC. Read about corner <a class="reference external" href="http://corner.readthedocs.io/en/latest/">here</a>.</p>
-<div class="highlight-Python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">biasd</span> <span class="kn">as</span> <span class="nn">b</span>
-
-<span class="c"># Load some SMD format data</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data.smd&#39;</span><span class="p">)</span>
-
-<span class="c"># Get read the sampler results for the first trace (0)</span>
-<span class="n">sampler_results</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">mcmc</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
-
-<span class="c"># Get the correlated samples</span>
-<span class="n">samples_corr</span> <span class="o">=</span> <span class="n">sampler_results</span><span class="o">.</span><span class="n">chain</span>
-
-<span class="c"># Remove some really bad samples</span>
-<span class="n">cut</span> <span class="o">=</span> <span class="n">sampler_results</span><span class="o">.</span><span class="n">lnprobability</span> <span class="o">&lt;</span> <span class="mf">0.</span>
-<span class="n">samples_corr</span> <span class="o">=</span> <span class="n">samples_corr</span><span class="p">[</span><span class="o">~</span><span class="n">cut</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
-
-<span class="c"># Get the uncorrelated samples (previously calculated)</span>
-<span class="n">samples_uncorr</span> <span class="o">=</span> <span class="n">sampler_results</span><span class="o">.</span><span class="n">samples</span>
-
-<span class="c"># Plot corner plots</span>
-<span class="n">f</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">plot_corner</span><span class="p">(</span><span class="n">samples_corr</span><span class="p">)</span>
-<span class="n">f</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">plot_corner</span><span class="p">(</span><span class="n">samples_uncorr</span><span class="p">)</span>
+<div class="section" id="adding-biasd-to-the-python-path">
+<h2>Adding BIASD to the Python Path<a class="headerlink" href="#adding-biasd-to-the-python-path" title="Permalink to this headline">¶</a></h2>
+<p>In order for your version of Python to find BIASD, you&#8217;ll need to add the folder containing the BIASD code into your environmental variable PYTHONPATH. To do this, you&#8217;ll need to edit your shell startup script with a text editor. This is located at <cite>/Users/&lt;username&gt;/.profile</cite> for mac, or <cite>/home/&lt;username&gt;/.bashrc</cite> if you&#8217;re using bash for linux/unix; here, you should replace <cite>&lt;username&gt;</cite> with your username. At the end of your file, add the line</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nb">export </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">PYTHONPATH</span><span class="si">}</span><span class="s2">:/path/to/the/biasd/folder/you/downloaded&quot;</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="plot-biasd-mcmc-results-using-viewer">
-<h2>Plot BIASD-MCMC Results Using Viewer<a class="headerlink" href="#plot-biasd-mcmc-results-using-viewer" title="Permalink to this headline">¶</a></h2>
-<p>From the above example with corner, you can use the built in distribution viewer to explore the marginalized BIASD posterior distribution.</p>
-<div class="highlight-Python"><div class="highlight"><pre><span class="c"># Create a collection of distributions from the marginalized samples</span>
-<span class="n">posterior</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">create_posterior_collection</span><span class="p">(</span><span class="n">samples_uncorr</span><span class="p">,</span><span class="n">priors</span><span class="p">)</span>
-
-<span class="c"># View the marginalized posterior in a biasd.distribution.viewer</span>
-<span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">viewer</span><span class="p">(</span><span class="n">posterior</span><span class="p">)</span>
+<p>which assumes that you downloaded the BIASD package to <cite>/path/to/the/biasd/folder/you/downloaded</cite>. Note, that you need to either restart your terminal window, or source the startup script, e.g.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nb">source</span> ~/.bashrc
 </pre></div>
 </div>
-</div>
-<div class="section" id="biasd-laplace-approximation">
-<h2>BIASD + Laplace Approximation<a class="headerlink" href="#biasd-laplace-approximation" title="Permalink to this headline">¶</a></h2>
-<p>You can also use the Laplace approximation to approximate the posterior distribution as a multidimensional gaussian centered the the maximum a postiori (MAP) value of the distribution. The advantage is that it is probably faster than MCMC, however, it is definitely an approximation.</p>
-<div class="highlight-Python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">biasd</span> <span class="kn">as</span> <span class="nn">b</span>
-
-<span class="c"># Load some SMD format data</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data.smd&#39;</span><span class="p">)</span>
-<span class="n">tau</span> <span class="o">=</span> <span class="mf">0.1</span>
-
-<span class="c"># Setup the prior distributions</span>
-<span class="n">e1</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span><span class="mf">9.</span><span class="p">)</span>
-<span class="n">e2</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="mf">9.</span><span class="p">,</span><span class="mf">1.</span><span class="p">)</span>
-<span class="n">sigma</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="mf">2.</span><span class="p">,</span><span class="mf">2.</span><span class="o">/.</span><span class="mo">05</span><span class="p">)</span>
-<span class="n">k1</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="mf">20.</span><span class="p">,</span><span class="mf">20.</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span>
-<span class="n">k2</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="mf">20.</span><span class="p">,</span><span class="mf">20.</span><span class="o">/</span><span class="mf">8.</span><span class="p">)</span>
-<span class="n">priors</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">parameter_collection</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span><span class="n">e2</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">k1</span><span class="p">,</span><span class="n">k2</span><span class="p">)</span>
-
-<span class="c"># Loop over the traces</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">n_traces</span><span class="p">):</span>
-
-        <span class="c"># Perform Laplace approximation</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">FRET</span>
-        <span class="n">lp</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">laplace</span><span class="o">.</span><span class="n">laplace_approximation</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="n">priors</span><span class="p">,</span><span class="n">tau</span><span class="p">)</span>
-
-        <span class="c"># Add the priors and results to the SMD</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">priors</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">priors</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">laplace_posterior</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">lp</span><span class="p">)</span>
-
-        <span class="c"># Calculate the moment-matched, marginalized posterior</span>
-        <span class="c"># of the same form as the prior distributions</span>
-        <span class="n">lp</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">priors</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">posterior</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">lp</span><span class="o">.</span><span class="n">posterior</span><span class="p">)</span>
-
-<span class="c"># Save the results</span>
-<span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data.smd&#39;</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="my-baseline-and-biasd">
-<h2>My Baseline and BIASD...<a class="headerlink" href="#my-baseline-and-biasd" title="Permalink to this headline">¶</a></h2>
-<p>If your baseline is crazy, BIASD will not work very well. In the <code class="docutils literal"><span class="pre">./utils</span></code> directory there a method to try to integrate out a baseline that follows a Brownian diffusion process. Since this implementation is built upon a Gaussian mixture model, it&#8217;s probably inappropriate to use this when there is a lot of blurring.</p>
-<div class="highlight-Python"><div class="highlight"><pre><span class="c"># Load data</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&#39;data.smd&#39;</span><span class="p">)</span>
-
-<span class="c"># Let&#39;s remove the baseline of the first trace</span>
-<span class="n">d</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">FRET</span>
-<span class="n">baseline_result</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">baseline</span><span class="o">.</span><span class="n">remove_baseline</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">baseline</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">baseline_result</span><span class="p">)</span>
-
-<span class="c"># Save the results</span>
-<span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data.smd&#39;</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
-
-<span class="c"># Subtract off the baseline for use in some other calculation</span>
-<span class="n">d</span> <span class="o">-=</span> <span class="n">baseline_result</span><span class="o">.</span><span class="n">baseline</span>
-</pre></div>
-</div>
+<p>After this, you should be able to use BIASD with Python. However, you should compile the likelihood function if you want better performance.</p>
 </div>
 </div>
 
@@ -324,7 +203,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016, Colin Kinz-Thompson.
+        &copy; Copyright 2013-2017, Colin Kinz-Thompson.
     </p>
   </div>
 
@@ -345,7 +224,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.1',
+            VERSION:'0.1.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

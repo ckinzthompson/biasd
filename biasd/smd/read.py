@@ -69,15 +69,15 @@ def mcmc(group,label='BIASD MCMC result'):
 	Load a BIASD MCMC result from an HDF5 group.
 	
 	Returns:
-		* a `biasd.mcmc._mcmc_result`
+		* a `biasd.mcmc.mcmc_result`
 	"""
 	assert group.attrs['description'] == label
-	from ..mcmc import _mcmc_result
+	from ..mcmc import mcmc_result
 	keys = ['autocorrelation times', 'iterations', 'number accepted', 'number of walkers','number of data dimensions']
 	p = [group.attrs[i] for i in keys]
 	p.insert(1,group['sampler chain'].value)
 	p.insert(2,group['log probability'].value)
-	return _mcmc_result(p)
+	return mcmc_result(p)
 
 @_safely
 def kmeans(group,label="K-means result"):

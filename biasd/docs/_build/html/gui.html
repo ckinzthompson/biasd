@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Bayesian Inference for the Analysis of Sub-temporal-resolution Data &mdash; BIASD v0.1.1</title>
+  <title>BIASD GUI &mdash; BIASD v0.1.1</title>
   
 
   
@@ -30,8 +30,9 @@
   
 
   
-    <link rel="top" title="BIASD v0.1.1" href="#"/>
-        <link rel="next" title="Getting Started" href="getstarted.html"/> 
+    <link rel="top" title="BIASD v0.1.1" href="index.html"/>
+        <link rel="next" title="Distributions" href="code_distributions.html"/>
+        <link rel="prev" title="BIASD Examples" href="examples.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -46,7 +47,7 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-nav-search">
         
-          <a href="#" class="fa fa-home"> BIASD</a>
+          <a href="index.html" class="fa fa-home"> BIASD</a>
         
         
 <div role="search">
@@ -62,7 +63,7 @@
         
           
           
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="getstarted.html">Getting Started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="getstarted.html#software-requirements">Software Requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getstarted.html#adding-biasd-to-the-python-path">Adding BIASD to the Python Path</a></li>
@@ -80,8 +81,8 @@
 <li class="toctree-l2"><a class="reference internal" href="examples.html#laplace-approximation-and-computing-the-predictive-posterior">Laplace approximation and computing the predictive posterior</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="gui.html">BIASD GUI</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="gui.html#functionality">Functionality</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">BIASD GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#functionality">Functionality</a></li>
 </ul>
 </li>
 </ul>
@@ -129,7 +130,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="#">BIASD</a>
+        <a href="index.html">BIASD</a>
       </nav>
 
 
@@ -138,12 +139,12 @@
         <div class="rst-content">
           <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="#">Docs</a> &raquo;</li>
+    <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>Bayesian Inference for the Analysis of Sub-temporal-resolution Data</li>
+    <li>BIASD GUI</li>
       <li class="wy-breadcrumbs-aside">
         
-          <a href="_sources/index.txt" rel="nofollow"> View page source</a>
+          <a href="_sources/gui.txt" rel="nofollow"> View page source</a>
         
       </li>
   </ul>
@@ -151,76 +152,28 @@
 </div>
           <div role="main" class="document">
             
-  <div class="section" id="bayesian-inference-for-the-analysis-of-sub-temporal-resolution-data">
-<h1>Bayesian Inference for the Analysis of Sub-temporal-resolution Data<a class="headerlink" href="#bayesian-inference-for-the-analysis-of-sub-temporal-resolution-data" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="biasd">
-<h2>BIASD<a class="headerlink" href="#biasd" title="Permalink to this headline">¶</a></h2>
-<p>BIASD allows you to analyze Markovian signal versus time series, such as those collected in single-molecule biophysics experiments, even when the kinetics of the underlying Markov chain are faster than the signal acquisition rate. The code here has been written in python for easy implementation, but unfortunately, the likelihood function is computationally expensive since it involves a numerical integral. Therefore, the likelihood function is also provided as C code and also in CUDA with python wrappers to use them with the rest of the code base.</p>
+  <div class="section" id="biasd-gui">
+<span id="gui"></span><h1>BIASD GUI<a class="headerlink" href="#biasd-gui" title="Permalink to this headline">¶</a></h1>
+<p>Also included is a graphical user interface to facilitate analysis with BIASD. Code for it is found in the <cite>./biasd/gui</cite> folder. It is written with <a class="reference external" href="https://riverbankcomputing.com/software/pyqt/intro">PyQt5</a>, which is a Python binding for <a class="reference external" href="https://www.qt.io/">Qt5</a>. Thus, you&#8217;ll need PyQt5 installed to run it, which you can get from a terminal with</p>
+<div class="highlight-bash"><div class="highlight"><pre>conda install PyQt5
+</pre></div>
 </div>
+<p>Once you have this installed, you can invoke the GUI from Python with</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">biasd</span> <span class="kn">as</span> <span class="nn">b</span>
+<span class="n">b</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">launch</span><span class="p">()</span>
+</pre></div>
 </div>
-<div class="section" id="contents">
-<h1>Contents:<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="getstarted.html">Getting Started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="getstarted.html#software-requirements">Software Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="getstarted.html#adding-biasd-to-the-python-path">Adding BIASD to the Python Path</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="compileguide.html">Compiling the Likelihood</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="compileguide.html#background">Background</a></li>
-<li class="toctree-l2"><a class="reference internal" href="compileguide.html#how-to-compile">How to Compile</a></li>
-<li class="toctree-l2"><a class="reference internal" href="compileguide.html#testing-speed">Testing Speed</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">BIASD Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#creating-a-new-smd-file">Creating a new SMD file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#sample-the-posterior-with-mcmc">Sample the posterior with MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#laplace-approximation-and-computing-the-predictive-posterior">Laplace approximation and computing the predictive posterior</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="gui.html">BIASD GUI</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="gui.html#functionality">Functionality</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
-<div class="section" id="code-documentation">
-<h1>Code Documentation:<a class="headerlink" href="#code-documentation" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="code_distributions.html">Distributions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Some standard probability distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#convert-between-distributions">Convert between distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#distributions-can-be-collected-for-priors-or-posteriors">Distributions can be collected for priors or posteriors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#collections-can-be-visualized">Collections can be visualized</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Finally, you can easily generate a few useful collections using</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_laplace.html">Laplace</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_laplace.html#laplace-approximation">Laplace Approximation</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_likelihood.html">Likelihood</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#switch-the-log-likelihood-function">Switch the log-likelihood function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#module-likelihood">Inference-related functions</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_mcmc.html">MCMC</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#markov-chain-monte-carlo">Markov chain Monte Carlo</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Setup and Run MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Analyze MCMC samples</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_smd.html">SMD</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#work-with-smd-data">Work with SMD data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.add">Add BIASD results to an SMD object</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.read">Read BIASD results from an SMD object into a useful format</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#examples">Examples</a></li>
-</ul>
-</li>
-</ul>
+<p>There is a script to do this in the main directory called <cite>./launch_GUI.py</cite>. You can launch it from that directory with</p>
+<p>..code-block:: bash</p>
+<blockquote>
+<div>python launch_GUI.py</div></blockquote>
+<p>or</p>
+<p>..code-block:: bash</p>
+<blockquote>
+<div>./launch_GUI.py</div></blockquote>
+<div class="section" id="functionality">
+<h2>Functionality<a class="headerlink" href="#functionality" title="Permalink to this headline">¶</a></h2>
+<p>Functionality in the GUI is not as rich as in the Python module, however, you can easily explore HDF5 SMD files, which is not trivial from a Python script.</p>
 </div>
 </div>
 
@@ -230,8 +183,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="getstarted.html" class="btn btn-neutral float-right" title="Getting Started">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="code_distributions.html" class="btn btn-neutral float-right" title="Distributions">Next <span class="fa fa-arrow-circle-right"></span></a>
       
+      
+        <a href="examples.html" class="btn btn-neutral" title="BIASD Examples"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

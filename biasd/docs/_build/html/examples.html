@@ -1,0 +1,467 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>BIASD Examples &mdash; BIASD v0.1.1</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="BIASD v0.1.1" href="index.html"/>
+        <link rel="next" title="BIASD GUI" href="gui.html"/>
+        <link rel="prev" title="Compiling the Likelihood" href="compileguide.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        
+          <a href="index.html" class="fa fa-home"> BIASD</a>
+        
+        
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+          
+          
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getstarted.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getstarted.html#software-requirements">Software Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getstarted.html#adding-biasd-to-the-python-path">Adding BIASD to the Python Path</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="compileguide.html">Compiling the Likelihood</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="compileguide.html#background">Background</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compileguide.html#how-to-compile">How to Compile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compileguide.html#testing-speed">Testing Speed</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">BIASD Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#creating-a-new-smd-file">Creating a new SMD file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sample-the-posterior-with-mcmc">Sample the posterior with MCMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#laplace-approximation-and-computing-the-predictive-posterior">Laplace approximation and computing the predictive posterior</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">BIASD GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui.html#functionality">Functionality</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="code_distributions.html">Distributions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Some standard probability distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#convert-between-distributions">Convert between distributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#distributions-can-be-collected-for-priors-or-posteriors">Distributions can be collected for priors or posteriors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#collections-can-be-visualized">Collections can be visualized</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Finally, you can easily generate a few useful collections using</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_laplace.html">Laplace</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_laplace.html#laplace-approximation">Laplace Approximation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_likelihood.html">Likelihood</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#switch-the-log-likelihood-function">Switch the log-likelihood function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#module-likelihood">Inference-related functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_mcmc.html">MCMC</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#markov-chain-monte-carlo">Markov chain Monte Carlo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Setup and Run MCMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Analyze MCMC samples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="code_smd.html">SMD</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#work-with-smd-data">Work with SMD data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.add">Add BIASD results to an SMD object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.read">Read BIASD results from an SMD object into a useful format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#examples">Examples</a></li>
+</ul>
+</li>
+</ul>
+
+          
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">BIASD</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>BIASD Examples</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/examples.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document">
+            
+  <div class="section" id="biasd-examples">
+<span id="examples"></span><h1>BIASD Examples<a class="headerlink" href="#biasd-examples" title="Permalink to this headline">¶</a></h1>
+<p>Here are some example Python scripts to perform BIASD. They can be found in <cite>./example_data</cite>, along with simulated data in a tab-delimited format (<cite>./example_data/example_data.dat</cite>), and an example HDF5 SMD dataset containing this data and some analysis results (<cite>./example_data/example_dataset.hdf5</cite>).</p>
+<div class="section" id="creating-a-new-smd-file">
+<h2>Creating a new SMD file<a class="headerlink" href="#creating-a-new-smd-file" title="Permalink to this headline">¶</a></h2>
+<p>This script loads the example data, and then creates an HDF5 SMD data file to contain this data. Future analysis performed with BIASD can also be saved into this file.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## Imports</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">biasd</span> <span class="kn">as</span> <span class="nn">b</span>
+
+<span class="c">## Create a new SMD file</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;./example_dataset.hdf5&#39;</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c">## Load example trajectories (N,T)</span>
+<span class="n">example_data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s">&#39;example_data.dat&#39;</span><span class="p">)</span>
+<span class="n">n_molecules</span><span class="p">,</span> <span class="n">n_datapoints</span> <span class="o">=</span> <span class="n">example_data</span><span class="o">.</span><span class="n">shape</span>
+
+<span class="c">## These signal versus time trajectories were simulated to be like smFRET data.</span>
+<span class="c">## The simulation parameters were:</span>
+<span class="n">tau</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="c"># seconds</span>
+<span class="n">e1</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="c"># E_{FRET}</span>
+<span class="n">e2</span> <span class="o">=</span> <span class="mf">0.9</span> <span class="c"># E_{FRET}</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.05</span> <span class="c">#E_{FRET}</span>
+<span class="n">k1</span> <span class="o">=</span> <span class="mf">3.</span> <span class="c"># s^{-1}</span>
+<span class="n">k2</span> <span class="o">=</span> <span class="mf">8.</span> <span class="c"># s^{-1}</span>
+
+<span class="n">truth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">e1</span><span class="p">,</span><span class="n">e2</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">k1</span><span class="p">,</span><span class="n">k2</span><span class="p">))</span>
+
+<span class="c">## Create a vector with the time of each datapoint</span>
+<span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_datapoints</span><span class="p">)</span> <span class="o">*</span> <span class="n">tau</span>
+
+<span class="c">## Add the trajectories to the SMD file automatically</span>
+<span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">trajectories</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">example_data</span><span class="p">,</span> <span class="n">x_label</span><span class="o">=</span><span class="s">&#39;time&#39;</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s">&#39;E_{FRET}&#39;</span><span class="p">)</span>
+
+<span class="c">## Add some metadata about the simulation to each trajectory</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_molecules</span><span class="p">):</span>
+
+        <span class="c"># Select the group of interest</span>
+        <span class="n">trajectory</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&#39;trajectory &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span>
+
+        <span class="c"># Add an attribute called tau to the data group.</span>
+        <span class="c"># This group contains the time and signal vectors.</span>
+        <span class="n">trajectory</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;tau&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tau</span>
+
+        <span class="c"># Add a new group called simulation in the data group</span>
+        <span class="n">simulation</span> <span class="o">=</span> <span class="n">trajectory</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s">&#39;simulation&#39;</span><span class="p">)</span>
+
+        <span class="c"># Add relevant simulation paramters</span>
+        <span class="n">simulation</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;tau&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tau</span>
+        <span class="n">simulation</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;e1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e1</span>
+        <span class="n">simulation</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;e2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">e2</span>
+        <span class="n">simulation</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;sigma&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="n">simulation</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;k1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">k1</span>
+        <span class="n">simulation</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;k2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">k2</span>
+
+        <span class="c"># Add an array of simulation parameters for easy access</span>
+        <span class="n">simulation</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;truth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">truth</span>
+
+<span class="c">## Save the changes, and close the HDF5 file</span>
+<span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="sample-the-posterior-with-mcmc">
+<h2>Sample the posterior with MCMC<a class="headerlink" href="#sample-the-posterior-with-mcmc" title="Permalink to this headline">¶</a></h2>
+<p>This script loads the example data from above, sets some priors, and then uses the Markov chain Monte Carlo (MCMC) technique to sample the posterior.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## Imports</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">biasd</span> <span class="kn">as</span> <span class="nn">b</span>
+
+
+<span class="c">#### Setup the analysis</span>
+<span class="c">## Load the SMD example dataset</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;./example_dataset.hdf5&#39;</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+<span class="c">## Select the data from the first trajectory</span>
+<span class="n">trace</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&#39;trajectory 0&#39;</span><span class="p">]</span>
+<span class="n">time</span> <span class="o">=</span> <span class="n">trace</span><span class="p">[</span><span class="s">&#39;data/time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+<span class="n">fret</span> <span class="o">=</span> <span class="n">trace</span><span class="p">[</span><span class="s">&#39;data/E_{FRET}&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+
+<span class="c">## Parse meta-data to load time resolution</span>
+<span class="n">tau</span> <span class="o">=</span> <span class="n">trace</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;tau&#39;</span><span class="p">]</span>
+
+<span class="c">## Get the simulation ground truth values</span>
+<span class="n">truth</span> <span class="o">=</span> <span class="n">trace</span><span class="p">[</span><span class="s">&#39;data/simulation&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;truth&#39;</span><span class="p">]</span>
+
+<span class="c">## Close the dataset</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="c">#### Perform a Calculation</span>
+<span class="c">## Make the prior distribution</span>
+<span class="c">## set means to ground truths: (.1, .9, .05, 3., 8.)</span>
+<span class="n">e1</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
+<span class="n">e2</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">k1</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span>
+<span class="n">k2</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">8.</span><span class="p">)</span>
+<span class="n">priors</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">parameter_collection</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span><span class="n">e2</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">k1</span><span class="p">,</span><span class="n">k2</span><span class="p">)</span>
+
+<span class="c">## Setup the MCMC sampler to use 100 walkers and 4 CPUs</span>
+<span class="n">nwalkers</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">ncpus</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">sampler</span><span class="p">,</span> <span class="n">initial_positions</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">fret</span><span class="p">,</span> <span class="n">priors</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">nwalkers</span><span class="p">,</span> <span class="n">threads</span> <span class="o">=</span> <span class="n">ncpus</span><span class="p">)</span>
+
+<span class="c">## Burn-in 100 steps and then remove them form the sampler,</span>
+<span class="c">## but keep the final positions</span>
+<span class="n">sampler</span><span class="p">,</span> <span class="n">burned_positions</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">burn_in</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span><span class="n">initial_positions</span><span class="p">,</span><span class="n">nsteps</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="c">## Run 100 steps starting at the burned-in positions. Timing data will provide an idea of how long each step takes</span>
+<span class="n">sampler</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span><span class="n">burned_positions</span><span class="p">,</span><span class="n">nsteps</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="n">timer</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c">## Continue on from step 100 for another 900 steps. Don&#39;t display timing.</span>
+<span class="n">sampler</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">continue_run</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span><span class="mi">900</span><span class="p">,</span><span class="n">timer</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c">## Get uncorrelated samples from the chain by skipping samples according to the autocorrelation time of the variable with the largest autocorrelation time</span>
+<span class="n">uncorrelated_samples</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span><span class="n">uncorrelated</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c">## Make a corner plot of these uncorrelated samples</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">plot_corner</span><span class="p">(</span><span class="n">uncorrelated_samples</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s">&#39;example_mcmc_corner.png&#39;</span><span class="p">)</span>
+
+
+<span class="c">#### Save the analysis</span>
+<span class="c">## Create a new group to hold the analysis in &#39;trajectory 0&#39;</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+<span class="n">trace</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&#39;trajectory 0&#39;</span><span class="p">]</span>
+<span class="n">mcmc_analysis</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s">&quot;MCMC analysis 20170106&quot;</span><span class="p">)</span>
+
+<span class="c">## Add the priors</span>
+<span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">parameter_collection</span><span class="p">(</span><span class="n">mcmc_analysis</span><span class="p">,</span><span class="n">priors</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;priors&#39;</span><span class="p">)</span>
+
+<span class="c">## Extract the relevant information from the sampler, and save this in the SMD file.</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">mcmc_result</span><span class="p">(</span><span class="n">sampler</span><span class="p">)</span>
+<span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">mcmc</span><span class="p">(</span><span class="n">mcmc_analysis</span><span class="p">,</span><span class="n">mcmc</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;MCMC posterior samples&#39;</span><span class="p">)</span>
+
+<span class="c">## Save and close the dataset</span>
+<span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="laplace-approximation-and-computing-the-predictive-posterior">
+<h2>Laplace approximation and computing the predictive posterior<a class="headerlink" href="#laplace-approximation-and-computing-the-predictive-posterior" title="Permalink to this headline">¶</a></h2>
+<p>This script loads the example data, sets some priors, and then finds the Laplace approximation to the posterior distribution. After this, it uses samples from this posterior to calculate the predictive posterior, which is the probability distribution for where you would expect to find new data.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## Imports</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">biasd</span> <span class="kn">as</span> <span class="nn">b</span>
+
+
+<span class="c">#### Setup the analysis</span>
+<span class="c">## Load the SMD example dataset</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;./example_dataset.hdf5&#39;</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+<span class="c">## Select the data from the first trajectory</span>
+<span class="n">trace</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&#39;trajectory 0&#39;</span><span class="p">]</span>
+<span class="n">time</span> <span class="o">=</span> <span class="n">trace</span><span class="p">[</span><span class="s">&#39;data/time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+<span class="n">fret</span> <span class="o">=</span> <span class="n">trace</span><span class="p">[</span><span class="s">&#39;data/E_{FRET}&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+
+<span class="c">## Parse meta-data to load time resolution</span>
+<span class="n">tau</span> <span class="o">=</span> <span class="n">trace</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;tau&#39;</span><span class="p">]</span>
+
+<span class="c">## Get the simulation ground truth values</span>
+<span class="n">truth</span> <span class="o">=</span> <span class="n">trace</span><span class="p">[</span><span class="s">&#39;data/simulation&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s">&#39;truth&#39;</span><span class="p">]</span>
+
+<span class="c">## Close the dataset</span>
+<span class="n">dataset</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="c">#### Perform a Calculation</span>
+<span class="c">## Make the prior distribution</span>
+<span class="c">## set means to ground truths: (.1, .9, .05, 3., 8.)</span>
+<span class="n">e1</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
+<span class="n">e2</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="n">k1</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span>
+<span class="n">k2</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="mf">8.</span><span class="p">)</span>
+<span class="n">priors</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">parameter_collection</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span><span class="n">e2</span><span class="p">,</span><span class="n">sigma</span><span class="p">,</span><span class="n">k1</span><span class="p">,</span><span class="n">k2</span><span class="p">)</span>
+
+<span class="c">## Find the Laplace approximation to the posterior</span>
+<span class="n">posterior</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">laplace</span><span class="o">.</span><span class="n">laplace_approximation</span><span class="p">(</span><span class="n">fret</span><span class="p">,</span><span class="n">priors</span><span class="p">,</span><span class="n">tau</span><span class="p">)</span>
+
+<span class="c">## Calculate the predictive posterior distribution for visualization</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-.</span><span class="mi">2</span><span class="p">,</span><span class="mf">1.2</span><span class="p">,</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">samples</span> <span class="o">=</span> <span class="n">posterior</span><span class="o">.</span><span class="n">samples</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">predictive</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">predictive_from_samples</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">samples</span><span class="p">,</span><span class="n">tau</span><span class="p">)</span>
+
+
+<span class="c">#### Save this analysis</span>
+<span class="c">## Load the dataset file</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+<span class="c">## Create a new group to hold the analysis in &#39;trajectory 0&#39;</span>
+<span class="n">trace</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s">&#39;trajectory 0&#39;</span><span class="p">]</span>
+<span class="n">laplace_analysis</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s">&quot;Laplace analysis 20161230&quot;</span><span class="p">)</span>
+
+<span class="c">## Add the priors</span>
+<span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">parameter_collection</span><span class="p">(</span><span class="n">laplace_analysis</span><span class="p">,</span><span class="n">priors</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;priors&#39;</span><span class="p">)</span>
+
+<span class="c">## Add the posterior</span>
+<span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">laplace_posterior</span><span class="p">(</span><span class="n">laplace_analysis</span><span class="p">,</span><span class="n">posterior</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;posterior&#39;</span><span class="p">)</span>
+
+<span class="c">## Add the predictive</span>
+<span class="n">laplace_analysis</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&#39;predictive x&#39;</span><span class="p">,</span><span class="n">data</span> <span class="o">=</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">laplace_analysis</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s">&#39;predictive y&#39;</span><span class="p">,</span><span class="n">data</span> <span class="o">=</span> <span class="n">predictive</span><span class="p">)</span>
+
+<span class="c">## Save and close the dataset</span>
+<span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+
+
+<span class="c">#### Visualize the results</span>
+<span class="c">## Plot a histogram of the data</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">fret</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">71</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="o">-.</span><span class="mi">2</span><span class="p">,</span><span class="mf">1.2</span><span class="p">),</span> <span class="n">normed</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s">&#39;stepfilled&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=.</span><span class="mi">6</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Data&#39;</span><span class="p">)</span>
+
+<span class="c">## Plot the predictive posterior of the Laplace approximation solution</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">predictive</span><span class="p">,</span> <span class="s">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Laplace&#39;</span><span class="p">)</span>
+
+<span class="c">## We know the data was simulated, so:</span>
+<span class="c">## plot the probability distribution used to simulate the data</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">nosum_log_likelihood</span><span class="p">(</span><span class="n">truth</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">tau</span><span class="p">)),</span> <span class="s">&#39;r&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Truth&#39;</span><span class="p">)</span>
+
+<span class="c">## Label Axes and Curves</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;Probability&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Signal&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="c">## Make the Axes Pretty</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+<span class="n">a</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s">&#39;right&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">a</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">a</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
+<span class="n">a</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s">&#39;bottom&#39;</span><span class="p">)</span>
+
+<span class="c"># Save the figure, then show it</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s">&#39;example_laplace_predictive.png&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="gui.html" class="btn btn-neutral float-right" title="BIASD GUI">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="compileguide.html" class="btn btn-neutral" title="Compiling the Likelihood"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013-2017, Colin Kinz-Thompson.
+    </p>
+  </div>
+
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

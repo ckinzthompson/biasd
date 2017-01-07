@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import biasd as b
 
+
 #### Setup the analysis
 ## Load the SMD example dataset
 filename = './example_dataset.hdf5'
@@ -24,6 +25,7 @@ truth = trace['data/simulation'].attrs['truth']
 ## Close the dataset
 dataset.close()
 
+
 #### Perform a Calculation
 ## Make the prior distribution
 ## set means to ground truths: (.1, .9, .05, 3., 8.)
@@ -41,6 +43,7 @@ posterior = b.laplace.laplace_approximation(fret,priors,tau)
 x = np.linspace(-.2,1.2,1000)
 samples = posterior.samples(100)
 predictive = b.likelihood.predictive_from_samples(x,samples,tau)
+
 
 #### Save this analysis
 ## Load the dataset file
@@ -62,6 +65,7 @@ laplace_analysis.create_dataset('predictive y',data = predictive)
 
 ## Save and close the dataset
 b.smd.save(dataset)
+
 
 #### Visualize the results
 ## Plot a histogram of the data

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-®
-import sys
+import sys, os
 
 # Make sure that we are using QT5
 import matplotlib
@@ -10,6 +10,11 @@ from PyQt5.QtWidgets import QApplication, QColumnView, QWidget, QVBoxLayout, QHB
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QIcon
 from PyQt5.QtCore import Qt, QTimer
 
+# BIASD Path
+this_path = os.path.dirname(os.path.abspath(__file__))
+biasd_path = this_path[:-len("/biasd/gui")]
+sys.path.append(biasd_path)
+import biasd as b
 
 # Other UIs 
 from priors2 import ui_priors
@@ -19,11 +24,6 @@ from traces import ui_traces, ui_set_tau
 from laplace import ui_laplace
 from mcmc import ui_mcmc
 from posterior import ui_posterior
-
-# BIASD Path
-biasd_path = '../'
-sys.path.append(biasd_path)
-import biasd as b
 
 __version__ = "0.1.1"
 
@@ -300,16 +300,19 @@ class gui(QMainWindow):
 		self.setCentralWidget(self.bc)
 		self.statusBar().showMessage("Ready")
 		
-		self.setWindowTitle("BIASD - 0.1.1")
-		self.setWindowIcon(QIcon('b_arrows-01.png'))
+		global __version__, this_path
+		self.setWindowTitle("BIASD - "+__version__)
+		self.setWindowIcon(QIcon(this_path+'/icon-01.png'))
 		# self.setGeometry(250,250,250,150)
 #		self.move(0,0)
 		self.show()
 	
-
-if __name__ == '__main__':
-	app = QApplication(sys.argv)
+def launch():
+	app = QApplication([])
 	app.setStyle('fusion')
 	g = gui()
 	app.setWindowIcon(g.windowIcon())
 	sys.exit(app.exec_())
+	
+if __name__ == '__main__':
+	launch()

@@ -68,7 +68,8 @@ Example use:
 	sampler = b.mcmc.continue_run(sampler,900,timer=False)
 	
 	# Save the sampler data
-	data = b.smd.add.mcmc(sampler)
+	result = b.mcmc.mcmc_result(sampler)
+	data = b.smd.add.mcmc(result)
 	b.smd.save('data.smd',data)
 
 Analyze MCMC samples

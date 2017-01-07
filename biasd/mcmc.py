@@ -171,7 +171,7 @@ def create_posterior_collection(samples,priors):
 	
 	return parameter_collection(e1,e2,sigma,k1,k2)
 
-class _mcmc_result(object):
+class mcmc_result(object):
 	"""
 	Holds the results of a MCMC sampler of the posterior probability distribution from BIASD
 	Input:
@@ -197,5 +197,5 @@ class _mcmc_result(object):
 			return
 		except:
 			pass
-		raise Exception("Couldn't initialize _mcmc_result")
+		raise Exception("Couldn't initialize mcmc_result")
 		

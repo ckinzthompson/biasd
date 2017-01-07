@@ -7,5 +7,4 @@ import distributions
 import mcmc
 import smd
 
-
 __version__ = "0.1.1"

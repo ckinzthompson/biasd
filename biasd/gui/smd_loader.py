@@ -218,13 +218,12 @@ class ui_loader(QMainWindow):
 		self.parent().raise_()
 		self.parent().setFocus()
 
+def launch(fn):
+	app = QApplication(sys.argv)
+	w = ui_loader(fn)
+	sys.exit(app.exec_())
+
 
 if __name__ == '__main__':
 	import sys
-	fn = '/Users/colin/Desktop/20161220 biasd_release/biasd/example_dataset.hdf5'
-	app = QApplication(sys.argv)
-	# apply_dark_theme(app)
-	
-	# w = smd_load(fn)
-	w = ui_loader(None)
-	sys.exit(app.exec_())
+	launch(sys.argv[1])

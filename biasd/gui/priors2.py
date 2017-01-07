@@ -11,9 +11,7 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 
 import sys
-#biasd_path = '/Users/colin/Desktop/20161220 biasd_release/biasd'
-biasd_path = '../'
-sys.path.append(biasd_path)
+
 import biasd as b
 
 from smd_loader import ui_loader

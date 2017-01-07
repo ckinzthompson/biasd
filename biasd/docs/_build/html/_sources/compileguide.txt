@@ -13,7 +13,7 @@ The BIASD log-likelihood function is something like
 	ln(\mathcal{L}) \sim \sum\limits_t ln \left( \delta(f) + \delta(1-f) + \int\limits_0^1 df \cdot \rm{blurring} \right)
 	
 
-Unfortunately, the integral in the logarithm makes it difficult to compute. It is the rate limiting step for this calculation, which is quite slow in Python. Therefore, this package comes with the log-likelihood function written in  C, and also in CUDA. There are three versions in the ``./src`` directory. One is in pure C -- it should be fairly straight forward to compile. The second is written in C with the `GNU Science Library (GSL) <https://www.gnu.org/software/gsl/>`_ -- it's slightly faster, but requires having installed GSL. The third is in CUDA, which allows the calculations to be performed on NVIDIA GPUs. You can use any of the above if compiled, or a version written in Python if you don't want to compile anything. 
+Unfortunately, the integral in the logarithm makes it difficult to compute. It is the rate limiting step for this calculation, which is quite slow in Python. Therefore, this package comes with the log-likelihood function written in  C, and also in CUDA. There are three versions in the ``./biasd/src`` directory. One is in pure C -- it should be fairly straight forward to compile. The second is written in C with the `GNU Science Library (GSL) <https://www.gnu.org/software/gsl/>`_ -- it's slightly faster, but requires having installed GSL. The third is in CUDA, which allows the calculations to be performed on NVIDIA GPUs. You can use any of the above if compiled, or a version written in Python if you don't want to compile anything. 
 
 
 How to Compile
@@ -35,7 +35,7 @@ Now, even if you didn't install GSL, you can compile the BIASD likelihood functi
 	make
 	
 
-Some might fail, for instance if you don't have a CUDA-enabled GPU, but you'll compile as many as possible into the ``./lib`` directory.
+Some might fail, for instance if you don't have a CUDA-enabled GPU, but you'll compile as many as possible into the ``./biasd/lib`` directory.
 
 Testing Speed
 -------------
@@ -43,22 +43,22 @@ To get a feeling for how long it takes the various versions of the BIASD likelih
 
 .. code-block:: python
 
-	import biasd
+	import biasd as b
 	
 	# Switch to the Python version
-	biasd.likelihood.use_python_ll()
+	b.likelihood.use_python_ll()
 
 	# Run the test 10 times, for 5000 datapoints
-	biasd.likelihood.test_speed(10,5000)
+	b.likelihood.test_speed(10,5000)
 	
 	# Switch to the C version and test
 	# Note: will default to GSL over pure C
-	biasd.likelihood.use_C_ll()
-	biasd.likelihood.test_speed(10,5000)
+	b.likelihood.use_C_ll()
+	b.likelihood.test_speed(10,5000)
 	
 	# Switch to the CUDA version and test
-	biasd.likelihood.use_CUDA_ll()
-	biasd.likelihood.test_speed(10,5000)
+	b.likelihood.use_CUDA_ll()
+	b.likelihood.test_speed(10,5000)
 	
 
-The actual execution time depends upon the rate constants, but Python is ~ 1 ms, C with GSL is around ~40 us, and CUDA (when you have many datapoints) is ~ 5 us.
+The actual execution time depends upon the rate constants, but Python is ~ 1 ms, C with GSL is around ~ 50 us, and CUDA (when you have many datapoints) is ~ 1 us.

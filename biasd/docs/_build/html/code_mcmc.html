@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>MCMC &mdash; BIASD v0.1</title>
+  <title>MCMC &mdash; BIASD v0.1.1</title>
   
 
   
@@ -30,7 +30,7 @@
   
 
   
-    <link rel="top" title="BIASD v0.1" href="index.html"/>
+    <link rel="top" title="BIASD v0.1.1" href="index.html"/>
         <link rel="next" title="SMD" href="code_smd.html"/>
         <link rel="prev" title="Likelihood" href="code_likelihood.html"/> 
 
@@ -65,17 +65,24 @@
           
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="getstarted.html">Getting Started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="getstarted.html#biasd-mcmc">BIASD + MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="getstarted.html#plot-biasd-mcmc-results-using-corner">Plot BIASD-MCMC Results Using Corner</a></li>
-<li class="toctree-l2"><a class="reference internal" href="getstarted.html#plot-biasd-mcmc-results-using-viewer">Plot BIASD-MCMC Results Using Viewer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="getstarted.html#biasd-laplace-approximation">BIASD + Laplace Approximation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="getstarted.html#my-baseline-and-biasd">My Baseline and BIASD...</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getstarted.html#software-requirements">Software Requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getstarted.html#adding-biasd-to-the-python-path">Adding BIASD to the Python Path</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="compileguide.html">Compiling the Likelihood</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="compileguide.html#background">Background</a></li>
 <li class="toctree-l2"><a class="reference internal" href="compileguide.html#how-to-compile">How to Compile</a></li>
 <li class="toctree-l2"><a class="reference internal" href="compileguide.html#testing-speed">Testing Speed</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">BIASD Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#creating-a-new-smd-file">Creating a new SMD file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#sample-the-posterior-with-mcmc">Sample the posterior with MCMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#laplace-approximation-and-computing-the-predictive-posterior">Laplace approximation and computing the predictive posterior</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gui.html">BIASD GUI</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui.html#functionality">Functionality</a></li>
 </ul>
 </li>
 </ul>
@@ -105,15 +112,9 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="code_smd.html">SMD</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="code_smd.html#work-with-smd-data">Work with SMD data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#add-biasd-results-to-an-smd-object">Add BIASD results to an SMD object</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#read-biasd-results-from-an-smd-object-into-a-useful-format">Read BIASD results from an SMD object into a useful format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.add">Add BIASD results to an SMD object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.read">Read BIASD results from an SMD object into a useful format</a></li>
 <li class="toctree-l2"><a class="reference internal" href="code_smd.html#examples">Examples</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_utils.html">Utils</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_utils.html#baseline-correction">Baseline Correction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_utils.html#fit-histograms-to-the-biasd-likelihood-function">Fit histograms to the BIASD likelihood function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_utils.html#clustering-data">Clustering data</a></li>
 </ul>
 </li>
 </ul>
@@ -303,7 +304,8 @@ and Jonathan Weare</td>
 <span class="n">sampler</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">continue_run</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span><span class="mi">900</span><span class="p">,</span><span class="n">timer</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 
 <span class="c"># Save the sampler data</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">mcmc</span><span class="p">(</span><span class="n">sampler</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">mcmc_result</span><span class="p">(</span><span class="n">sampler</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">mcmc</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&#39;data.smd&#39;</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -412,7 +414,7 @@ and Jonathan Weare</td>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2016, Colin Kinz-Thompson.
+        &copy; Copyright 2013-2017, Colin Kinz-Thompson.
     </p>
   </div>
 
@@ -433,7 +435,7 @@ and Jonathan Weare</td>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.1',
+            VERSION:'0.1.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
