@@ -257,7 +257,7 @@
 
 <span class="c">## Setup the MCMC sampler to use 100 walkers and 4 CPUs</span>
 <span class="n">nwalkers</span> <span class="o">=</span> <span class="mi">100</span>
-<span class="n">ncpus</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">ncpus</span> <span class="o">=</span> <span class="mi">4</span>
 <span class="n">sampler</span><span class="p">,</span> <span class="n">initial_positions</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">fret</span><span class="p">,</span> <span class="n">priors</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">nwalkers</span><span class="p">,</span> <span class="n">threads</span> <span class="o">=</span> <span class="n">ncpus</span><span class="p">)</span>
 
 <span class="c">## Burn-in 100 steps and then remove them form the sampler,</span>
@@ -289,7 +289,7 @@
 
 <span class="c">## Extract the relevant information from the sampler, and save this in the SMD file.</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">mcmc</span><span class="o">.</span><span class="n">mcmc_result</span><span class="p">(</span><span class="n">sampler</span><span class="p">)</span>
-<span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">mcmc</span><span class="p">(</span><span class="n">mcmc_analysis</span><span class="p">,</span><span class="n">mcmc</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;MCMC posterior samples&#39;</span><span class="p">)</span>
+<span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">add</span><span class="o">.</span><span class="n">mcmc</span><span class="p">(</span><span class="n">mcmc_analysis</span><span class="p">,</span><span class="n">result</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;MCMC posterior samples&#39;</span><span class="p">)</span>
 
 <span class="c">## Save and close the dataset</span>
 <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>

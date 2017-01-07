@@ -113,7 +113,7 @@ This script loads the example data from above, sets some priors, and then uses t
 
 	## Setup the MCMC sampler to use 100 walkers and 4 CPUs
 	nwalkers = 100
-	ncpus = 3
+	ncpus = 4
 	sampler, initial_positions = b.mcmc.setup(fret, priors, tau, nwalkers, threads = ncpus)
 
 	## Burn-in 100 steps and then remove them form the sampler,
@@ -145,7 +145,7 @@ This script loads the example data from above, sets some priors, and then uses t
 
 	## Extract the relevant information from the sampler, and save this in the SMD file.
 	result = b.mcmc.mcmc_result(sampler)
-	b.smd.add.mcmc(mcmc_analysis,mcmc,label='MCMC posterior samples')
+	b.smd.add.mcmc(mcmc_analysis,result,label='MCMC posterior samples')
 
 	## Save and close the dataset
 	b.smd.save(dataset)

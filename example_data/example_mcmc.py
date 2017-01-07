@@ -38,7 +38,7 @@ priors = b.distributions.parameter_collection(e1,e2,sigma,k1,k2)
 
 ## Setup the MCMC sampler to use 100 walkers and 4 CPUs
 nwalkers = 100
-ncpus = 3
+ncpus = 4
 sampler, initial_positions = b.mcmc.setup(fret, priors, tau, nwalkers, threads = ncpus)
 
 ## Burn-in 100 steps and then remove them form the sampler,
@@ -70,7 +70,7 @@ b.smd.add.parameter_collection(mcmc_analysis,priors,label='priors')
 
 ## Extract the relevant information from the sampler, and save this in the SMD file.
 result = b.mcmc.mcmc_result(sampler)
-b.smd.add.mcmc(mcmc_analysis,mcmc,label='MCMC posterior samples')
+b.smd.add.mcmc(mcmc_analysis,result,label='MCMC posterior samples')
 
 ## Save and close the dataset
 b.smd.save(dataset)
