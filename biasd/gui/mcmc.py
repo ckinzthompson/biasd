@@ -99,7 +99,10 @@ class mcmc(QWidget):
 		try:
 			fn = self.get_smd_filename()
 			f = b.smd.load(fn)
-			t = f[self.tloc+'/data/Time'].value
+			if f[self.tloc+'/data'].keys().count('Time') > 0:
+				t = f[self.tloc+'/data/Time'].value
+			elif f[self.tloc+'/data'].keys().count('time') > 0:
+				t = f[self.tloc+'/data/time'].value
 			self.tau = t[1] - t[0]
 			f.close()
 		except:

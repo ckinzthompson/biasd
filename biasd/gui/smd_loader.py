@@ -1,6 +1,7 @@
 '''
 GUI written in QT5 to explore HDF5 SMD Files
 '''
+import sys
 from h5py import File
 from PyQt5.QtWidgets import QApplication, QColumnView, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QMainWindow,QMessageBox,QSizePolicy
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -15,9 +16,12 @@ class selectChangeSignal(QObject):
 		self.signal.emit(s,d)
 
 class smd_load(QWidget):
-	def __init__(self,parent=None,select = True):
+	def __init__(self,parent=None,select = True,filename=None):
 		super(QWidget,self).__init__(parent)
-		self.filename = self.parent().parent().get_smd_filename()
+		if filename is None:
+			self.filename = self.parent().parent().get_smd_filename()
+		else:
+			self.filename = filename
 		self.select_type = select
 		self.initialize(self.filename,select)
 	
@@ -207,20 +211,23 @@ class smd_load(QWidget):
 			pass
 			
 class ui_loader(QMainWindow):
-	def __init__(self,parent=None,select = True):
+	def __init__(self,parent=None,select = True,filename=None):
 		super(QMainWindow,self).__init__(parent)
-		self.ui = smd_load(self,select=select)
+		self.ui = smd_load(self,select=select,filename=filename)
 		self.setCentralWidget(self.ui)
 		self.show()
 	
 	def closeEvent(self,event):
-		self.parent().activateWindow()
-		self.parent().raise_()
-		self.parent().setFocus()
+		try:
+			self.parent().activateWindow()
+			self.parent().raise_()
+			self.parent().setFocus()
+		except:
+			pass
 
 def launch(fn):
-	app = QApplication(sys.argv)
-	w = ui_loader(fn)
+	app = QApplication([])
+	w = ui_loader(select=False,filename=fn)
 	sys.exit(app.exec_())
 
 

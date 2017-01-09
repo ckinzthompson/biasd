@@ -108,7 +108,7 @@ class prefs(QWidget):
 	
 	def update_eps(self):
 		p = self.parent().parent().prefs
-		p.eps = float(self.le_eps.text())
+		p.eps = np.array(float(self.le_eps.text()),dtype='float64')
 		b.likelihood._eps = p.eps
 		self.parent().parent().log.new('Updated epsilon = '+str(p.eps))
 		
