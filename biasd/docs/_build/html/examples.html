@@ -30,6 +30,9 @@
   
 
   
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
     <link rel="top" title="BIASD v0.1.1" href="index.html"/>
         <link rel="next" title="BIASD GUI" href="gui.html"/>
         <link rel="prev" title="Compiling the Likelihood" href="compileguide.html"/> 
@@ -144,7 +147,7 @@
     <li>BIASD Examples</li>
       <li class="wy-breadcrumbs-aside">
         
-          <a href="_sources/examples.txt" rel="nofollow"> View page source</a>
+          <a href="_sources/examples.rst.txt" rel="nofollow"> View page source</a>
         
       </li>
   </ul>
@@ -164,7 +167,7 @@
 
 <span class="c">## Create a new SMD file</span>
 <span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;./example_dataset.hdf5&#39;</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">force</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 
 <span class="c">## Load example trajectories (N,T)</span>
 <span class="n">example_data</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">smd</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s">&#39;example_data.dat&#39;</span><span class="p">)</span>

@@ -18,7 +18,7 @@ This script loads the example data, and then creates an HDF5 SMD data file to co
 
 	## Create a new SMD file
 	filename = './example_dataset.hdf5'
-	dataset = b.smd.new(filename,force=True)
+	dataset = b.smd.new(filename)
 
 	## Load example trajectories (N,T)
 	example_data = b.smd.loadtxt('example_data.dat')
