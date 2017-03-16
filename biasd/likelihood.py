@@ -23,11 +23,11 @@ _eps = 1e-10
 ### 	double * ll,
 ### 	double ep1,
 ### 	double ep2,
-### 	double sigma, 
+### 	double sigma,
 ### 	double k1,
 ### 	double k2,
 ### 	double tau
-### 	
+###
 ### where d is a point to the input datapoints,
 ### and ll is a point to the output numpy array.
 ##########
@@ -65,21 +65,22 @@ try:
 		_ctypes.c_double ]
 #	_lib_cuda.log_likelihood.restype  = _ctypes.POINTER(_ctypes.c_double)
 	_lib_cuda.sum_log_likelihood.restype  = _ctypes.c_double
+
 	print "Loaded CUDA Library:\n"+_sopath+".so"
 	_flag_cuda = True
 except:
 	_flag_cuda = False
-	
+
 
 ### Try to load C log-likelihood .so
 try:
 	if _os.path.isfile(_lib_path+'biasd_ll_gsl.so'):
-		_sopath = _lib_path+'biasd_ll_gsl' 
-	else: 
+		_sopath = _lib_path+'biasd_ll_gsl'
+	else:
 		_sopath = _lib_path + 'biasd_ll_adaptive'
-	
+
 	_lib_c = _np.ctypeslib.load_library(_sopath, '.') ## future-self: the library has to end in .so ....
-	
+
 	_lib_c.log_likelihood.argtypes = [
 		_ctypes.c_int,
 		_np.ctypeslib.ndpointer(dtype = _np.double),
@@ -92,7 +93,7 @@ try:
 		_ctypes.c_double,
 		_np.ctypeslib.ndpointer(dtype = _np.double) ]
 	_lib_c.log_likelihood.restype  = _ctypes.c_void_p
-	
+
 	_lib_c.sum_log_likelihood.argtypes = [
 		_ctypes.c_int,
 		_np.ctypeslib.ndpointer(dtype = _np.double),
@@ -104,7 +105,7 @@ try:
 		_ctypes.c_double,
 		_ctypes.c_double ]
 	_lib_c.sum_log_likelihood.restype  = _ctypes.c_double
-	
+
 	print "Loaded .C Library:\n"+_sopath+".so"
 	_flag_c = True
 except:
@@ -115,7 +116,7 @@ if _flag_cuda:
 	def _log_likelihood_cuda(theta,data,tau):
 		"""
 		Calculate the log of the BIASD likelihood function at `theta` using the data `data` given the time period of the data as `tau`.
-		
+
 		CUDA Version
 		"""
 		global _eps
@@ -126,7 +127,7 @@ if _flag_cuda:
 		return _lib_cuda.sum_log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		llp = _lib_cuda.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		return _np.ctypeslib.as_array(llp,shape=data.shape)
-	
+
 	def _nosum_log_likelihood_cuda(theta,data,tau):
 		global _eps
 		epsilon = _eps
@@ -134,10 +135,10 @@ if _flag_cuda:
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
 		ll = _np.empty_like(data)
-		_lib_cuda.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon,ll)	
+		_lib_cuda.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon,ll)
 		return ll
-	
-	
+
+
 	def use_cuda_ll():
 		global log_likelihood
 		global ll_version
@@ -150,12 +151,12 @@ if _flag_c:
 	def _log_likelihood_c(theta,data,tau):
 		"""
 		Calculate the individual values of the log of the BIASD likelihood function at :math:`\\Theta`
-		
+
 		Input:
 			* `theta` is a `np.ndarray` of the parameters to evaluate
 			* `data is a 1D `np.ndarray` of the time series to analyze
 			* `tau` is the measurement period of each data point in `data`
-		
+
 		Returns:
 			* A 1D `np.ndarray` of the log-likelihood for each data point in `data`
 		"""
@@ -164,7 +165,7 @@ if _flag_c:
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
-		return _lib_c.sum_log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)			
+		return _lib_c.sum_log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		llp = _lib_c.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		return _np.ctypeslib.as_array(llp,shape=data.shape)
 
@@ -175,10 +176,10 @@ if _flag_c:
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
 		ll = _np.empty_like(data)
-		_lib_c.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon,ll)	
+		_lib_c.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon,ll)
 		return ll
 
-	
+
 	def use_c_ll():
 		global log_likelihood
 		global ll_version
@@ -205,7 +206,7 @@ def _python_integrand(x,d,e1,e2,sigma,k1,k2,tau):
 		pf = 2.*k*tau*p1*p2*(_special.i0(y)+k*tau*(1.-z)*_special.i1(y)/y)*_np.exp(-z*k*tau)
 		py = 1./_np.sqrt(2.*_np.pi*sigma**2.)*_np.exp(-.5/sigma/sigma*(d-(e1*x+e2*(1.-x)))**2.) * pf
 		return py
-		
+
 def _python_integral(d,e1,e2,sigma,k1,k2,tau):
 	"""
 	Use Gaussian quadrature to integrate the BIASD integrand across df between f = 0 ... 1
@@ -236,7 +237,7 @@ def _nosum_log_likelihood_python(theta,data,tau):
 	return _np.log(out)
 
 def _log_likelihood_python(theta,data,tau):
-	return _np.sum(_nosum_log_likelihood_python(theta,data,tau))
+	return _np.nansum(_nosum_log_likelihood_python(theta,data,tau))
 
 def use_python_ll():
 	global log_likelihood
@@ -245,31 +246,31 @@ def use_python_ll():
 	ll_version = "Python"
 	log_likelihood = _log_likelihood_python
 	nosum_log_likelihood = _nosum_log_likelihood_python
-	
+
 def test_speed(n,dpoints = 5000):
 	"""
 	Test how fast the BIASD integral runs.
-	
+
 	Input:
 		* `n` is the number of times to repeat the test
 		* `dpoints` is the number of data points in each test
-	
+
 	Returns:
 		* The average amount of time per data point in seconds.
-	
+
 	"""
 	from time import time
-	d = _np.linspace(-2,1.2,dpoints)
+	d = _np.linspace(-.2,1.2,dpoints)
 	t0 = time()
 	for i in range(n):
 		# quad(integrand,0.,1.,args=(.1,0.,1.,.05,3.,8.,.1))[0]
-		y = log_likelihood([0.,1.,.05,3.,8.],d,.1)
+		y = log_likelihood(_np.array([0.,1.,.05,3.,8.]),d,.1)
 	t1 = time()
 	print "Total time for "+str(n)+" runs: ",_np.around(t1-t0,4)," (s)"
 	print 'Average speed: ', _np.around((t1-t0)/n/d.size*1.e6,4),' (usec/datapoint)'
 	return _np.around((t1-t0)/n/d.size*1.e6,4)
-		
-	
+
+
 ### Default to Python implementation
 log_likelihood = _log_likelihood_python
 nosum_log_likelihood = _nosum_log_likelihood_python
@@ -288,26 +289,26 @@ else:
 #	thetas = theta[:5*n].reshape((n,5))
 #	qs = theta[5*n:]
 #	qs = _np.append(qs,1.-qs.sum())
-#	
+#
 #	lls = _np.empty((n,data.size))
 #	for i in range(n):
 #		lls[i] = log_likelihood(thetas[i],data,tau)
 #	ll = _np.log(_np.sum(qs[:,None]*_np.exp(lls),axis=0))
 #	return ll
-#	
+#
 
 
 #def mixture_log_posterior(theta,data,theta_priors,population_prior,tau):
 #	"""
 #	Calculate the log-posterior probability for a mixture of `M` sub-systems at :math:`\\vec{ \\Theta}`
-#	
+#
 #	Input:
 #		* `theta` is a vector of BIASD parameters and the population fractions. e.g. :math:`[ \\Theta_1, ..., \\Theta_M, f_1, ..., f_{M-1}`
 #		* `data` is a 1D `np.ndarray` of the time series to analyze
 #		* `theta_priors` is a list of `biasd.distributions.parameter_collection`s containing the prior probability distributions for each sub-system
 #		* `population_prior` is a function that takes a 1D `np.ndarray` vector of length M containing the occupation probability of each of the `M` states, and returns the log probability prior of that point as a float.
 #		* `tau` is the measurement period of `data`
-#	
+#
 #	Returns:
 #		* The summed log posterior probability distribution, :math:`p(\\Theta \\vert data) \\propto p(data \\vert \\Theta) \cdot p(\\Theta)`
 #	"""
@@ -317,18 +318,18 @@ else:
 #	thetas = theta[:5*n].reshape((n,5))
 #	qs = theta[5*n:]
 #	qs = _np.append(qs,1.-qs.sum())
-#	
-#	
+#
+#
 #	lnprior = 0.
 #	for i in xrange(n):
 #		lnprior += theta_priors[i].lnpdf(thetas[i])
 #	lnprior += population_prior.lnpdf(qs)
-#	
+#
 #	if _np.isnan(lnprior):
 #		return -_np.inf
 #	elif not _np.isfinite(lnprior):
 #		return -_np.inf
-#	else:	
+#	else:
 #		lls = _np.empty((n,data.size))
 #		for i in range(n):
 #			lls[i] = log_likelihood(thetas[i],data,tau)
@@ -342,20 +343,20 @@ else:
 def log_posterior(theta,data,prior_dists,tau):
 	"""
 	Calculate the log-posterior probability distribution at :math:`\\Theta`
-	
+
 	Input:
 		* `theta` is a vector of the parameters (i.e., :math:`\\theta`) where to evaluate the log-posterior
 		* `data` is a 1D `np.ndarray` of the time series to analyze
 		* `prior_dists` is a `biasd.distributions.parameter_collection` containing the prior probability distributions for the BIASD calculation
 		* `tau` is the measurement period of `data`
-	
+
 	Returns:
 		* The summed log posterior probability distribution, :math:`p(\\Theta \\vert data) \\propto p(data \\vert \\Theta) \cdot p(\\Theta)`
 	"""
 	lprior = prior_dists.lnpdf(theta)
 	ll = log_likelihood(theta,data,tau)
 	y = lprior + ll
-	
+
 	if _np.isnan(y):
 		return -_np.inf
 	else:
@@ -365,43 +366,43 @@ def log_posterior(theta,data,prior_dists,tau):
 def fit_histogram(data,tau,guess=None):
 	"""
 	Fits a histogram of to the BIASD likelihood function.
-	
+
 	Input:
-	
+
 		* `data` is a `np.ndarray`
 		* `tau` is the measurement period
 		* `guess` is an initial guess. This can be provided as:
 			- a `biasd.distributions.parameter_collection`, it will use the mean
 			- a `np.ndarray`
 			- `Nothing...`, in which case it will try to guess
-	
+
 	Returns:
 		* the best-fit parameters, and the covariances
 	"""
 	from scipy.optimize import curve_fit
 	from .distributions import guess_prior
-	
+
 	if isinstance(guess,_np.ndarray):
 		guess = guess
 	else:
 		guess = guess_prior(data,tau=tau).mean()
-		
+
 	hy,hx = _np.histogram(data,bins=int(data.size**.5),normed=True)
 	hx = .5*(hx[1:] + hx[:-1])
-	
+
 	fitted_params,covars = curve_fit(lambda x,e1,e2,sig,k1,k2: _np.exp(nosum_log_likelihood(_np.array((e1,e2,sig,k1,k2)),x,tau)),hx,hy,p0=guess)
 	return fitted_params,covars
 
 def predictive_from_samples(x,samples,tau):
 	'''
 	Returns the posterior predictive distribution calculated from samples -- the average value of the likelihood function evaluated at `x` marginalized from the samples of BIASD parameters given in `samples`.
-	
+
 	Samples can be generated from a posterior probability distribution. For instance, after a Laplace approximation, just draw random variates from the multivariate-normal distribution -- i.e., given results in `r`, try `samples = np.random.multivariate_normal(r.mu,r.covar,100)`. Alternatively, some posteriors might already have samples (e.g., from MCMC).
-	
+
 	Input:
 		* `x` a `np.ndarry` where to evaluate the likelihood at (e.g., [-.2 ... 1.2] for FRET)
 		* `samples` is a (N,5) `np.ndarray` containing `N` samples of BIASD parameters (e.g. \Theta)
-		* `tau` the time period with which to evaluate the likelihood function 
+		* `tau` the time period with which to evaluate the likelihood function
 	Returns:
 		* `y` a `np.ndarray` the same size as `x` containing the marginalized likelihood function evaluated at x
 	'''

@@ -75,6 +75,7 @@ __device__ double adaptive_quad(int idx, double * d, double ep1, double ep2, dou
 			} else { // there's no space in the buffer
 				bx[maxiter - 1] = mx;
 				by[maxiter - 1] = my;
+				i = maxiter - 1;
 			}
 		}
 	}
@@ -89,12 +90,22 @@ __global__ void kernel_loglikelihood(int N, double * d, double ep1, double ep2, 
 		double out;
 		out = k2/(k1+k2) * exp(-k1*tau - .5 * pow((d[idx]-ep1)/sigma,2.)); // state 1
 		out += k1/(k1+k2) * exp(-k2*tau - .5 * pow((d[idx]-ep2)/sigma,2.)); // state 2
-		out += 2.*k1*k2/(k1+k2)*tau * adaptive_quad(idx,d,ep1,ep2,sigma,k1,k2,tau,epsilon); // both
+
+		// Bound-checks b/c my algorithm isn't as robust as quadpack
+		if ((k1*k2/(k1+k2)*tau > 1e-6) && (d[idx] >= ep1-sigma*6) && (d[idx] <= ep2+sigma*6)) {
+			out += 2.*k1*k2/(k1+k2)*tau * adaptive_quad(idx,d,ep1,ep2,sigma,k1,k2,tau,epsilon); // both
+		}
 		out = log(out) - .5 * log(2.* M_PI) - log(sigma); // prefactor
 		ll[idx] = out; // transfer
 	}
 }
 
+void get_cuda_errors(){
+	cudaError_t err = cudaGetLastError();
+	if (err != cudaSuccess) {
+			printf("CUDA Error: %s\n", cudaGetErrorString(err));
+	}
+}
 
 void log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * ll) {
 
@@ -121,10 +132,7 @@ void log_likelihood(int N, double * d, double ep1, double ep2, double sigma, dou
 	cudaFree(d_d);
 	cudaFree(ll_d);
 
-	cudaError_t err = cudaGetLastError();
-	if (err != cudaSuccess) {
-    	printf("CUDA Error: %s\n", cudaGetErrorString(err));
-	}
+	get_cuda_errors();
 }
 
 double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon) {
@@ -160,14 +168,15 @@ tau = 0.1
 print b.likelihood.log_likelihood(theta,d,tau)
 */
 
+
 /*
 int main(){
 	double d[50] = {0.87755042,  0.90101722,  0.88297422,  0.90225072,  0.91185969,        0.88479424,  0.64257305,  0.23650566,  0.17532272,  0.24785572,        0.77647345,  0.12143413,  0.04994399,  0.19918067,  0.09625039,
         0.14283554,  0.30052487,  0.8937437 ,  0.90544194,  0.87350816,        0.62315481,  0.48258872,  0.77018322,  0.42989469,  0.69183523,        0.35556625,  0.90622313,  0.12529433,  0.74309849,  0.8860914 ,        0.8335358 ,  0.56208782,  0.45287218,  0.79373139,  0.42808399,        0.86643919,  0.70459052,  0.09161765,  0.53514735,  0.06578612,        0.09050594,  0.14923124,  0.8579178 ,  0.884698  ,  0.8745358 ,        0.89191605,  0.57743238,  0.80656044,  0.9069933 ,  0.65817311};
 
 	double sum = 0;
-
-	sum = sum_log_likelihood(50,d,0.,1.,.05,3.,8.,.1,1e-20);
+	printf("Starting Test...\n");
+	sum = sum_log_likelihood(50,d,0.,1.,.05,3.,8.,.1,1e-10);
 	double truth = -45.312935111611729;
 
 	printf("Real : %.10f\n",truth);
