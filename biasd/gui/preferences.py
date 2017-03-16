@@ -12,6 +12,7 @@ matplotlib.use('Qt5Agg')
 
 import sys
 
+import numpy as np
 import biasd as b
 
 class prefs(QWidget):
@@ -21,7 +22,7 @@ class prefs(QWidget):
 
 	def initialize(self):
 		layout = QVBoxLayout()
-		
+
 		# Change Likelihood
 		vbox = QVBoxLayout()
 		likelihoods = ["Python","C","CUDA"]
@@ -31,7 +32,7 @@ class prefs(QWidget):
 		frame1 = QGroupBox("Likelihood Function")
 		frame1.setLayout(vbox)
 		layout.addWidget(frame1)
-		
+
 		# Speed Test
 		grid1 = QGridLayout()
 		self.spin = [QSpinBox(), QSpinBox()]
@@ -49,7 +50,7 @@ class prefs(QWidget):
 		frame2 = QGroupBox("Speed Test Likelihood Function")
 		frame2.setLayout(grid1)
 		layout.addWidget(frame2)
-		
+
 		# Options
 		frame_options = QGroupBox('Options')
 		grid2 = QGridLayout()
@@ -65,7 +66,7 @@ class prefs(QWidget):
 		grid2.addWidget(self.spin_threads,1,1)
 		frame_options.setLayout(grid2)
 		layout.addWidget(frame_options)
-		
+
 		# Reset and Log
 		frame3 = QFrame()
 		hbox = QHBoxLayout()
@@ -75,13 +76,13 @@ class prefs(QWidget):
 		hbox.addWidget(breset)
 		frame3.setLayout(hbox)
 		layout.addWidget(frame3)
-		
+
 		layout.addStretch(1)
 		self.setLayout(layout)
-		
+
 		#Fill Forms
 		self.init_forms()
-		
+
 		# Connect Forms & Buttons
 		[r.toggled.connect(self.change_ll) for r in self.rbs]
 		[s.valueChanged.connect(self.update_speed) for s in self.spin]
@@ -91,33 +92,33 @@ class prefs(QWidget):
 		self.spin_threads.valueChanged.connect(self.update_threads)
 		breset.clicked.connect(self.check_reset)
 		bdumplog.clicked.connect(self.save_log)
-		
+
 		self.setWindowTitle('Set Preferences')
 		# self.setGeometry(200,200,500,300)
 		self.show()
-	
+
 	def update_speed(self):
 		p = self.parent().parent().prefs
 		p.speed_n = self.spin[0].value()
 		p.speed_d = self.spin[1].value()
-	
+
 	def update_threads(self):
 		p = self.parent().parent().prefs
 		p.n_threads = self.spin_threads.value()
 		self.parent().parent().log.new('Updated N threads = '+str(p.n_threads))
-	
+
 	def update_eps(self):
 		p = self.parent().parent().prefs
 		p.eps = np.array(float(self.le_eps.text()),dtype='float64')
 		b.likelihood._eps = p.eps
 		self.parent().parent().log.new('Updated epsilon = '+str(p.eps))
-		
-	
+
+
 	def check_reset(self):
 		really = QMessageBox.question(self,"Reset?","Do you really want to reset the preferences?")
 		if really == QMessageBox.Yes:
 			self.reset()
-	
+
 	def init_forms(self):
 		p = self.parent().parent().prefs
 		self.spin[0].setValue(p.speed_n)
@@ -125,15 +126,15 @@ class prefs(QWidget):
 		self.lavg.setText("")
 		self.le_eps.setText(str(p.eps))
 		self.spin_threads.setValue(p.n_threads)
-	
+
 	def reset(self):
 		p = self.parent().parent().prefs
 		p.reset()
 		self.init_forms()
 		self.parent().parent().parent().statusBar().showMessage("Reset Preferences")
 		self.parent().parent().log.new("Reset Preferences")
-		
-	
+
+
 	def save_log(self):
 		print self.parent().parent().log.format()
 		oname = QFileDialog.getSaveFileName(self,"Save Log file",'./','*.txt')
@@ -145,7 +146,7 @@ class prefs(QWidget):
 			f.close()
 		except:
 			QMessageBox.critical(None,"Could Not Save","Could not save file: %s\n."%(oname[0]))
-	
+
 	def speed_tester(self):
 		try:
 			sb = self.parent().parent().parent().statusBar()
@@ -155,12 +156,12 @@ class prefs(QWidget):
 			sout = str(time)+u' μsec/datapoint'
 			self.lavg.setText(sout)
 			self.parent().parent().log.new('Speed Test - '
-				+ b.likelihood.ll_version 
+				+ b.likelihood.ll_version
 				+ '\n%d, %d, %s'%(p.speed_n, p.speed_d,sout))
 			sb.showMessage('Test Complete')
 		except:
 			pass
-	
+
 	def test_likelihood(self):
 		## Be careful so that you don't lock up people's computers for too long
 		if b.likelihood.ll_version == 'Python':
@@ -180,7 +181,7 @@ class prefs(QWidget):
 				proceed = False
 		if proceed:
 			self.speed_tester()
-		
+
 	def change_ll(self,enable):
 		try:
 			if self.rbs[0].isChecked():
@@ -198,12 +199,12 @@ class prefs(QWidget):
 		for i,t in zip(range(3),['Python','C','CUDA']):
 			if b.likelihood.ll_version == t:
 				self.rbs[i].setChecked(True)
-	
-	
+
+
 	def keyPressEvent(self,event):
 		if event.key() == Qt.Key_Escape:
 			self.parent().close()
-			
+
 
 class ui_preferences(QMainWindow):
 	def __init__(self,parent=None):
@@ -212,13 +213,13 @@ class ui_preferences(QMainWindow):
 		self.setCentralWidget(self.ui)
 		self.setGeometry(100,100,400,300)
 		self.show()
-	
+
 	def closeEvent(self,event):
 		self.parent().activateWindow()
 		self.parent().raise_()
 		self.parent().setFocus()
 
-		
+
 if __name__ == '__main__':
 	import sys
 	app = QApplication(sys.argv)
