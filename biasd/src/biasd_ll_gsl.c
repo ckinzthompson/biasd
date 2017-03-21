@@ -34,8 +34,8 @@ double point_ll(struct integration_params * p) {
 	// Peak for state 2
 	lli += t.k1/(t.k1+t.k2) * exp(-t.k2*t.tau - .5 * pow((t.d-t.ep2)/t.sigma,2.));
 	// Add in the contribution from the numerical integration
-	gsl_integration_qags(p->F,0.,1.,p->epsilon,5000,0.,p->w,p->result,p->error); // compute to absolute error.. relative gets strange pattern at low ln(L) < -50
-	// gsl_integration_qags(p->F,0.,1.,0.,p->epsilon,50000,p->w,p->result,p->error); // compute to relative error
+	gsl_integration_qags(p->F,0.,1.,p->epsilon,0.,5000,p->w,p->result,p->error); // compute to absolute error.. relative gets strange pattern at low ln(L) < -50
+	//gsl_integration_qags(p->F,0.,1.,0.,p->epsilon,5000,p->w,p->result,p->error); // compute to relative error
 	lli += 2.*t.k1*t.k2/(t.k1+t.k2)*t.tau * *(p->result);
 	// Log and get the prefactor
 	lli = log(lli) - .5 * log(2.* M_PI) - log(t.sigma);
