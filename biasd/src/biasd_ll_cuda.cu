@@ -2,21 +2,23 @@
 #include <stdlib.h>
 //#include <math.h>
 #include <time.h>
-
 #include <cuda.h>
 
 /* Compile with:
 nvcc -arch compute_50 cuda_biasd_simpson.c -o cuda_biasd_simpson
 */
 
-#define maxiter 2000
+#define DBL_EPSILON 2.22045e-16
+#define DBL_MIN 4.94066e-324
 
 extern "C" void log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * ll);
 extern "C" double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon);
 
 __global__ void kernel_loglikelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * ll);
-__device__ double adaptive_quad(int idx, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon);
 __device__ double integrand(double f, double d, double ep1, double ep2, double sigma, double k1, double k2, double tau);
+__device__ void qgauss(double a, double b, double d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double *out);
+__device__ double integrate(double d, double ep1, double ep2, double sigma, double k1, double k2, double tau,double epsilon);
+
 
 // ##########################################################
 // ##########################################################
@@ -37,53 +39,113 @@ __device__ double integrand(double f, double d, double ep1, double ep2, double s
 
 }
 
-__device__ double adaptive_quad(int idx, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon) {
 
-	// Doing it this way to cache all of the non-midpoint integrand calculations in order to minimize the number of calculations that are performed.
+/*
+	Parameters ripped from Quadpack dqk21.f on 3/20/2017:
+	c gauss quadrature weights and kronron quadrature abscissae and weights
+	c as evaluated with 80 decimal digit arithmetic by l. w. fullerton,
+	c bell labs, nov. 1981.
+*/
 
-	int i = 0;
-	double ival = 0., ax = 0., ay = 0., mx = 0., my = 0., h = 0., s1 = 0., s2_left = 0., s2_right = 0.;
-	double bx[maxiter], by[maxiter];
-	bx[0] = 1.;
 
-	// Calculate f(0), and f(1)
-	ay = integrand(ax,d[idx],ep1,ep2,sigma,k1,k2,tau);
-	by[0] = integrand(bx[0],d[idx],ep1,ep2,sigma,k1,k2,tau);
+__constant__ static double wg[5] = {
+	0.066671344308688137593568809893332,
+	0.149451349150580593145776339657697,
+	0.219086362515982043995534934228163,
+	0.269266719309996355091226921569469,
+	0.295524224714752870173892994651338
+};
+__constant__ static double wgk[11] = {
+	0.011694638867371874278064396062192,
+	0.032558162307964727478818972459390,
+	0.054755896574351996031381300244580,
+	0.075039674810919952767043140916190,
+	0.093125454583697605535065465083366,
+	0.109387158802297641899210590325805,
+	0.123491976262065851077958109831074,
+	0.134709217311473325928054001771707,
+	0.142775938577060080797094273138717,
+	0.147739104901338491374841515972068,
+	0.149445554002916905664936468389821
+};
+__constant__ static double xgk[11] = {
+	0.995657163025808080735527280689003,
+	0.973906528517171720077964012084452,
+	0.930157491355708226001207180059508,
+	0.865063366688984510732096688423493,
+	0.780817726586416897063717578345042,
+	0.679409568299024406234327365114874,
+	0.562757134668604683339000099272694,
+	0.433395394129247190799265943165784,
+	0.294392862701460198131126603103866,
+	0.148874338981631210884826001129720,
+	0.000000000000000000000000000000000
+};
 
-	while (i >= 0) {
-		h = (bx[i] - ax)/2.;
-		mx = ax + h;
-		my = integrand(mx,d[idx],ep1,ep2,sigma,k1,k2,tau); // Calc f(mid-point)
+__device__ void qgauss(double a, double b, double d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double *out){
+	// translated from Fortran from Quadpack's dqk21.f
 
-		s1 = h/3. * (ay + 4.*my + by[i]);
+	double center = 0.5*(b+a);
+	double halflength = 0.5*(b-a);
 
-		s2_left = h/6. * (ay + 4.*integrand(ax + h/2.,d[idx],ep1,ep2,sigma,k1,k2,tau) + my);
-		s2_right = h/6. * (my + 4.*integrand(ax + h*3./2.,d[idx],ep1,ep2,sigma,k1,k2,tau) + by[i]);
+	double result10 = 0.;
+	double result21 = 0.;
 
-		// Success
-		// if (fabs(s1 - s2_left - s2_right) < 15.*epsilon){ // absolute wasn't working... had strange pattern at ln(L) < ~-20
-		if (fabs(s1 - s2_left - s2_right)/(s2_left + s2_right) < 15.*epsilon){
-			ival += s2_left + s2_right;
-			ax = bx[i];
-			ay = by[i];
-			i -= 1;
-		} else { // Failure, so add midpoint to list if
-			i += 1;
-			if (i < maxiter - 1) { // there is space left in buffer
-				bx[i] = mx;
-				by[i] = my;
-			} else { // there's no space in the buffer
-				bx[maxiter - 1] = mx;
-				by[maxiter - 1] = my;
-				i = maxiter - 1;
-			}
-		}
+	int i;
+	// Function values
+	double fval1[10],fval2[10];
+	for (i=0;i<10;i++){
+		fval1[i] = integrand(center+halflength*xgk[i],d,ep1,ep2,sigma,k1,k2,tau);
+		fval2[i] = integrand(center-halflength*xgk[i],d,ep1,ep2,sigma,k1,k2,tau);
 	}
-	return ival;
+
+	// Evaluate gauss-10 and kronrod-21
+	for (i=0;i<5;i++){
+		result10 += wg[i]*(fval1[2*i+1] + fval2[2*i+1]);
+		result21 += wgk[2*i+1]*(fval1[2*i+1] + fval2[2*i+1]);
+		result21 += wgk[2*i]*(fval1[2*i] + fval2[2*i]);
+	}
+
+	double fc = integrand(center,d,ep1,ep2,sigma,k1,k2,tau);
+	result21 += wgk[10]*fc;
+
+	// // Removed error calculation.....
+	// errors
+	// double resabs = result21; // in this case resabs = result21 b/c it's all positive
+	// double reskh = result21*.5;
+	// double resasc = wgk[10]*fabs(fc-reskh);
+	// for (i=0;i<10;i++){
+		// resasc += wgk[i]*(fabs(fval1[i] - reskh) + fabs(fval2[i] - reskh));
+	// }
+
+	out[0] = result21*halflength;
+	// resabs *= halflength;
+	// resasc *= halflength;
+	// out[1] = fabs(result10-result21)*halflength;
+	// if (resasc != 0. && out[1] != 0.){
+	// 	out[1] = resasc*fmin(1.,pow(200.*out[1]/resasc,1.5));
+	// }
+	// if (resabs > DBL_MIN/(50.*DBL_EPSILON)){
+	// 	out[1] = fmax(resabs*(DBL_EPSILON*50.),out[1]);
+	// }
+}
+
+__device__ double integrate(double d, double ep1, double ep2, double sigma, double k1, double k2, double tau,double epsilon){
+
+	double out[2],integral = 0.,error = 0.;
+
+	int i;
+	for (i=0;i<20;i++){
+		qgauss(0.05*(double)i,0.05*(double)(i+1),d,ep1,ep2,sigma,k1,k2,tau,out);
+		integral += out[0];
+		error += out[1];
+	}
+	return integral;
 }
 
 
 __global__ void kernel_loglikelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * ll) {
+
 	int idx = threadIdx.x + blockIdx.x*blockDim.x;
 
 	if (idx < N) {
@@ -91,10 +153,8 @@ __global__ void kernel_loglikelihood(int N, double * d, double ep1, double ep2, 
 		out = k2/(k1+k2) * exp(-k1*tau - .5 * pow((d[idx]-ep1)/sigma,2.)); // state 1
 		out += k1/(k1+k2) * exp(-k2*tau - .5 * pow((d[idx]-ep2)/sigma,2.)); // state 2
 
-		// Bound-checks b/c my algorithm isn't as robust as quadpack
-		if ((k1*k2/(k1+k2)*tau > 1e-6) && (d[idx] >= ep1-sigma*6) && (d[idx] <= ep2+sigma*6)) {
-			out += 2.*k1*k2/(k1+k2)*tau * adaptive_quad(idx,d,ep1,ep2,sigma,k1,k2,tau,epsilon); // both
-		}
+		out += 2.*k1*k2/(k1+k2)*tau *integrate(d[idx],ep1,ep2,sigma,k1,k2,tau,epsilon); // both
+
 		out = log(out) - .5 * log(2.* M_PI) - log(sigma); // prefactor
 		ll[idx] = out; // transfer
 	}
