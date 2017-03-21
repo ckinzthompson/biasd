@@ -357,7 +357,8 @@ def log_posterior(theta,data,prior_dists,tau):
 	ll = log_likelihood(theta,data,tau)
 	y = lprior + ll
 
-	if _np.isnan(y):
+	# keep e1 < e2...
+	if _np.isnan(y) or theta[0] >= theta[1]:
 		return -_np.inf
 	else:
 		return y
