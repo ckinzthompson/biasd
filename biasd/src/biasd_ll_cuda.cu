@@ -11,8 +11,8 @@ nvcc -arch compute_50 cuda_biasd_simpson.c -o cuda_biasd_simpson
 #define DBL_EPSILON 2.22045e-16
 #define DBL_MIN 4.94066e-324
 
-extern "C" void log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * ll);
-extern "C" double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon);
+extern "C" void log_likelihood(int device, int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * ll);
+extern "C" double sum_log_likelihood(int device, int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon);
 
 __global__ void kernel_loglikelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * ll);
 __device__ double integrand(double f, double d, double ep1, double ep2, double sigma, double k1, double k2, double tau);
@@ -167,14 +167,13 @@ void get_cuda_errors(){
 	}
 }
 
-void log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * ll) {
+void log_likelihood(int device, int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * ll) {
 
-	cudaSetDevice(0);
+	cudaSetDevice(device);
 	cudaDeviceProp deviceProp;
-	cudaGetDeviceProperties(&deviceProp, 0);
-	int threads = deviceProp.maxThreadsPerBlock/2;
+	cudaGetDeviceProperties(&deviceProp, device);
+	int threads = deviceProp.maxThreadsPerBlock/2.;
 	int blocks = (N+threads-1)/threads;
-
 
 	double * d_d;
 	double * ll_d;
@@ -195,7 +194,7 @@ void log_likelihood(int N, double * d, double ep1, double ep2, double sigma, dou
 	get_cuda_errors();
 }
 
-double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon) {
+double sum_log_likelihood(int device, int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon) {
 
 	int i = 0;
 	double sum = 0.;
@@ -203,7 +202,7 @@ double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma
 	double * ll;
 	ll = (double *) malloc(N*sizeof(double));
 
-	log_likelihood(N,d,ep1,ep2,sigma,k1,k2,tau,epsilon,ll);
+	log_likelihood(device,N,d,ep1,ep2,sigma,k1,k2,tau,epsilon,ll);
 
 	for (i=0;i<N;i++) {
 		sum += ll[i];

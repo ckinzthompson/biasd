@@ -33,7 +33,8 @@ _eps = 1e-10
 ##########
 
 #Try to load CUDA log-likelihood .so
-try:
+# try:
+if 1:
 	if _platform == 'darwin':
 		_sopath = _lib_path+'biasd_ll_cuda'
 	elif _platform == 'linux' or _platform == 'linux2':
@@ -41,6 +42,7 @@ try:
 	_lib_cuda = _np.ctypeslib.load_library(_sopath, '.') ## future-self: the library has to end in .so ....
 
 	_lib_cuda.log_likelihood.argtypes = [
+		_ctypes.c_int,
 		_ctypes.c_int,
 		_np.ctypeslib.ndpointer(dtype = _np.double),
 		_ctypes.c_double,
@@ -55,6 +57,7 @@ try:
 
 	_lib_cuda.sum_log_likelihood.argtypes = [
 		_ctypes.c_int,
+		_ctypes.c_int,
 		_np.ctypeslib.ndpointer(dtype = _np.double),
 		_ctypes.c_double,
 		_ctypes.c_double,
@@ -68,8 +71,8 @@ try:
 
 	print "Loaded CUDA Library:\n"+_sopath+".so"
 	_flag_cuda = True
-except:
-	_flag_cuda = False
+# except:
+	# _flag_cuda = False
 
 
 ### Try to load C log-likelihood .so
@@ -113,7 +116,7 @@ except:
 
 
 if _flag_cuda:
-	def _log_likelihood_cuda(theta,data,tau):
+	def _log_likelihood_cuda(theta,data,tau,device=0):
 		"""
 		Calculate the log of the BIASD likelihood function at `theta` using the data `data` given the time period of the data as `tau`.
 
@@ -124,18 +127,18 @@ if _flag_cuda:
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
-		return _lib_cuda.sum_log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
+		return _lib_cuda.sum_log_likelihood(device,data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		llp = _lib_cuda.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		return _np.ctypeslib.as_array(llp,shape=data.shape)
 
-	def _nosum_log_likelihood_cuda(theta,data,tau):
+	def _nosum_log_likelihood_cuda(theta,data,tau,device=0):
 		global _eps
 		epsilon = _eps
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
 		ll = _np.empty_like(data)
-		_lib_cuda.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon,ll)
+		_lib_cuda.log_likelihood(device,data.size, data, e1, e2, sigma, k1, k2, tau,epsilon,ll)
 		return ll
 
 
@@ -148,7 +151,7 @@ if _flag_cuda:
 		nosum_log_likelihood = _nosum_log_likelihood_cuda
 
 if _flag_c:
-	def _log_likelihood_c(theta,data,tau):
+	def _log_likelihood_c(theta,data,tau,device=None):
 		"""
 		Calculate the individual values of the log of the BIASD likelihood function at :math:`\\Theta`
 
@@ -169,7 +172,7 @@ if _flag_c:
 #		llp = _lib_c.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		return _np.ctypeslib.as_array(llp,shape=data.shape)
 
-	def _nosum_log_likelihood_c(theta,data,tau):
+	def _nosum_log_likelihood_c(theta,data,tau,device=None):
 		global _eps
 		epsilon = _eps
 		e1,e2,sigma,k1,k2 = theta
@@ -217,7 +220,7 @@ _python_integral = _np.vectorize(_python_integral)
 def _p_gauss(x,mu,sigma):
 	return 1./_np.sqrt(2.*_np.pi*sigma**2.) * _np.exp(-.5*((x-mu)/sigma)**2.)
 
-def _nosum_log_likelihood_python(theta,data,tau):
+def _nosum_log_likelihood_python(theta,data,tau,device=None):
 	"""
 	Calculate the log of the BIASD likelihood function at theta using the data data given the time period of the data as tau.
 
@@ -236,7 +239,7 @@ def _nosum_log_likelihood_python(theta,data,tau):
 	#Don't use -infinity
 	return _np.log(out)
 
-def _log_likelihood_python(theta,data,tau):
+def _log_likelihood_python(theta,data,tau,device=None):
 	return _np.nansum(_nosum_log_likelihood_python(theta,data,tau))
 
 def use_python_ll():
@@ -247,7 +250,7 @@ def use_python_ll():
 	log_likelihood = _log_likelihood_python
 	nosum_log_likelihood = _nosum_log_likelihood_python
 
-def test_speed(n,dpoints = 5000):
+def test_speed(n,dpoints = 5000,device=None):
 	"""
 	Test how fast the BIASD integral runs.
 
@@ -264,7 +267,7 @@ def test_speed(n,dpoints = 5000):
 	t0 = time()
 	for i in range(n):
 		# quad(integrand,0.,1.,args=(.1,0.,1.,.05,3.,8.,.1))[0]
-		y = log_likelihood(_np.array([0.,1.,.05,3.,8.]),d,.1)
+		y = log_likelihood(_np.array([0.,1.,.05,3.,8.]),d,.1,device=device)
 	t1 = time()
 	print "Total time for "+str(n)+" runs: ",_np.around(t1-t0,4)," (s)"
 	print 'Average speed: ', _np.around((t1-t0)/n/d.size*1.e6,4),' (usec/datapoint)'
@@ -340,7 +343,7 @@ else:
 #		else:
 #			return y
 
-def log_posterior(theta,data,prior_dists,tau):
+def log_posterior(theta,data,prior_dists,tau,device=0):
 	"""
 	Calculate the log-posterior probability distribution at :math:`\\Theta`
 
@@ -354,7 +357,7 @@ def log_posterior(theta,data,prior_dists,tau):
 		* The summed log posterior probability distribution, :math:`p(\\Theta \\vert data) \\propto p(data \\vert \\Theta) \cdot p(\\Theta)`
 	"""
 	lprior = prior_dists.lnpdf(theta)
-	ll = log_likelihood(theta,data,tau)
+	ll = log_likelihood(theta,data,tau,device=device)
 	y = lprior + ll
 
 	# keep e1 < e2...
@@ -364,7 +367,7 @@ def log_posterior(theta,data,prior_dists,tau):
 		return y
 
 
-def fit_histogram(data,tau,guess=None):
+def fit_histogram(data,tau,guess=None,device=0):
 	"""
 	Fits a histogram of to the BIASD likelihood function.
 
@@ -391,10 +394,10 @@ def fit_histogram(data,tau,guess=None):
 	hy,hx = _np.histogram(data,bins=int(data.size**.5),normed=True)
 	hx = .5*(hx[1:] + hx[:-1])
 
-	fitted_params,covars = curve_fit(lambda x,e1,e2,sig,k1,k2: _np.exp(nosum_log_likelihood(_np.array((e1,e2,sig,k1,k2)),x,tau)),hx,hy,p0=guess)
+	fitted_params,covars = curve_fit(lambda x,e1,e2,sig,k1,k2: _np.exp(nosum_log_likelihood(_np.array((e1,e2,sig,k1,k2)),x,tau,device=device)),hx,hy,p0=guess)
 	return fitted_params,covars
 
-def predictive_from_samples(x,samples,tau):
+def predictive_from_samples(x,samples,tau,device=0):
 	'''
 	Returns the posterior predictive distribution calculated from samples -- the average value of the likelihood function evaluated at `x` marginalized from the samples of BIASD parameters given in `samples`.
 
@@ -408,5 +411,5 @@ def predictive_from_samples(x,samples,tau):
 		* `y` a `np.ndarray` the same size as `x` containing the marginalized likelihood function evaluated at x
 	'''
 	n = samples.shape[0]
-	y = reduce(lambda x,y: x+y, [_np.exp(nosum_log_likelihood(samples[i],x,tau)) for i in xrange(n)])/n
+	y = reduce(lambda x,y: x+y, [_np.exp(nosum_log_likelihood(samples[i],x,tau,device=device)) for i in xrange(n)])/n
 	return y
