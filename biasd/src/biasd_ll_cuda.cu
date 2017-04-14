@@ -3,9 +3,6 @@
 #include <time.h>
 #include <cuda.h>
 
-#define DBL_EPSILON 2.22045e-16
-#define DBL_MIN 4.94066e-324
-
 // External calls from python
 extern "C" void log_likelihood(int device, int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * ll);
 extern "C" double sum_log_likelihood(int device, int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon);
@@ -114,21 +111,20 @@ __device__ void qg10k21(double a, double b, double *out, double d, double ep1, d
 	result21 *= fabs(halflength);
 
 	// Error calculation
-	double avg = result21/fabs(b-a), error = 0.;
+	double avgg = result21/fabs(b-a), errors = 0.;
 	for (i=0;i<5;i++){
-		error += wgk[2*i]*(fabs(fval1[2*i]-avg)+fabs(fval2[2*i]-avg));
-		error += wgk[2*i+1]*(fabs(fval1[2*i+1]-avg)+fabs(fval2[2*i+1]-avg));
+		errors += wgk[2*i]*(fabs(fval1[2*i]-avgg)+fabs(fval2[2*i]-avgg));
+		errors += wgk[2*i+1]*(fabs(fval1[2*i+1]-avgg)+fabs(fval2[2*i+1]-avgg));
 	}
-	error += wgk[10]*(fabs(fc-avg));
-	error = error*min(1.,pow(200.*fabs(result21-result10)/error,1.5));
+	errors += wgk[10]*(fabs(fc-avgg));
+	errors *= min(1.,pow(200.*fabs(result21-result10)/errors,1.5));
 
 	// Output results
 	out[0] += result21;
-	out[1] += error;
-
+	out[1] += errors;
 }
 
-__device__ void adaptive_integrate(double a, double b, double *out, double epsilon, double d, double ep1, double ep2, double sigma, double k1, double k2, double tau){
+__device__ void adaptive_integrate(double a0, double b0, double *out, double epsilon, double d, double ep1, double ep2, double sigma, double k1, double k2, double tau){
 
 	// a is the lowerbound of the integral
 	// b is the upperbound of the integral
@@ -136,26 +132,26 @@ __device__ void adaptive_integrate(double a, double b, double *out, double epsil
 	// out[1] is the error of the integral
 	// epsilon is the error limit we must reach in each sub-interval
 
-	double current_a = a, current_b = b, temp_out[2];
+	double current_a = a0, current_b = b0, temp_out[2];
 
 	// This loops from the bottom to the top, subdividing and trying again on the lower half, then moving up once converged to epsilon
-	while (current_a < current_b){
+	while (current_a < b0){
 		// Evaluate quadrature on current interval
 		temp_out[0] = 0.;
 		temp_out[1] = 0.;
 		// Perform the quadrature
 		qg10k21(current_a,current_b,temp_out,d,ep1,ep2,sigma,k1,k2,tau);
-		// If the interval is a success
-		if (temp_out[1] < epsilon){
+		// Check convergence on this interval
+		if (temp_out[1] < epsilon ){
 			// keep the results
 			out[0] += temp_out[0];
 			out[1] += temp_out[1];
 			// step the interval
 			current_a = current_b;
-			current_b = b;
-		} else { // if the loop failed
+			current_b = b0;
+		} else { // if the interval failed to converge
 			// sub-divide the interval
-			current_b = 0.5*(current_b+current_a);
+			current_b -= 0.5*(current_b-current_a);
 		}
 	}
 }
@@ -189,29 +185,39 @@ void get_cuda_errors(){
 
 void log_likelihood(int device, int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * ll) {
 
-	cudaSetDevice(device);
-	cudaDeviceProp deviceProp;
-	cudaGetDeviceProperties(&deviceProp, device);
-	int threads = deviceProp.maxThreadsPerBlock/4.;
-	int blocks = (N+threads-1)/threads;
+	// Sanity checks from the model
+	if ((ep1 < ep2) && (sigma > 0.) && (k1 > 0.) && (k2 > 0.) && (tau > 0.) && (epsilon > 0.)) {
 
-	double * d_d;
-	double * ll_d;
+		// Initialize CUDA things
+		//get_cuda_errors();
+		cudaSetDevice(device);
+		//cudaDeviceProp deviceProp;
+		//cudaGetDeviceProperties(&deviceProp, device);
+		int threads = 256;//deviceProp.maxThreadsPerBlock/8;
+		int blocks = (N+threads-1)/threads;
 
-	cudaMalloc((void**)&d_d,N*sizeof(double));
-	cudaMalloc((void**)&ll_d,N*sizeof(double));
+		double * d_d;
+		double * ll_d;
 
-	cudaMemcpy(d_d,d,N*sizeof(double),cudaMemcpyHostToDevice);
+		cudaMalloc((void**)&d_d,N*sizeof(double));
+		cudaMalloc((void**)&ll_d,N*sizeof(double));
 
-	// Evaluate integrand at f -> store in y.
-	kernel_loglikelihood<<<blocks,threads>>>(N,d_d,ep1,ep2,sigma,k1,k2,tau,epsilon,ll_d);
+		cudaMemcpy(d_d,d,N*sizeof(double),cudaMemcpyHostToDevice);
 
-	cudaMemcpy(ll,ll_d,N*sizeof(double),cudaMemcpyDeviceToHost);
+		// Evaluate integrand at f -> store in y.
 
-	cudaFree(d_d);
-	cudaFree(ll_d);
+		kernel_loglikelihood<<<blocks,threads>>>(N,d_d,ep1,ep2,sigma,k1,k2,tau,epsilon,ll_d);
 
-	get_cuda_errors();
+		cudaMemcpy(ll,ll_d,N*sizeof(double),cudaMemcpyDeviceToHost);
+
+		cudaFree(d_d);
+		cudaFree(ll_d);
+
+		//get_cuda_errors();
+	} else {
+		int i;
+		for (i=0;i<N;i++){ ll[i] = -INFINITY;}
+	}
 }
 
 double sum_log_likelihood(int device, int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon) {

@@ -100,12 +100,12 @@ class _laplace_posterior:
 	def samples(self,n):
 		return np.random.multivariate_normal(self.mu,self.covar,n)
 
-
 def _min_fxn(theta,data,prior,tau,device):
 	return -1.*log_posterior(theta,data,prior,tau,device)
 def _minimizer(inputt):
 	data,prior,tau,x0,meth,device = inputt
-	return minimize(_min_fxn,x0,method=meth,args=(data,prior,tau,device))
+	mind =  minimize(_min_fxn,x0,method=meth,args=(data,prior,tau,device))
+	return mind
 
 def find_map(data,prior,tau,meth='nelder-mead',xx=None,nrestarts=2,threads=1,device=0):
 	'''
