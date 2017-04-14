@@ -8,7 +8,7 @@ import numpy as _np
 import emcee
 from time import time as _time
 
-def setup(data, priors, tau, nwalkers, initialize='rvs', threads=1):
+def setup(data, priors, tau, nwalkers, initialize='rvs', threads=1,device=0):
 	"""
 	Prepare the MCMC sampler
 
@@ -46,7 +46,7 @@ def setup(data, priors, tau, nwalkers, initialize='rvs', threads=1):
 			initial_positions[i,0] = initial_positions[i,1]
 			initial_positions[i,1] = temp
 
-	sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=[data,priors,tau],threads=threads)
+	sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=[data,priors,tau,device],threads=threads)
 
 	return sampler,initial_positions
 

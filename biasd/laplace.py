@@ -101,13 +101,13 @@ class _laplace_posterior:
 		return np.random.multivariate_normal(self.mu,self.covar,n)
 
 
-def _min_fxn(theta,data,prior,tau):
-	return -1.*log_posterior(theta,data,prior,tau)
+def _min_fxn(theta,data,prior,tau,device):
+	return -1.*log_posterior(theta,data,prior,tau,device)
 def _minimizer(inputt):
-	data,prior,tau,x0,meth = inputt
-	return minimize(_min_fxn,x0,method=meth,args=(data,prior,tau))
+	data,prior,tau,x0,meth,device = inputt
+	return minimize(_min_fxn,x0,method=meth,args=(data,prior,tau,device))
 
-def find_map(data,prior,tau,meth='nelder-mead',xx=None,nrestarts=2,threads=1):
+def find_map(data,prior,tau,meth='nelder-mead',xx=None,nrestarts=2,threads=1,device=0):
 	'''
 	Use numerical minimization to find the maximum a posteriori estimate of a BIASD log-posterior distribution.
 
@@ -136,10 +136,10 @@ def find_map(data,prior,tau,meth='nelder-mead',xx=None,nrestarts=2,threads=1):
 	if threads > 1:
 		import multiprocessing as mp
 		p = mp.Pool(threads)
-		ylist = p.map(_minimizer,[[data,prior,tau,xx[i],meth] for i in range(nrestarts)])
+		ylist = p.map(_minimizer,[[data,prior,tau,xx[i],meth,device] for i in range(nrestarts)])
 		p.close()
 	else:
-		ylist =   map(_minimizer,[[data,prior,tau,xx[i],meth] for i in range(nrestarts)])
+		ylist =   map(_minimizer,[[data,prior,tau,xx[i],meth,device] for i in range(nrestarts)])
 
 	#Select the best MAP estimate
 	ymin = np.inf
@@ -153,7 +153,7 @@ def find_map(data,prior,tau,meth='nelder-mead',xx=None,nrestarts=2,threads=1):
 		y = None
 	return y
 
-def laplace_approximation(data,prior,tau,nrestarts=2,verbose=False,threads=1):
+def laplace_approximation(data,prior,tau,nrestarts=2,verbose=False,threads=1,device=0):
 	'''
 	Perform the Laplace approximation on the BIASD posterior probability distribution of this trace.
 
@@ -174,7 +174,7 @@ def laplace_approximation(data,prior,tau,nrestarts=2,verbose=False,threads=1):
 	#Calculate the best MAP estimate
 	import time
 	t0 = time.time()
-	mind = find_map(data,prior,tau,nrestarts=nrestarts,threads=threads)
+	mind = find_map(data,prior,tau,nrestarts=nrestarts,threads=threads,device=device)
 	t1 = time.time()
 	if verbose:
 		print t1-t0
