@@ -1,23 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
-//#include <math.h>
 #include <time.h>
 #include <cuda.h>
-
-/* Compile with:
-nvcc -arch compute_50 cuda_biasd_simpson.c -o cuda_biasd_simpson
-*/
 
 #define DBL_EPSILON 2.22045e-16
 #define DBL_MIN 4.94066e-324
 
+// External calls from python
 extern "C" void log_likelihood(int device, int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * ll);
 extern "C" double sum_log_likelihood(int device, int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon);
 
+// BIASD related functions
 __global__ void kernel_loglikelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * ll);
 __device__ double integrand(double f, double d, double ep1, double ep2, double sigma, double k1, double k2, double tau);
-__device__ void qgauss(double a, double b, double d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double *out);
-__device__ double integrate(double d, double ep1, double ep2, double sigma, double k1, double k2, double tau,double epsilon);
+
+// Adaptive Gauss-10, Kronrod-21 quadrature
+__device__ void qg10k21(double a, double b, double *out, double d, double ep1, double ep2, double sigma, double k1, double k2, double tau);
+__device__ void adaptive_integrate(double a, double b, double *out, double epsilon, double d, double ep1, double ep2, double sigma, double k1, double k2, double tau);
 
 
 // ##########################################################
@@ -36,9 +35,7 @@ __device__ double integrand(double f, double d, double ep1, double ep2, double s
 			* (cyl_bessel_i0(y) + (k2*f+k1*(1.-f))*tau
 				* cyl_bessel_i1(y)/y); // Full Expression
 	}
-
 }
-
 
 /*
 	Parameters ripped from Quadpack dqk21.f on 3/20/2017:
@@ -46,7 +43,6 @@ __device__ double integrand(double f, double d, double ep1, double ep2, double s
 	c as evaluated with 80 decimal digit arithmetic by l. w. fullerton,
 	c bell labs, nov. 1981.
 */
-
 
 __constant__ static double wg[5] = {
 	0.066671344308688137593568809893332,
@@ -82,8 +78,9 @@ __constant__ static double xgk[11] = {
 	0.000000000000000000000000000000000
 };
 
-__device__ void qgauss(double a, double b, double d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double *out){
-	// translated from Fortran from Quadpack's dqk21.f
+__device__ void qg10k21(double a, double b, double *out, double d, double ep1, double ep2, double sigma, double k1, double k2, double tau) {
+	// Do quadrature with the Gauss-10, Kronrod-21 rule
+	// translated from Fortran from Quadpack's dqk21.f...
 
 	double center = 0.5*(b+a);
 	double halflength = 0.5*(b-a);
@@ -92,71 +89,94 @@ __device__ void qgauss(double a, double b, double d, double ep1, double ep2, dou
 	double result21 = 0.;
 
 	int i;
-	// Function values
+	// Pre-calculate function values
 	double fval1[10],fval2[10];
 	for (i=0;i<10;i++){
 		fval1[i] = integrand(center+halflength*xgk[i],d,ep1,ep2,sigma,k1,k2,tau);
 		fval2[i] = integrand(center-halflength*xgk[i],d,ep1,ep2,sigma,k1,k2,tau);
 	}
 
-	// Evaluate gauss-10 and kronrod-21
 	for (i=0;i<5;i++){
+		// Evaluate Gauss-10
 		result10 += wg[i]*(fval1[2*i+1] + fval2[2*i+1]);
-		result21 += wgk[2*i+1]*(fval1[2*i+1] + fval2[2*i+1]);
+
+		//Evaluate Kronrod-21
 		result21 += wgk[2*i]*(fval1[2*i] + fval2[2*i]);
+		result21 += wgk[2*i+1]*(fval1[2*i+1] + fval2[2*i+1]);
 	}
 
+	// Add 0 point to Kronrod-21
 	double fc = integrand(center,d,ep1,ep2,sigma,k1,k2,tau);
 	result21 += wgk[10]*fc;
 
-	// // Removed error calculation.....
-	// errors
-	// double resabs = result21; // in this case resabs = result21 b/c it's all positive
-	// double reskh = result21*.5;
-	// double resasc = wgk[10]*fabs(fc-reskh);
-	// for (i=0;i<10;i++){
-		// resasc += wgk[i]*(fabs(fval1[i] - reskh) + fabs(fval2[i] - reskh));
-	// }
+	// Scale results to the interval
+	result10 *= fabs(halflength);
+	result21 *= fabs(halflength);
 
-	out[0] = result21*halflength;
-	// resabs *= halflength;
-	// resasc *= halflength;
-	// out[1] = fabs(result10-result21)*halflength;
-	// if (resasc != 0. && out[1] != 0.){
-	// 	out[1] = resasc*fmin(1.,pow(200.*out[1]/resasc,1.5));
-	// }
-	// if (resabs > DBL_MIN/(50.*DBL_EPSILON)){
-	// 	out[1] = fmax(resabs*(DBL_EPSILON*50.),out[1]);
-	// }
-}
-
-__device__ double integrate(double d, double ep1, double ep2, double sigma, double k1, double k2, double tau,double epsilon){
-
-	double out[2],integral = 0.,error = 0.;
-
-	int i;
-	for (i=0;i<20;i++){
-		qgauss(0.05*(double)i,0.05*(double)(i+1),d,ep1,ep2,sigma,k1,k2,tau,out);
-		integral += out[0];
-		error += out[1];
+	// Error calculation
+	double avg = result21/fabs(b-a), error = 0.;
+	for (i=0;i<5;i++){
+		error += wgk[2*i]*(fabs(fval1[2*i]-avg)+fabs(fval2[2*i]-avg));
+		error += wgk[2*i+1]*(fabs(fval1[2*i+1]-avg)+fabs(fval2[2*i+1]-avg));
 	}
-	return integral;
+	error += wgk[10]*(fabs(fc-avg));
+	error = error*min(1.,pow(200.*fabs(result21-result10)/error,1.5));
+
+	// Output results
+	out[0] += result21;
+	out[1] += error;
+
 }
 
+__device__ void adaptive_integrate(double a, double b, double *out, double epsilon, double d, double ep1, double ep2, double sigma, double k1, double k2, double tau){
+
+	// a is the lowerbound of the integral
+	// b is the upperbound of the integral
+	// out[0] is the value of the integral
+	// out[1] is the error of the integral
+	// epsilon is the error limit we must reach in each sub-interval
+
+	double current_a = a, current_b = b, temp_out[2];
+
+	// This loops from the bottom to the top, subdividing and trying again on the lower half, then moving up once converged to epsilon
+	while (current_a < current_b){
+		// Evaluate quadrature on current interval
+		temp_out[0] = 0.;
+		temp_out[1] = 0.;
+		// Perform the quadrature
+		qg10k21(current_a,current_b,temp_out,d,ep1,ep2,sigma,k1,k2,tau);
+		// If the interval is a success
+		if (temp_out[1] < epsilon){
+			// keep the results
+			out[0] += temp_out[0];
+			out[1] += temp_out[1];
+			// step the interval
+			current_a = current_b;
+			current_b = b;
+		} else { // if the loop failed
+			// sub-divide the interval
+			current_b = 0.5*(current_b+current_a);
+		}
+	}
+}
 
 __global__ void kernel_loglikelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * ll) {
 
 	int idx = threadIdx.x + blockIdx.x*blockDim.x;
 
 	if (idx < N) {
-		double out;
+		double out, intval[2] = {0.,0.};
+
+		// Calculate the state contributions
 		out = k2/(k1+k2) * exp(-k1*tau - .5 * pow((d[idx]-ep1)/sigma,2.)); // state 1
 		out += k1/(k1+k2) * exp(-k2*tau - .5 * pow((d[idx]-ep2)/sigma,2.)); // state 2
 
-		out += 2.*k1*k2/(k1+k2)*tau *integrate(d[idx],ep1,ep2,sigma,k1,k2,tau,epsilon); // both
+		// Perform the blurring integral
+		adaptive_integrate(0.,1.,intval,epsilon,d[idx],ep1,ep2,sigma,k1,k2,tau);
 
-		out = log(out) - .5 * log(2.* M_PI) - log(sigma); // prefactor
-		ll[idx] = out; // transfer
+		out += 2.*k1*k2/(k1+k2)*tau *intval[0]; // the blurring contribution
+		out = log(out) - .5 * log(2.* M_PI) - log(sigma); // Add prefactor
+		ll[idx] = out; // transfer out result
 	}
 }
 
@@ -172,7 +192,7 @@ void log_likelihood(int device, int N, double * d, double ep1, double ep2, doubl
 	cudaSetDevice(device);
 	cudaDeviceProp deviceProp;
 	cudaGetDeviceProperties(&deviceProp, device);
-	int threads = deviceProp.maxThreadsPerBlock/2.;
+	int threads = deviceProp.maxThreadsPerBlock/4.;
 	int blocks = (N+threads-1)/threads;
 
 	double * d_d;
@@ -233,13 +253,14 @@ int main(){
 	double d[50] = {0.87755042,  0.90101722,  0.88297422,  0.90225072,  0.91185969,        0.88479424,  0.64257305,  0.23650566,  0.17532272,  0.24785572,        0.77647345,  0.12143413,  0.04994399,  0.19918067,  0.09625039,
         0.14283554,  0.30052487,  0.8937437 ,  0.90544194,  0.87350816,        0.62315481,  0.48258872,  0.77018322,  0.42989469,  0.69183523,        0.35556625,  0.90622313,  0.12529433,  0.74309849,  0.8860914 ,        0.8335358 ,  0.56208782,  0.45287218,  0.79373139,  0.42808399,        0.86643919,  0.70459052,  0.09161765,  0.53514735,  0.06578612,        0.09050594,  0.14923124,  0.8579178 ,  0.884698  ,  0.8745358 ,        0.89191605,  0.57743238,  0.80656044,  0.9069933 ,  0.65817311};
 
+	int device = 1;
 	double sum = 0;
 	printf("Starting Test...\n");
-	sum = sum_log_likelihood(50,d,0.,1.,.05,3.,8.,.1,1e-10);
+	sum = sum_log_likelihood(device,50,d,0.,1.,.05,3.,8.,.1,1e-10);
 	double truth = -45.312935111611729;
 
-	printf("Real : %.10f\n",truth);
-	printf("Calcd: %.10f\n",sum);
-	printf("%%Diff: %.10f\n",abs((truth-sum)/truth)*100.);
+	printf("Real : %.20f\n",truth);
+	printf("Calcd: %.20f\n",sum);
+	printf("%%Diff: %.20f\n",abs((truth-sum)/truth)*100.);
 }
 */
