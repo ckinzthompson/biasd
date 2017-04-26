@@ -33,8 +33,7 @@ _eps = 1e-10
 ##########
 
 #Try to load CUDA log-likelihood .so
-# try:
-if 1:
+try:
 	if _platform == 'darwin':
 		_sopath = _lib_path+'biasd_ll_cuda'
 	elif _platform == 'linux' or _platform == 'linux2':
@@ -71,8 +70,8 @@ if 1:
 
 	print "Loaded CUDA Library:\n"+_sopath+".so"
 	_flag_cuda = True
-# except:
-	# _flag_cuda = False
+except:
+	_flag_cuda = False
 
 
 ### Try to load C log-likelihood .so
