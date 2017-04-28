@@ -34,10 +34,7 @@ _eps = 1e-10
 
 #Try to load CUDA log-likelihood .so
 try:
-	if _platform == 'darwin':
-		_sopath = _lib_path+'biasd_ll_cuda'
-	elif _platform == 'linux' or _platform == 'linux2':
-		_sopath = _lib_path + 'biasd_ll_cuda'
+	_sopath = _lib_path + 'biasd_cuda'
 	_lib_cuda = _np.ctypeslib.load_library(_sopath, '.') ## future-self: the library has to end in .so ....
 
 	_lib_cuda.log_likelihood.argtypes = [
@@ -78,10 +75,7 @@ except:
 
 ### Try to load C log-likelihood .so
 try:
-	if _os.path.isfile(_lib_path+'biasd_ll_gsl.so'):
-		_sopath = _lib_path+'biasd_ll_gsl'
-	else:
-		_sopath = _lib_path + 'biasd_ll_adaptive'
+	_sopath = _lib_path + 'biasd_c'
 
 	_lib_c = _np.ctypeslib.load_library(_sopath, '.') ## future-self: the library has to end in .so ....
 

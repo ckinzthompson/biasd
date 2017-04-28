@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <cuda.h>
-#include "biasd_twostate_integrate_cuda.h"
-#include "biasd_twostate_ll_cuda.h"
+#include "biasd_cuda_integrate.h"
+#include "biasd_cuda.h"
 
 // ##########################################################
 // ##########################################################

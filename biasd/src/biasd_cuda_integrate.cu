@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <cuda.h>
-#include "biasd_twostate_integrate_cuda.h"
+#include "biasd_cuda_integrate.h"
 
 /*
 	Parameters ripped from Quadpack dqk21.f on 3/20/2017:
