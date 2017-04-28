@@ -3,66 +3,52 @@
 #include <math.h>
 #include "biasd_adaptive.h"
 
-
 // #############################################################################
 // #############################################################################
 
-node_t * new_list(){
-	node_t * head;
-	head = malloc(sizeof(node_t));
-	(*head).next = NULL;
-	(*head).val = NULL;
-	return head;
-}
-
-fval_t * new_fval(double x, double y){
-	fval_t * newf;
-	newf = malloc(sizeof(fval_t));
-	(*newf).x = x;
-	(*newf).y = y;
-	return newf;
-}
-
-void push(node_t ** head, fval_t * val){
-	if (val != NULL) {
-		node_t * new_node;
-		new_node = malloc(sizeof(node_t));
-	
-		(*new_node).val = val;
-		(*new_node).next = *head;
-	
-		*head = new_node;
-	}
-}
-
-fval_t * pop(node_t ** head){
-	if (*head != NULL){
-		node_t * next = (*head)->next;
-		fval_t * popped = (*head)->val;
-		free(*head);
-		*head = next;
-		return popped;
-	}
-	else{
-		return NULL;
-	}
-	
-}
-
-void free_list(node_t ** head){
-	fval_t * empty;
-	
-	while (1){
-		empty = pop(head);
-		if (empty == NULL){
-			break;
-		}
-	}
-}
+/*
+	Parameters ripped from Quadpack dqk21.f on 3/20/2017:
+	c gauss quadrature weights and kronron quadrature abscissae and weights
+	c as evaluated with 80 decimal digit arithmetic by l. w. fullerton,
+	c bell labs, nov. 1981.
+*/
+static double wg[5] = {
+	0.066671344308688137593568809893332,
+	0.149451349150580593145776339657697,
+	0.219086362515982043995534934228163,
+	0.269266719309996355091226921569469,
+	0.295524224714752870173892994651338
+};
+static double wgk[11] = {
+	0.011694638867371874278064396062192,
+	0.032558162307964727478818972459390,
+	0.054755896574351996031381300244580,
+	0.075039674810919952767043140916190,
+	0.093125454583697605535065465083366,
+	0.109387158802297641899210590325805,
+	0.123491976262065851077958109831074,
+	0.134709217311473325928054001771707,
+	0.142775938577060080797094273138717,
+	0.147739104901338491374841515972068,
+	0.149445554002916905664936468389821
+};
+static double xgk[11] = {
+	0.995657163025808080735527280689003,
+	0.973906528517171720077964012084452,
+	0.930157491355708226001207180059508,
+	0.865063366688984510732096688423493,
+	0.780817726586416897063717578345042,
+	0.679409568299024406234327365114874,
+	0.562757134668604683339000099272694,
+	0.433395394129247190799265943165784,
+	0.294392862701460198131126603103866,
+	0.148874338981631210884826001129720,
+	0.000000000000000000000000000000000
+};
 
 // #############################################################################
 // #############################################################################
-
+// Bessels are from numerical recipies in C?
 double bessel_i0(double x) {
 	double ax,ans;
 	double y;
@@ -102,120 +88,132 @@ double bessel_i1(double x) {
 }
 
 double integrand(double f, ip * p) {
-	double y, out;
+	double y,var;
 	
 	y = 2.*p->tau*sqrt(p->k1*p->k2*f*(1.-f));
-	
-	if (f == 0.){
-		out = exp(-1. * p->k2 * p->tau) * (1.+ p->k1 * p->tau / 2.) * exp(-.5 * pow((p->d - p->ep2)/p->sigma,2.)); // Limits
-	} else if (f == 1.){
-		out = exp(-1. * p->k1 * p->tau) * (1.+ p->k2 * p->tau / 2.) * exp(-.5 * pow((p->d - p->ep1)/p->sigma,2.)); //Limits
-	} else {//if ((f > 0.) && (f < 1.)){
-		out = exp(-(p->k1*f+p->k2*(1.-f))*p->tau)
-			* exp(-.5*pow((p->d - (p->ep1 * f +
-				p->ep2 * (1.-f)))/p->sigma,2.))
-			* (bessel_i0(y) + (p->k2*f+p->k1*(1.-f))*p->tau
-				* bessel_i1(y)/y); // Full Expression
-	} //else {
-	//	out = NAN;
-	//}
-	return out;
+	var = p->sig1 * p->sig1 * f + p->sig2 * p->sig2 * (1.-f);
+
+	return exp(-(p->k1*f+p->k2*(1.-f))*p->tau)/ sqrt(var)
+		* exp(-.5*pow((p->d - (p->ep1 * f + p->ep2 * (1.-f))),2.)/var)
+		* (bessel_i0(y) + (p->k2*f+p->k1*(1.-f))*p->tau
+		* bessel_i1(y)/y); // Full Expression
+
 }
 
 // #############################################################################
 // #############################################################################
 
-cs_out check_simpson(fval_t * va, fval_t * vb, double epsilon, ip * args) {
-	
-	double a = va->x;
-	double b = vb->x;
-	
-	cs_out out = {0,0.,0.,0.};
-	double h = (b-a)/2.;
-	double xmid = a + h;
-	double ymid = integrand(xmid,args);
-	
-	// Calc Simpson 1 division
-	double s1 = h/3. * (va->y + 4. * ymid + vb->y);
+void qg10k21(double a, double b, double *out, ip * p) {
+	// Do quadrature with the Gauss-10, Kronrod-21 rule
+	// translated from Fortran from Quadpack's dqk21.f...
 
-	// Calc Simpson 2 divisions
-	double s2_left = h/6. * (va->y + 4.*integrand(a + h/2.,args) + ymid);
-	double s2_right = h/6. * (ymid + 4.*integrand(a + h*1.5,args) + vb->y);
-	
-	double err = fabs(s1 - s2_left - s2_right);
+	double center = 0.5*(b+a);
+	double halflength = 0.5*(b-a);
 
-	if (err < 15.*epsilon) {
-		out.success = 1;
-		out.integral = s2_left+s2_right;
-	} else {
-		out.x_mid = xmid;
-		out.y_mid = ymid;
-	}
-	return out;
-}
+	double result10 = 0.;
+	double result21 = 0.;
 
-double adaptive_quad(double epsilon, ip * args){
-	double integral = 0.;
-	cs_out check;
-	node_t * head = new_list();
-	push(&head,new_fval(1.,integrand(1.,args)));
-	push(&head,new_fval(0.,integrand(0.,args)));
-	
-	fval_t * v1, * v2;
-	
 	int i;
-	while(head != NULL) {
-		v1 = pop(&head);
-		v2 = pop(&head);
-	
-		if ((v1 != NULL) && (v2 != NULL)){
-			check = check_simpson(v1,v2,epsilon,args);
-			if (check.success){
-				// printf("%e, %e   =   %e\n",v1->x,v2->x,check.integral );
-				integral += check.integral;
-				push(&head,v2);
-				free(v1);
-			} else {
-				push(&head,v2);
-				push(&head,new_fval(check.x_mid,check.y_mid));
-				push(&head,v1);
-			}
+	// Pre-calculate function values
+	double fval1[10],fval2[10];
+	for (i=0;i<10;i++){
+		fval1[i] = integrand(center+halflength*xgk[i],p);
+		fval2[i] = integrand(center-halflength*xgk[i],p);
+	}
+
+	for (i=0;i<5;i++){
+		// Evaluate Gauss-10
+		result10 += wg[i]*(fval1[2*i+1] + fval2[2*i+1]);
+
+		//Evaluate Kronrod-21
+		result21 += wgk[2*i]*(fval1[2*i] + fval2[2*i]);
+		result21 += wgk[2*i+1]*(fval1[2*i+1] + fval2[2*i+1]);
+	}
+
+	// Add 0 point to Kronrod-21
+	double fc = integrand(center,p);
+	result21 += wgk[10]*fc;
+
+	// Scale results to the interval
+	result10 *= fabs(halflength);
+	result21 *= fabs(halflength);
+
+	// Error calculation
+	double avgg = result21/fabs(b-a), errors = 0.;
+	for (i=0;i<5;i++){
+		errors += wgk[2*i]*(fabs(fval1[2*i]-avgg)+fabs(fval2[2*i]-avgg));
+		errors += wgk[2*i+1]*(fabs(fval1[2*i+1]-avgg)+fabs(fval2[2*i+1]-avgg));
+	}
+	errors += wgk[10]*(fabs(fc-avgg));
+	errors *= fmin(1.,pow(200.*fabs(result21-result10)/errors,1.5));
+
+	// Output results
+	out[0] += result21;
+	out[1] += errors;
+}
+
+void adaptive_integrate(double a0, double b0, double *out, double epsilon, ip * p){
+
+	// a is the lowerbound of the integral
+	// b is the upperbound of the integral
+	// out[0] is the value of the integral
+	// out[1] is the error of the integral
+	// epsilon is the error limit we must reach in each sub-interval
+
+	double current_a = a0, current_b = b0, temp_out[2];
+
+	// This loops from the bottom to the top, subdividing and trying again on the lower half, then moving up once converged to epsilon
+	while (current_a < b0){
+		// Evaluate quadrature on current interval
+		temp_out[0] = 0.;
+		temp_out[1] = 0.;
+		// Perform the quadrature
+		qg10k21(current_a,current_b,temp_out,p);
+		// Check convergence on this interval
+		if (temp_out[1] < epsilon ){
+			// keep the results
+			out[0] += temp_out[0];
+			out[1] += temp_out[1];
+			// step the interval
+			current_a = current_b;
+			current_b = b0;
+		} else { // if the interval failed to converge
+			// sub-divide the interval
+			current_b -= 0.5*(current_b-current_a);
 		}
 	}
-	free(v1);
-	free(v2);
-	free_list(&head);
-	return integral;
 }
 
+
 // #############################################################################
 // #############################################################################
 
-void log_likelihood(int N, double * d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon, double * out) {
+void log_likelihood(int N, double * d, double ep1, double ep2, double sigma1, double sigma2, double k1, double k2, double tau, double epsilon, double * out) {
 	
-	ip p = {0.,ep1,ep2,sigma,k1,k2,tau};
+	ip p = {0.,ep1,ep2,sigma1,sigma2,k1,k2,tau};
 	
-	double lli;
+	double lli, intval[2] = {0.,0.};
 
 	int i;
 	for (i=0;i<N;i++){
 		
 		// Peak for state 1
-		lli = k2/(k1+k2) * exp(-1. * k1 * tau - .5 * pow((d[i] - ep1) / sigma,2.));
+		lli = k2/(k1+k2) / sigma1 * exp(-1. * k1 * tau - .5 * pow((d[i] - ep1) / sigma1,2.));
 		// Peak for state 2
-		lli += k1/(k1+k2) * exp(-1.* k2 * tau - .5 * pow((d[i] - ep2) / sigma,2.));
+		lli += k1/(k1+k2) / sigma2 * exp(-1.* k2 * tau - .5 * pow((d[i] - ep2) / sigma2,2.));
 
 		// Add in the contribution from the numerical integration
 		p.d = d[i];
-		lli += 2.*k1 * k2/(k1 + k2) * tau * adaptive_quad(epsilon,&p);
+		adaptive_integrate(0,1,intval,epsilon,&p);
+		lli += 2.*k1 * k2/(k1 + k2) * tau * intval[0];
 
 		// Log and get the prefactor
-		lli = log(lli) - .5 * log(2.* M_PI) - log(sigma); 
+		lli = log(lli) - .5 * log(2.* M_PI); 
 		out[i] = lli;
 	}
 }
 
-double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma, double k1, double k2, double tau, double epsilon) {
+double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma1, double sigma2, double k1, double k2, double tau, double epsilon) {
 	
 	int i = 0;
 	double sum = 0.;
@@ -223,7 +221,7 @@ double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma
 	double * ll;
 	ll = (double *) malloc(N*sizeof(double));
 	
-	log_likelihood(N,d,ep1,ep2,sigma,k1,k2,tau,epsilon,ll);
+	log_likelihood(N,d,ep1,ep2,sigma1,sigma2,k1,k2,tau,epsilon,ll);
 	for (i=0;i<N;i++) {
 		sum += ll[i];
 	}

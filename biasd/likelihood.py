@@ -51,6 +51,7 @@ try:
 		_ctypes.c_double,
 		_ctypes.c_double,
 		_ctypes.c_double,
+		_ctypes.c_double,
 		_np.ctypeslib.ndpointer(dtype = _np.double) ]
 	_lib_cuda.log_likelihood.restype  = _ctypes.c_void_p
 
@@ -58,6 +59,7 @@ try:
 		_ctypes.c_int,
 		_ctypes.c_int,
 		_np.ctypeslib.ndpointer(dtype = _np.double),
+		_ctypes.c_double,
 		_ctypes.c_double,
 		_ctypes.c_double,
 		_ctypes.c_double,
@@ -93,12 +95,14 @@ try:
 		_ctypes.c_double,
 		_ctypes.c_double,
 		_ctypes.c_double,
+		_ctypes.c_double,
 		_np.ctypeslib.ndpointer(dtype = _np.double) ]
 	_lib_c.log_likelihood.restype  = _ctypes.c_void_p
 
 	_lib_c.sum_log_likelihood.argtypes = [
 		_ctypes.c_int,
 		_np.ctypeslib.ndpointer(dtype = _np.double),
+		_ctypes.c_double,
 		_ctypes.c_double,
 		_ctypes.c_double,
 		_ctypes.c_double,
@@ -126,7 +130,7 @@ if _flag_cuda:
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
-		return _lib_cuda.sum_log_likelihood(device,data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
+		return _lib_cuda.sum_log_likelihood(device,data.size, data, e1, e2, sigma, sigma, k1, k2, tau,epsilon)
 #		llp = _lib_cuda.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		return _np.ctypeslib.as_array(llp,shape=data.shape)
 
@@ -137,7 +141,7 @@ if _flag_cuda:
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
 		ll = _np.empty_like(data)
-		_lib_cuda.log_likelihood(device,data.size, data, e1, e2, sigma, k1, k2, tau,epsilon,ll)
+		_lib_cuda.log_likelihood(device,data.size, data, e1, e2, sigma, sigma, k1, k2, tau,epsilon,ll)
 		return ll
 
 
@@ -167,7 +171,7 @@ if _flag_c:
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
-		return _lib_c.sum_log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
+		return _lib_c.sum_log_likelihood(data.size, data, e1, e2, sigma, sigma, k1, k2, tau,epsilon)
 #		llp = _lib_c.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		return _np.ctypeslib.as_array(llp,shape=data.shape)
 
@@ -178,7 +182,7 @@ if _flag_c:
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
 		ll = _np.empty_like(data)
-		_lib_c.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon,ll)
+		_lib_c.log_likelihood(data.size, data, e1, e2, sigma, sigma, k1, k2, tau,epsilon,ll)
 		return ll
 
 
@@ -192,12 +196,12 @@ if _flag_c:
 
 from scipy.integrate import quad as _quad
 from scipy import special as _special
-def _python_integrand(x,d,e1,e2,sigma,k1,k2,tau):
+def _python_integrand(x,d,e1,e2,sigma1,sigma2,k1,k2,tau):
 	"""
 	Integrand for BIASD likelihood function
 	"""
 	#Ensures proper support
-	if x < 0. or x > 1. or k1 <= 0. or k2 <= 0. or sigma <= 0. or tau <= 0. or e1 >= e2:
+	if x < 0. or x > 1. or k1 <= 0. or k2 <= 0. or sigma1 <= 0. or sigma2 <= 0. or tau <= 0. or e1 >= e2:
 		return 0.
 	else:
 		k = k1 + k2
@@ -205,15 +209,16 @@ def _python_integrand(x,d,e1,e2,sigma,k1,k2,tau):
 		p2 = k1 /k
 		y = 2.*k*tau * _np.sqrt(p1*p2*x*(1.-x))
 		z = p2*x + p1*(1.-x)
+		varr = sigma1**2. * x + sigma2**2. *(1.-x)
 		pf = 2.*k*tau*p1*p2*(_special.i0(y)+k*tau*(1.-z)*_special.i1(y)/y)*_np.exp(-z*k*tau)
-		py = 1./_np.sqrt(2.*_np.pi*sigma**2.)*_np.exp(-.5/sigma/sigma*(d-(e1*x+e2*(1.-x)))**2.) * pf
+		py = 1./_np.sqrt(2.*_np.pi*varr)*_np.exp(-.5/varr*(d-(e1*x+e2*(1.-x)))**2.) * pf
 		return py
 
-def _python_integral(d,e1,e2,sigma,k1,k2,tau):
+def _python_integral(d,e1,e2,sigma1,sigma2,k1,k2,tau):
 	"""
 	Use Gaussian quadrature to integrate the BIASD integrand across df between f = 0 ... 1
 	"""
-	return _quad(_python_integrand, 0.,1.,args=(d,e1,e2,sigma,k1,k2,tau), limit=1000)[0]
+	return _quad(_python_integrand, 0.,1.,args=(d,e1,e2,sigma1,sigma2,k1,k2,tau), limit=1000)[0]
 _python_integral = _np.vectorize(_python_integral)
 
 def _p_gauss(x,mu,sigma):
@@ -229,7 +234,7 @@ def _nosum_log_likelihood_python(theta,data,tau,device=None):
 	e1,e2,sigma,k1,k2 = theta
 	p1 = k2/(k1+k2)
 	p2 = 1.-p1
-	out = _python_integral(data,e1,e2,sigma,k1,k2,tau)
+	out = _python_integral(data,e1,e2,sigma,sigma,k1,k2,tau)
 	peak1 = _p_gauss(data,e1,sigma)
 	peak2 = _p_gauss(data,e2,sigma)
 	out += p1*peak1*_np.exp(-k1*tau)
@@ -249,7 +254,7 @@ def use_python_ll():
 	log_likelihood = _log_likelihood_python
 	nosum_log_likelihood = _nosum_log_likelihood_python
 
-def test_speed(n,dpoints = 5000,device=None):
+def test_speed(n,dpoints = 5000,device=0):
 	"""
 	Test how fast the BIASD integral runs.
 
