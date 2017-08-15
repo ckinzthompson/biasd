@@ -147,6 +147,7 @@ if _flag_cuda:
 		log_likelihood = _log_likelihood_cuda
 		nosum_log_likelihood = _nosum_log_likelihood_cuda
 
+
 if _flag_c:
 	def _log_likelihood_c(theta,data,tau,device=None):
 		"""
@@ -245,8 +246,15 @@ def use_python_ll():
 	global nosum_log_likelihood
 	global ll_version
 	ll_version = "Python"
-	log_likelihood = _log_likelihood_python
-	nosum_log_likelihood = _nosum_log_likelihood_python
+	try:
+		from src import log_likelihood as numba_ll
+		from src import sum_log_likelihood as numba_sum_ll
+		log_likelihood = numba_sum_ll
+		nosum_log_likelihood = numba_ll
+		ll_version = 'Python - Numba'
+	except:
+		log_likelihood = _log_likelihood_python
+		nosum_log_likelihood = _nosum_log_likelihood_python
 
 def test_speed(n,dpoints = 5000,device=0):
 	"""
