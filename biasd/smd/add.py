@@ -115,7 +115,7 @@ def trajectories(f,x,y,x_label='Time',y_label='Signal'):
 
 	# Add the incoming data trajectory by trajectory
 	for i in range(nstart,nstart+n):
-		group = f.create_group('trajectory %d'%(i))
+		group = f.create_group('trajectory %05d'%(i))
 		_addhash(group)
 
 		g = group.create_group('data')
