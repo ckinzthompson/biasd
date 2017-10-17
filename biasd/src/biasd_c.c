@@ -3,9 +3,6 @@
 #include <math.h>
 #include "biasd_c.h"
 
-// #############################################################################
-// #############################################################################
-
 /*
 	Parameters ripped from Quadpack dqk21.f on 3/20/2017:
 	c gauss quadrature weights and kronron quadrature abscissae and weights
@@ -70,7 +67,7 @@ double bessel_i0(double x) {
 double bessel_i1(double x) {
 	double ax,ans;
 	double y;
-	
+
 	if ((ax=fabs(x)) < 3.75) {
 		y = x/3.75;
 		y *= y;
@@ -89,11 +86,11 @@ double bessel_i1(double x) {
 
 double integrand(double f, ip * p) {
 	double y,var;
-	
-	y = 2.*p->tau*sqrt(p->k1*p->k2*f*(1.-f));
+
+	y = 2. * p->tau * sqrt(p->k1 * p->k2 * f * (1.-f));
 	var = p->sig1 * p->sig1 * f + p->sig2 * p->sig2 * (1.-f);
 
-	return exp(-(p->k1*f+p->k2*(1.-f))*p->tau)/ sqrt(var)
+	return exp(-(p->k1 * f + p->k2*(1.-f)) * p->tau)/ sqrt(var)
 		* exp(-.5*pow((p->d - (p->ep1 * f + p->ep2 * (1.-f))),2.)/var)
 		* (bessel_i0(y) + (p->k2*f+p->k1*(1.-f))*p->tau
 		* bessel_i1(y)/y); // Full Expression
@@ -189,14 +186,14 @@ void adaptive_integrate(double a0, double b0, double *out, double epsilon, ip * 
 // #############################################################################
 
 void log_likelihood(int N, double * d, double ep1, double ep2, double sigma1, double sigma2, double k1, double k2, double tau, double epsilon, double * out) {
-	
+
 	ip p = {0.,ep1,ep2,sigma1,sigma2,k1,k2,tau};
-	
+
 	double lli, intval[2] = {0.,0.};
 
 	int i;
 	for (i=0;i<N;i++){
-		
+
 		// Peak for state 1
 		lli = k2/(k1+k2) / sigma1 * exp(-1. * k1 * tau - .5 * pow((d[i] - ep1) / sigma1,2.));
 		// Peak for state 2
@@ -204,23 +201,25 @@ void log_likelihood(int N, double * d, double ep1, double ep2, double sigma1, do
 
 		// Add in the contribution from the numerical integration
 		p.d = d[i];
+		intval[0] = 0.;
+		intval[0] = 0.;
 		adaptive_integrate(0,1,intval,epsilon,&p);
 		lli += 2.*k1 * k2/(k1 + k2) * tau * intval[0];
 
 		// Log and get the prefactor
-		lli = log(lli) - .5 * log(2.* M_PI); 
+		lli = log(lli) - .5 * log(2.* M_PI);
 		out[i] = lli;
 	}
 }
 
 double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma1, double sigma2, double k1, double k2, double tau, double epsilon) {
-	
+
 	int i = 0;
 	double sum = 0.;
-		
+
 	double * ll;
 	ll = (double *) malloc(N*sizeof(double));
-	
+
 	log_likelihood(N,d,ep1,ep2,sigma1,sigma2,k1,k2,tau,epsilon,ll);
 	for (i=0;i<N;i++) {
 		sum += ll[i];
@@ -233,11 +232,11 @@ double sum_log_likelihood(int N, double *d, double ep1, double ep2, double sigma
 int main(){
 	double d[50] = {0.87755042,  0.90101722,  0.88297422,  0.90225072,  0.91185969,        0.88479424,  0.64257305,  0.23650566,  0.17532272,  0.24785572,        0.77647345,  0.12143413,  0.04994399,  0.19918067,  0.09625039,
         0.14283554,  0.30052487,  0.8937437 ,  0.90544194,  0.87350816,        0.62315481,  0.48258872,  0.77018322,  0.42989469,  0.69183523,        0.35556625,  0.90622313,  0.12529433,  0.74309849,  0.8860914 ,        0.8335358 ,  0.56208782,  0.45287218,  0.79373139,  0.42808399,        0.86643919,  0.70459052,  0.09161765,  0.53514735,  0.06578612,        0.09050594,  0.14923124,  0.8579178 ,  0.884698  ,  0.8745358 ,        0.89191605,  0.57743238,  0.80656044,  0.9069933 ,  0.65817311};
-        
+
 	double sum = 0;
-	
+
 	sum = sum_log_likelihood(50,d,0.,1.,.05,3.,8.,.1,1e-6);
-	
-	printf("%f\n",sum);       
+
+	printf("%f\n",sum);
 }
 */
