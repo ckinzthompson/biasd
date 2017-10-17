@@ -186,29 +186,36 @@ void adaptive_integrate(double a0, double b0, double *out, double epsilon, ip * 
 // #############################################################################
 
 void log_likelihood(int N, double * d, double ep1, double ep2, double sigma1, double sigma2, double k1, double k2, double tau, double epsilon, double * out) {
-
-	ip p = {0.,ep1,ep2,sigma1,sigma2,k1,k2,tau};
-
-	double lli, intval[2] = {0.,0.};
-
 	int i;
-	for (i=0;i<N;i++){
 
-		// Peak for state 1
-		lli = k2/(k1+k2) / sigma1 * exp(-1. * k1 * tau - .5 * pow((d[i] - ep1) / sigma1,2.));
-		// Peak for state 2
-		lli += k1/(k1+k2) / sigma2 * exp(-1.* k2 * tau - .5 * pow((d[i] - ep2) / sigma2,2.));
+	if ((ep1 < ep2) && (sigma1 > 0.) && (sigma2 > 0.) && (k1 > 0.) && (k2 > 0.) && (tau > 0.) && (epsilon > 0.)) {
 
-		// Add in the contribution from the numerical integration
-		p.d = d[i];
-		intval[0] = 0.;
-		intval[0] = 0.;
-		adaptive_integrate(0,1,intval,epsilon,&p);
-		lli += 2.*k1 * k2/(k1 + k2) * tau * intval[0];
+		ip p = {0.,ep1,ep2,sigma1,sigma2,k1,k2,tau};
 
-		// Log and get the prefactor
-		lli = log(lli) - .5 * log(2.* M_PI);
-		out[i] = lli;
+		double lli, intval[2] = {0.,0.};
+
+		for (i=0;i<N;i++){
+
+			// Peak for state 1
+			lli = k2/(k1+k2) / sigma1 * exp(-1. * k1 * tau - .5 * pow((d[i] - ep1) / sigma1,2.));
+			// Peak for state 2
+			lli += k1/(k1+k2) / sigma2 * exp(-1.* k2 * tau - .5 * pow((d[i] - ep2) / sigma2,2.));
+
+			// Add in the contribution from the numerical integration
+			p.d = d[i];
+			intval[0] = 0.;
+			intval[0] = 0.;
+			adaptive_integrate(0,1,intval,epsilon,&p);
+			lli += 2.*k1 * k2/(k1 + k2) * tau * intval[0];
+
+			// Log and get the prefactor
+			lli = log(lli) - .5 * log(2.* M_PI);
+			out[i] = lli;
+		}
+	} else {
+		for (i=0;i<N;i++) {
+			out[i] = - INFINITY;
+		}
 	}
 }
 
