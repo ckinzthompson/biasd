@@ -3,7 +3,7 @@
 
 """
 This module allows you to use the single-molecule dataset (SMD) format, and integrate BIASD results into them. The data is stored in as HDF5, and as such can be arbitrarily changed to fit your needs. Generally speaking, the structure is
-	
+
 	SMD File ``(HDF5 File)``:
 		- attrs ``(HDF5 Attributes)``
 			- time created ``(Str)``
@@ -42,5 +42,6 @@ try:
 	from . import add
 	from . import read
 	from ..gui.smd_loader import launch as viewer
+	from .matlab_to_hdf5 import convert as convert_matlab
 except:
 	print "SMD failed to load - Make sure h5py is installed"

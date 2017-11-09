@@ -14,7 +14,7 @@ def _addhash(hdf5_item):
 	"""
 	from time import ctime
 	from hashlib import md5
-	
+
 	time = ctime()
 	hdf5_item.attrs['time created'] = time
 	# h5py items don't really hash, so.... do this, instead.
@@ -94,19 +94,19 @@ def loadtxt(filename):
 class smd_exists(Exception):
 	""" Error if a file already exists """
 	def __init__(self):
-		Exception.__init__(self,"SMD I/O error: File Already Exists") 
+		Exception.__init__(self,"SMD I/O error: File Already Exists")
 
 class smd_fail(Exception):
 	""" Error for opening a file """
 	def __init__(self,filename):
-		Exception.__init__(self,"SMD I/O error: Couldn't open %s"%(filename)) 
+		Exception.__init__(self,"SMD I/O error: Couldn't open %s"%(filename))
 
 class smd_malformed(Exception):
 	""" Error if file isn't formed as expected """
 	def __init__(self):
-		Exception.__init__(self,"SMD I/O error: file is not formed as expected") 
+		Exception.__init__(self,"SMD I/O error: file is not formed as expected")
 
 class smd_save(Exception):
 	""" Error if file isn't saved """
 	def __init__(self):
-		Exception.__init__(self,"SMD I/O error: could not flush buffers to file ") 
+		Exception.__init__(self,"SMD I/O error: could not flush buffers to file ")
