@@ -28,7 +28,7 @@ def convert(input_filename):
 		pass
 
 	## Transfer ID
-	dataset.create_dataset('id',data=str(d['id'][0]))
+	#dataset.create_dataset('id',data=str(d['id'][0]))
 	dataset.attrs.create('SMD hash ID',str(d['id'][0]))
 
 	## Transfer Types
