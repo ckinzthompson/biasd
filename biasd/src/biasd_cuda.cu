@@ -28,7 +28,7 @@ __global__ void kernel_loglikelihood(int N, double * d, double ep1, double ep2, 
 	}
 }
 
-void load_data(int device, int N, double * d, void * d_d, void * ll_d){
+void load_dataz(int device, int N, double * d, void * d_d, void * ll_d){
 	cudaSetDevice(device);
 	int padding = get_padding(device,N);
 
