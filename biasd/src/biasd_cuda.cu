@@ -43,7 +43,7 @@ void load_dataz(int device, int N, double * d, void * d_d, void * ll_d){
 	for (int i =0; i < N+padding;i++){
 		ll[i] = 0.0;
 	}
-	cudaMemcpy(ll_d,ll,(N+padding)*sizeof(double));
+	cudaMemcpy(ll_d,ll,(N+padding)*sizeof(double),cudaMemcpyHostToDevice);
 	free(ll);
 	// cudaMemset(ll_d, 0.0, (N+padding)*sizeof(double));
 }
