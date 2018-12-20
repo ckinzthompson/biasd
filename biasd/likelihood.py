@@ -45,8 +45,8 @@ if 1:
 	_lib_cuda.log_likelihood.argtypes = [
 		_ctypes.c_int,
 		_ctypes.c_int,
-		_ctypes.POINTER(_ctypes.c_double),
-		_ctypes.POINTER(_ctypes.c_double),
+		_ctypes.POINTER(_ctypes.c_void_p),
+		_ctypes.POINTER(_ctypes.c_void_p),
 		_ctypes.c_double,
 		_ctypes.c_double,
 		_ctypes.c_double,
@@ -61,8 +61,8 @@ if 1:
 	_lib_cuda.sum_log_likelihood.argtypes = [
 		_ctypes.c_int,
 		_ctypes.c_int,
-		_ctypes.POINTER(_ctypes.c_double),
-		_ctypes.POINTER(_ctypes.c_double),
+		_ctypes.POINTER(_ctypes.c_void_p),
+		_ctypes.POINTER(_ctypes.c_void_p),
 		_ctypes.c_double,
 		_ctypes.c_double,
 		_ctypes.c_double,

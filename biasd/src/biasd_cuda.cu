@@ -28,7 +28,7 @@ __global__ void kernel_loglikelihood(int N, double * d, double ep1, double ep2, 
 	}
 }
 
-void load_data(int device, int N, double * d, double * d_d, double * ll_d){
+void load_data(int device, int N, double * d, void* d_d, void * ll_d){
 	cudaSetDevice(device);
 	int padding = get_padding(device,N);
 
@@ -39,12 +39,12 @@ void load_data(int device, int N, double * d, double * d_d, double * ll_d){
 	cudaMemset(ll_d, 0.0, (N+padding)*sizeof(double));
 }
 
-void free_data(double *d_d, double *ll_d){
+void free_data(void *d_d, void *ll_d){
 	cudaFree(d_d);
 	cudaFree(ll_d);
 }
 
-void log_likelihood(int device, int N, double *d_d, double *ll_d, double ep1, double ep2, double sigma1, double sigma2, double k1, double k2, double tau, double epsilon, double * ll) {
+void log_likelihood(int device, int N, void *d_d, void *ll_d, double ep1, double ep2, double sigma1, double sigma2, double k1, double k2, double tau, double epsilon, double * ll) {
 
 	// Sanity checks from the model
 	if ((ep1 < ep2) && (sigma1 > 0.) && (sigma2 > 0.) && (k1 > 0.) && (k2 > 0.) && (tau > 0.) && (epsilon > 0.)) {
@@ -62,7 +62,7 @@ void log_likelihood(int device, int N, double *d_d, double *ll_d, double ep1, do
 	}
 }
 
-double sum_log_likelihood(int device, int N, double *d_d, double *ll_d, double ep1, double ep2, double sigma1, double sigma2, double k1, double k2, double tau, double epsilon) {
+double sum_log_likelihood(int device, int N, void *d_d, void *ll_d, double ep1, double ep2, double sigma1, double sigma2, double k1, double k2, double tau, double epsilon) {
 
 	double sum = 0.;
 
