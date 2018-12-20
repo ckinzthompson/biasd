@@ -100,7 +100,7 @@ double parallel_sum(void * a_d, int N, int num_SMs) {
 	cudaMemcpy( result_d, &result, sizeof(double), cudaMemcpyHostToDevice );
 
 	// Call kernel to get sum
-	cuda_parallel_sum<<<num_SMs , 1024 >>>(a_d, N, result_d);
+	cuda_parallel_sum<<<num_SMs , 1024 >>>(&a_d, N, result_d);
 
 	cudaMemcpy( &result, result_d, sizeof(double), cudaMemcpyDeviceToHost );
 	cudaFree(result_d);
