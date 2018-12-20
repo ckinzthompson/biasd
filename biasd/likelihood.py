@@ -76,8 +76,8 @@ if 1:
 
 	# _lib_cuda.device_count.argtypes = [_ctypes.c_void_p]
 	# _lib_cuda.device_count.restype = _ctypes.c_int
-	_lib_cuda.cuda_errors.argtypes = [_ctypes.c_int]
-	_lib_cuda.cuda_errors.restype = _ctypes.c_int
+	# _lib_cuda.cuda_errors.argtypes = [_ctypes.c_int]
+	# _lib_cuda.cuda_errors.restype = _ctypes.c_int
 
 	_lib_cuda.load_data.argtypes = [_ctypes.c_int,_ctypes.c_int,_np.ctypeslib.ndpointer(dtype = _np.double),_ctypes.POINTER(_ctypes.c_double),_ctypes.POINTER(_ctypes.c_double)]
 	_lib_cuda.load_data.restype = _ctypes.c_void_p
@@ -152,9 +152,9 @@ if _flag_cuda:
 			_lib_cuda.load_data(device,data.size,data,_cuda_d_pointer,_cuda_ll_pointer)
 
 		y = _lib_cuda.sum_log_likelihood(device,data.size, _cuda_d_pointer, _cuda_ll_pointer, e1, e2, sigma, sigma, k1, k2, tau,epsilon)
-		if device >= 0:
-			if _lib_cuda.cuda_errors(device) == 1:
-				raise Exception('Cuda Error: Check Cuda code')
+		# if device >= 0:
+		# 	if _lib_cuda.cuda_errors(device) == 1:
+		# 		raise Exception('Cuda Error: Check Cuda code')
 		return y
 #		llp = _lib_cuda.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		return _np.ctypeslib.as_array(llp,shape=data.shape)
@@ -173,9 +173,9 @@ if _flag_cuda:
 
 		ll = _np.empty_like(data)
 		_lib_cuda.log_likelihood(device,data.size, _cuda_d_pointer, _cuda_ll_pointer, e1, e2, sigma, sigma, k1, k2, tau,epsilon,ll)
-		if device >= 0:
-			if _lib_cuda.cuda_errors(device) == 1:
-				raise Exception('Cuda Error: Check Cuda code')
+		# if device >= 0:
+		# 	if _lib_cuda.cuda_errors(device) == 1:
+		# 		raise Exception('Cuda Error: Check Cuda code')
 		return ll
 
 	def _free_cuda():
