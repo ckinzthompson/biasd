@@ -4,7 +4,7 @@
 
 #define WARP_SIZE 32
 
-int device_count() {
+int device_count(void) {
 	int count;
 	cudaGetDeviceCount(&count);
 	return count;

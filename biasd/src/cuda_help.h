@@ -2,8 +2,8 @@
 #define CUDA_HELP_H_
 
 // External calls from python
-extern "C" int device_count();
-extern "C" int cuda_errors(int);
+extern "C" int device_count(void);
+extern "C" int cuda_errors(int device);
 
 // #if __CUDA_ARCH__ < 600
 // __device__ double atomicAdd(double* address, double val);
@@ -14,4 +14,7 @@ double parallel_sum(double * a_d, int N, int num_SMs);
 
 int get_padding(int device, int N);
 int get_num_SM(int device);
+
+__shfl_xor_sync = __shfl_xor;
+
 #endif
