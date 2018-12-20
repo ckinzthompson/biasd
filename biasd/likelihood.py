@@ -37,7 +37,8 @@ _cuda_ll_pointer = None
 ##########
 
 #Try to load CUDA log-likelihood .so
-try:
+# try:
+if 1:
 	_sopath = _lib_path + 'biasd_cuda'
 	_lib_cuda = _np.ctypeslib.load_library(_sopath, '.') ## future-self: the library has to end in .so ....
 
@@ -86,8 +87,8 @@ try:
 
 	print("Loaded CUDA Library:\n"+_sopath+".so")
 	_flag_cuda = True
-except:
-	_flag_cuda = False
+# except:
+	# _flag_cuda = False
 
 
 ### Try to load C log-likelihood .so
