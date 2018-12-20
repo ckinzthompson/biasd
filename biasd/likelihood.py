@@ -16,6 +16,9 @@ _lib_path = _os.path.dirname(_os.path.abspath(__file__)) + "/lib/"
 # Relative error for numerical integration
 _eps = 1e-10
 
+_cuda_d_pointer = None
+_cuda_ll_pointer = None
+
 ###########
 ### The C functions are for the log-likelihood of N datapoints.
 ### They return a void, and as input take:
@@ -41,7 +44,8 @@ try:
 	_lib_cuda.log_likelihood.argtypes = [
 		_ctypes.c_int,
 		_ctypes.c_int,
-		_np.ctypeslib.ndpointer(dtype = _np.double),
+		_ctypes.POINTER(_ctypes.c_double),
+		_ctypes.POINTER(_ctypes.c_double),
 		_ctypes.c_double,
 		_ctypes.c_double,
 		_ctypes.c_double,
@@ -56,7 +60,8 @@ try:
 	_lib_cuda.sum_log_likelihood.argtypes = [
 		_ctypes.c_int,
 		_ctypes.c_int,
-		_np.ctypeslib.ndpointer(dtype = _np.double),
+		_ctypes.POINTER(_ctypes.c_double),
+		_ctypes.POINTER(_ctypes.c_double),
 		_ctypes.c_double,
 		_ctypes.c_double,
 		_ctypes.c_double,
@@ -72,6 +77,12 @@ try:
 	_lib_cuda.device_count.restype = _ctypes.c_int
 	_lib_cuda.cuda_errors.argtypes = [_ctypes.c_int]
 	_lib_cuda.cuda_errors.restype = _ctypes.c_int
+
+	_lib_cuda.load_data.argtypes = [_ctypes.c_int,_ctypes.c_int,_np.ctypeslib.ndpointer(dtype = _np.double),_ctypes.POINTER(_ctypes.c_double),_ctypes.POINTER(_ctypes.c_double)]
+	_lib_cuda.load_data.restype = _ctypes.c_void_p
+
+	_lib_cuda.free_data.argtypes = [_ctypes.POINTER(_ctypes.c_double),_ctypes.POINTER(_ctypes.c_double)]
+	_lib_cuda.free_data.restype = _ctypes.c_void_p
 
 	print("Loaded CUDA Library:\n"+_sopath+".so")
 	_flag_cuda = True
@@ -125,12 +136,21 @@ if _flag_cuda:
 
 		CUDA Version
 		"""
-		global _eps
+		global _eps,_cuda_d_pointer,_cuda_ll_pointer
+
 		epsilon = _eps
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
-		y = _lib_cuda.sum_log_likelihood(device,data.size, data, e1, e2, sigma, sigma, k1, k2, tau,epsilon)
+		_cuda_d_pointer = None
+		_cuda_ll_pointer = None
+
+		if _cuda_d_pointer is None or _cuda_ll_pointer is None:
+			_cuda_d_pointer = ctypes.POINTER(ctypes.c_double)
+			_cuda_ll_pointer = ctypes.POINTER(ctypes.c_double)
+			_lib_cuda.load_data(device,data.size,data,_cuda_d_pointer,_cuda_ll_pointer)
+
+		y = _lib_cuda.sum_log_likelihood(device,data.size, _cuda_d_pointer, _cuda_ll_pointer, e1, e2, sigma, sigma, k1, k2, tau,epsilon)
 		if device >= 0:
 			if _lib_cuda.cuda_errors(device) == 1:
 				raise Exception('Cuda Error: Check Cuda code')
@@ -139,18 +159,29 @@ if _flag_cuda:
 #		return _np.ctypeslib.as_array(llp,shape=data.shape)
 
 	def _nosum_log_likelihood_cuda(theta,data,tau,device=0):
-		global _eps
+		global _eps,_cuda_d_pointer,_cuda_ll_pointer
 		epsilon = _eps
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
+
+		if _cuda_d_pointer is None or _cuda_ll_pointer is None:
+			_cuda_d_pointer = ctypes.POINTER(ctypes.c_double)
+			_cuda_ll_pointer = ctypes.POINTER(ctypes.c_double)
+			_lib_cuda.load_data(device,data.size,data,_cuda_d_pointer,_cuda_ll_pointer)
+
 		ll = _np.empty_like(data)
-		_lib_cuda.log_likelihood(device,data.size, data, e1, e2, sigma, sigma, k1, k2, tau,epsilon,ll)
+		_lib_cuda.log_likelihood(device,data.size, _cuda_d_pointer, _cuda_ll_pointer, e1, e2, sigma, sigma, k1, k2, tau,epsilon,ll)
 		if device >= 0:
 			if _lib_cuda.cuda_errors(device) == 1:
 				raise Exception('Cuda Error: Check Cuda code')
 		return ll
 
+	def _free_cuda():
+		global _cuda_d_pointer,_cuda_ll_pointer
+		_lib_cuda.free_data(_cuda_d_pointer,_cuda_ll_pointer)
+		_cuda_d_pointer = None
+		_cuda_ll_pointer = None
 
 	def use_cuda_ll():
 		global log_likelihood
