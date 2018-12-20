@@ -74,8 +74,8 @@ if 1:
 #	_lib_cuda.log_likelihood.restype  = _ctypes.POINTER(_ctypes.c_double)
 	_lib_cuda.sum_log_likelihood.restype  = _ctypes.c_double
 
-	_lib_cuda.device_count.argtypes = [_ctypes.c_void_p]
-	_lib_cuda.device_count.restype = _ctypes.c_int
+	# _lib_cuda.device_count.argtypes = [_ctypes.c_void_p]
+	# _lib_cuda.device_count.restype = _ctypes.c_int
 	_lib_cuda.cuda_errors.argtypes = [_ctypes.c_int]
 	_lib_cuda.cuda_errors.restype = _ctypes.c_int
 
