@@ -109,5 +109,5 @@ int get_padding(int device, int N) {
 	int num_SMs = prop.multiProcessorCount;
 	int batch_size = num_SMs * 1024;
 	int padding = (batch_size - (N % batch_size)) % batch_size;
-	return padding
+	return padding;
 }
