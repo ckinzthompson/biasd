@@ -21,22 +21,22 @@ int cuda_errors(int device){
 }
 
 
-#if __CUDA_ARCH__ < 600
-// https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html
-__device__ double atomicAdd(double* address, double val) {
-	unsigned long long int* address_as_ull =(unsigned long long int*)address;
-	unsigned long long int old = *address_as_ull, assumed;
-
-	do {
-		assumed = old;
-		old = atomicCAS(address_as_ull, assumed,__double_as_longlong(val + __longlong_as_double(assumed)));
-
-	// Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
-	} while (assumed != old);
-
-	return __longlong_as_double(old);
-}
-#endif
+// #if __CUDA_ARCH__ < 600
+// // https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html
+// __device__ double atomicAdd(double* address, double val) {
+// 	unsigned long long int* address_as_ull =(unsigned long long int*)address;
+// 	unsigned long long int old = *address_as_ull, assumed;
+//
+// 	do {
+// 		assumed = old;
+// 		old = atomicCAS(address_as_ull, assumed,__double_as_longlong(val + __longlong_as_double(assumed)));
+//
+// 	// Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
+// 	} while (assumed != old);
+//
+// 	return __longlong_as_double(old);
+// }
+// #endif
 
 /*
 The following is from:
@@ -62,7 +62,7 @@ cuda_parallel_sum(double *in, int num_elements, double *sum) {
 				// All warps in this block (32) compute the sum of all
 				// threads in their warp
 				for(int delta = WARP_SIZE/2; delta > 0; delta /= 2) {
-						 temp+= __shfl_xor(0xffffffff,temp, delta);
+						 temp+= __shfl_xor_sync(0xffffffff,temp, delta);
 				}
 				// Write all 32 of these partial sums to shared memory
 				if(lane == 0) {
@@ -73,7 +73,7 @@ cuda_parallel_sum(double *in, int num_elements, double *sum) {
 				if(threadIdx.x < WARP_SIZE) {
 						temp = buffer[threadIdx.x];
 						for(int delta = WARP_SIZE / 2; delta > 0; delta /= 2) {
-								temp += __shfl_xor(0xffffffff,temp, delta);
+								temp += __shfl_xor_sync(0xffffffff,temp, delta);
 						}
 				}
 				// Add this block's sum to the total sum
