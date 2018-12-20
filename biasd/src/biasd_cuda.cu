@@ -7,7 +7,6 @@
 // ##########################################################
 // ##########################################################
 
-
 __global__ void kernel_loglikelihood(int N, double * d, double ep1, double ep2, double sigma1, double sigma2, double k1, double k2, double tau, double epsilon, double * ll) {
 
 	int idx = threadIdx.x + blockIdx.x*blockDim.x;
