@@ -89,7 +89,7 @@ cuda_parallel_sum(double *in, int num_elements, double *sum) {
 		}
 }
 
-double parallel_sum(double * a_d, int N, int num_SMs) {
+double parallel_sum(void * a_d, int N, int num_SMs) {
 	// a_d is a pointer to an array already on the GPU
 	// a_d must already be padded to a multiple of 1024
 
