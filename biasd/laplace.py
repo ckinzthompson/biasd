@@ -184,33 +184,46 @@ def laplace_approximation(data,prior,tau,nrestarts=2,verbose=False,threads=1,dev
 		if mind['success']:
 			mu = mind['x']
 			feps = np.sqrt(np.finfo(np.float).eps)
+			feps *= 8. ## The interval is typically too small
 			t0 = time.time()
 			hessian = calc_hessian(lambda theta: log_posterior(theta,data,prior,tau), mu,eps=feps)
 			t1 = time.time()
 			if verbose:
 				print(t1-t0)
+
 			#Ensure that the hessian is positive semi-definite by checking that all eigenvalues are positive
 			#If not, expand the value of machine error in the hessian calculation and try again
 			try:
-				#Check eigenvalues
-				while np.any(np.linalg.eig(-hessian)[0] <= 0.):
-					feps *= 2.
-					#Calculate hessian
-					t0 = time.time()
-					hessian = calc_hessian(lambda theta: log_posterior(theta,data,prior,tau), mu,eps=feps)
-					t1 = time.time()
-					if verbose:
-						print(t1-t0)
-				#Invert hessian to get the covariance matrix
-				var = np.linalg.inv(-hessian)
+				#Check eigenvalues, use pseudoinverse if ill-conditioned
+				var = -np.linalg.inv(hessian)
+
+				#Ensuring Hessian(variance) is stable
+				new_feps = feps*2.
+				new_hess = calc_hessian(lambda theta: log_posterior(theta,data,prior,tau), mu,eps= new_feps)
+				new_var = -np.linalg.inv(new_hess)
+				it = 0
+
+				while np.any(np.abs(new_var-var)/var > 1e-2):
+					new_feps *= 2
+					var = new_var.copy()
+					new_hess = calc_hessian(lambda theta: log_posterior(theta,data,prior,tau), mu,eps= new_feps)
+					new_var = -np.linalg.inv(new_hess)
+					it +=1
+					# 2^26 times feps = 1. Arbitrary upper-limit, increase if necessary (probably not for BIASD)
+					if it > 25:
+						raise ValueError('Whelp, you hit the end there. bud')
+				# print('Hessian iterations')
+				# print(np.log2(new_feps/feps), it)
+
 				#Ensure symmetry of covariance matrix if witin machine error
 				if np.allclose(var,var.T):
-					var = np.tri(5,5,-1)*var+(np.tri(5,5)*var).T
+					n = var.shape[0]
+					var = np.tri(n,n,-1)*var+(np.tri(n,n)*var).T
 					return _laplace_posterior(mu,var)
 
 			#If this didn't work, return None
 			except np.linalg.LinAlgError:
 				raise ValueError("Wasn't able to calculate the Hessian")
-				pass
+
 	raise ValueError("No MAP estimate")
 	return _laplace_posterior(None,None)
