@@ -36,7 +36,16 @@ void load_dataz(int device, int N, double * d, void * d_d, void * ll_d){
 	cudaMalloc((void**)&ll_d,(N+padding)*sizeof(double)); // Make this bigger to pad to 1024
 
 	cudaMemcpy(d_d,d,N*sizeof(double),cudaMemcpyHostToDevice);
-	cudaMemset(ll_d, 0.0, (N+padding)*sizeof(double));
+
+
+	double * ll;
+	ll = (double *) malloc((N+padding)*sizeof(double));
+	for (int i =0; i < N+padding;i++){
+		ll[i] = 0.0;
+	}
+	cudaMemcpy(ll_d,ll,(N+padding)*sizeof(double));
+	free(ll);
+	// cudaMemset(ll_d, 0.0, (N+padding)*sizeof(double));
 }
 
 void free_data(void *d_d, void *ll_d){
