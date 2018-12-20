@@ -6,9 +6,9 @@ biasd_c: ./src/biasd_c.c ./src/biasd_c.h
 
 biasd_cuda: ./src/biasd_cuda.cu
 	mkdir -p lib
-	nvcc --relocatable-device-code=true --compiler-options '-fPIC' -D_FORCE_INLINES -Xcompiler "-O3" -arch=compute_35 -code=sm_35 -o ./src/biasd_cuda_integrate.o -c ./src/biasd_cuda_integrate.cu
-	nvcc --relocatable-device-code=true --compiler-options '-fPIC' -D_FORCE_INLINES -Xcompiler "-O3" -o -arch=compute_35 -code=sm_35 ./src/cuda_help.o -c ./src/cuda_help.cu
-	nvcc --shared --relocatable-device-code=true --compiler-options '-fPIC' -D_FORCE_INLINES -Xcompiler "-O3" -o -arch=compute_35 -code=sm_35 ./lib/biasd_cuda.so ./src/biasd_cuda.cu ./src/biasd_cuda_integrate.o ./src/cuda_help.o
+	nvcc --relocatable-device-code=true --compiler-options '-fPIC' -D_FORCE_INLINES -Xcompiler "-O3" -arch=compute_50 -code=sm_50 -o ./src/biasd_cuda_integrate.o -c ./src/biasd_cuda_integrate.cu
+	nvcc --relocatable-device-code=true --compiler-options '-fPIC' -D_FORCE_INLINES -Xcompiler "-O3" -o -arch=compute_50 -code=sm_50 ./src/cuda_help.o -c ./src/cuda_help.cu
+	nvcc --shared --relocatable-device-code=true --compiler-options '-fPIC' -D_FORCE_INLINES -Xcompiler "-O3" -o -arch=compute_50 -code=sm_50 ./lib/biasd_cuda.so ./src/biasd_cuda.cu ./src/biasd_cuda_integrate.o ./src/cuda_help.o
 	rm ./src/*.o
 
 clean:
