@@ -2,6 +2,7 @@
 #include <cuda.h>
 #include "biasd_cuda_integrate.h"
 #include "biasd_cuda.h"
+#include "cuda_help.h"
 
 // ##########################################################
 // ##########################################################

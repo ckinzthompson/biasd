@@ -68,6 +68,11 @@ try:
 #	_lib_cuda.log_likelihood.restype  = _ctypes.POINTER(_ctypes.c_double)
 	_lib_cuda.sum_log_likelihood.restype  = _ctypes.c_double
 
+	_lib_cuda.device_count.argtypes = []
+	_lib_cuda.device_count.restype = _ctypes.c_int
+	_lib_cuda.cuda_errors.argtypes = [_ctypes.c_int]
+	_lib_cuda.cuda_errors.restype = _ctypes.c_int
+
 	print("Loaded CUDA Library:\n"+_sopath+".so")
 	_flag_cuda = True
 except:
@@ -125,7 +130,11 @@ if _flag_cuda:
 		e1,e2,sigma,k1,k2 = theta
 		if not isinstance(data,_np.ndarray):
 			data = _np.array(data,dtype='double')
-		return _lib_cuda.sum_log_likelihood(device,data.size, data, e1, e2, sigma, sigma, k1, k2, tau,epsilon)
+		y = _lib_cuda.sum_log_likelihood(device,data.size, data, e1, e2, sigma, sigma, k1, k2, tau,epsilon)
+		if device >= 0:
+			if _lib_cuda.cuda_errors(device) == 1:
+				raise Exception('Cuda Error: Check Cuda code')
+		return y
 #		llp = _lib_cuda.log_likelihood(data.size, data, e1, e2, sigma, k1, k2, tau,epsilon)
 #		return _np.ctypeslib.as_array(llp,shape=data.shape)
 
@@ -137,6 +146,9 @@ if _flag_cuda:
 			data = _np.array(data,dtype='double')
 		ll = _np.empty_like(data)
 		_lib_cuda.log_likelihood(device,data.size, data, e1, e2, sigma, sigma, k1, k2, tau,epsilon,ll)
+		if device >= 0:
+			if _lib_cuda.cuda_errors(device) == 1:
+				raise Exception('Cuda Error: Check Cuda code')
 		return ll
 
 
