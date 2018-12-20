@@ -28,7 +28,7 @@ __global__ void kernel_loglikelihood(int N, double * d, double ep1, double ep2, 
 	}
 }
 
-void load_data(int device, int N, double * d, void* d_d, void * ll_d){
+void load_data(int device, int N, double * d, void * d_d, void * ll_d){
 	cudaSetDevice(device);
 	int padding = get_padding(device,N);
 
@@ -53,7 +53,7 @@ void log_likelihood(int device, int N, void *d_d, void *ll_d, double ep1, double
 		int threads = 256;//deviceProp.maxThreadsPerBlock/8;
 		int blocks = (N+threads-1)/threads;
 		// Evaluate integrand at f -> store in ll.
-		kernel_loglikelihood<<<blocks,threads>>>(N,d_d,ep1,ep2,sigma1,sigma2,k1,k2,tau,epsilon,ll_d);
+		kernel_loglikelihood<<<blocks,threads>>>(N,(double*)d_d,ep1,ep2,sigma1,sigma2,k1,k2,tau,epsilon,(double*)ll_d);
 		cudaMemcpy(ll,ll_d,N*sizeof(double),cudaMemcpyDeviceToHost);
 
 	} else {
@@ -73,7 +73,7 @@ double sum_log_likelihood(int device, int N, void *d_d, void *ll_d, double ep1, 
 		int threads = 256;//deviceProp.maxThreadsPerBlock/8;
 		int blocks = (N+threads-1)/threads;
 
-		kernel_loglikelihood<<<blocks,threads>>>(N,d_d,ep1,ep2,sigma1,sigma2,k1,k2,tau,epsilon,ll_d);
+		kernel_loglikelihood<<<blocks,threads>>>(N,(double*)d_d,ep1,ep2,sigma1,sigma2,k1,k2,tau,epsilon,(double*)ll_d);
 		sum = parallel_sum(ll_d,N+padding,nSM);
 	} else {
 		sum = -INFINITY;
