@@ -42,9 +42,6 @@ if 1:
 	_sopath = _lib_path + 'biasd_cuda'
 	_lib_cuda = _np.ctypeslib.load_library(_sopath, '.') ## future-self: the library has to end in .so ....
 
-	_lib_cuda.load_dataz.argtypes = [_ctypes.c_int,_ctypes.c_int,_np.ctypeslib.ndpointer(dtype = _np.double),_ctypes.c_void_p,_ctypes.c_void_p]
-	_lib_cuda.load_dataz.restype = _ctypes.c_void_p
-
 	_lib_cuda.log_likelihood.argtypes = [
 		_ctypes.c_int,
 		_ctypes.c_int,
@@ -83,6 +80,9 @@ if 1:
 	# _lib_cuda.device_count.restype = _ctypes.c_int
 	# _lib_cuda.cuda_errors.argtypes = [_ctypes.c_int]
 	# _lib_cuda.cuda_errors.restype = _ctypes.c_int
+	# 
+	# _lib_cuda.load_dataz.argtypes = [_ctypes.c_int,_ctypes.c_int,_np.ctypeslib.ndpointer(dtype = _np.double),_ctypes.c_void_p,_ctypes.c_void_p]
+	# _lib_cuda.load_dataz.restype = _ctypes.c_void_p
 
 	_lib_cuda.free_data.argtypes = [_ctypes.c_void_p,_ctypes.c_void_p]
 	_lib_cuda.free_data.restype = _ctypes.c_void_p
