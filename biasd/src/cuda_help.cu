@@ -52,7 +52,7 @@ https://github.com/jordanbonilla/Cuda-Example
 	 since the algorithm processes elements in chunks of this size.
 	 This is taken care of in "cuda_parallel_sum which pads zeros. */
 __global__ void
-cuda_parallel_sum(double *in, int num_elements, double *sum) {
+cuda_parallel_sum(void *in, int num_elements, double *sum) {
 		//Holds intermediates in shared memory reduction
 		__syncthreads();
 		__shared__ double buffer[WARP_SIZE];
