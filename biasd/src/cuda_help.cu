@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <cuda.h>
 
+#define WARP_SIZE 32
+
 // https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html
 #if __CUDA_ARCH__ < 600
 __device__ double atomicAdd(double* address, double val) {
