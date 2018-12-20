@@ -69,12 +69,13 @@ double sum_log_likelihood(int device, int N, double *d_d, double *ll_d, double e
 
 	if ((ep1 < ep2) && (sigma1 > 0.) && (sigma2 > 0.) && (k1 > 0.) && (k2 > 0.) && (tau > 0.) && (epsilon > 0.)) {
 		int padding = get_padding(device,N);
+		int nSM = get_num_SM(device);
 
 		int threads = 256;//deviceProp.maxThreadsPerBlock/8;
 		int blocks = (N+threads-1)/threads;
 
 		kernel_loglikelihood<<<blocks,threads>>>(N,d_d,ep1,ep2,sigma1,sigma2,k1,k2,tau,epsilon,ll_d);
-		sum = parallel_sum(ll_d,N+padding);
+		sum = parallel_sum(ll_d,N+padding,nSM);
 	} else {
 		sum = -INFINITY;
 	}

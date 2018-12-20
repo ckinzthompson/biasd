@@ -109,10 +109,16 @@ double parallel_sum(double * a_d, int N, int num_SMs) {
 }
 
 int get_padding(int device, int N) {
-	cudaDeviceProp prop;
-	cudaGetDeviceProperties(&prop, device);
-	int num_SMs = prop.multiProcessorCount;
+	int num_SMs;
+	num_SMs = get_num_SM(device);
 	int batch_size = num_SMs * 1024;
 	int padding = (batch_size - (N % batch_size)) % batch_size;
 	return padding;
+}
+
+int get_num_SM(int device) {
+	cudaDeviceProp prop;
+	cudaGetDeviceProperties(&prop, device);
+	int num_SMs = prop.multiProcessorCount;
+	return num_SMs;
 }
