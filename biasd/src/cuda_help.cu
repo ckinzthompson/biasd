@@ -47,42 +47,35 @@ https://github.com/jordanbonilla/Cuda-Example
 	 since the algorithm processes elements in chunks of this size.
 	 This is taken care of in "cuda_parallel_sum which pads zeros. */
 __global__ void
-cuda_parallel_sum(double *in, int num_elements, double *sum)
-{
+cuda_parallel_sum(double *in, int num_elements, double *sum) {
 		//Holds intermediates in shared memory reduction
 		__syncthreads();
 		__shared__ double buffer[WARP_SIZE];
 		int globalIdx = blockIdx.x * blockDim.x + threadIdx.x;
 		int lane = threadIdx.x % WARP_SIZE;
 		double temp;
-		while(globalIdx < num_elements)
-		{
+		while(globalIdx < num_elements) {
 			// All threads in a block of 1024 take an element
 				temp = in[globalIdx];
 				// All warps in this block (32) compute the sum of all
 				// threads in their warp
-				for(int delta = WARP_SIZE/2; delta > 0; delta /= 2)
-				{
+				for(int delta = WARP_SIZE/2; delta > 0; delta /= 2) {
 						 temp+= __shfl_xor(temp, delta);
 				}
 				// Write all 32 of these partial sums to shared memory
-				if(lane == 0)
-				{
+				if(lane == 0) {
 						buffer[threadIdx.x / WARP_SIZE] = temp;
 				}
 				__syncthreads();
 				// Add the remaining 32 partial sums using a single warp
-				if(threadIdx.x < WARP_SIZE)
-				{
+				if(threadIdx.x < WARP_SIZE) {
 						temp = buffer[threadIdx.x];
-						for(int delta = WARP_SIZE / 2; delta > 0; delta /= 2)
-						{
+						for(int delta = WARP_SIZE / 2; delta > 0; delta /= 2) {
 								temp += __shfl_xor(temp, delta);
 						}
 				}
 				// Add this block's sum to the total sum
-				if(threadIdx.x == 0)
-				{
+				if(threadIdx.x == 0) {
 						atomicAdd(sum, temp);
 				}
 				// Jump ahead 1024 * #SMs to the next region of numbers to sum
@@ -91,7 +84,7 @@ cuda_parallel_sum(double *in, int num_elements, double *sum)
 		}
 }
 
-double cuda_parallel_sum(double * a_d, int N, int num_SMs) {
+double parallel_sum(double * a_d, int N, int num_SMs) {
 	// a_d is a pointer to an array already on the GPU
 	// a_d must already be padded to a multiple of 1024
 
@@ -102,10 +95,19 @@ double cuda_parallel_sum(double * a_d, int N, int num_SMs) {
 	cudaMemcpy( result_d, &result, sizeof(double), cudaMemcpyHostToDevice );
 
 	// Call kernel to get sum
-	_cuda_parallel_sum<<<num_SMs , 1024 >>>(a_d, N, result_d);
+	cuda_parallel_sum<<<num_SMs , 1024 >>>(a_d, N, result_d);
 
 	cudaMemcpy( &result, result_d, sizeof(double), cudaMemcpyDeviceToHost );
 	cudaFree(result_d);
 
 	return result;
+}
+
+int get_padding(int device, int N) {
+	cudaDeviceProp prop;
+	cudaGetDeviceProperties(&prop, device);
+	int num_SMs = prop.multiProcessorCount;
+	int batch_size = num_SMs * 1024;
+	int padding = (batch_size - (N % batch_size)) % batch_size;
+	return padding
 }
