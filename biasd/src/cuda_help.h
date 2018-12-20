@@ -15,6 +15,4 @@ double parallel_sum(double * a_d, int N, int num_SMs);
 int get_padding(int device, int N);
 int get_num_SM(int device);
 
-__shfl_xor_sync = __shfl_xor;
-
 #endif
