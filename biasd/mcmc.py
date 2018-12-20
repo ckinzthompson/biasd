@@ -40,7 +40,7 @@ def setup(data, priors, tau, nwalkers, initialize='rvs', threads=1,device=0):
 		raise AttributeError('Could not initialize the walkers. Try calling with initialize=\'rvs\'')
 
 	# Slap-dash hackery
-	for i in xrange(initial_positions.shape[0]):
+	for i in range(initial_positions.shape[0]):
 		if initial_positions[i,0] > initial_positions[i,1]:
 			temp = initial_positions[i,0]
 			initial_positions[i,0] = initial_positions[i,1]
@@ -89,9 +89,9 @@ def run(sampler,positions,nsteps,timer=True):
 	sampler.run_mcmc(positions,nsteps)
 	t1 = _time()
 	if timer:
-		print "Steps: ", sampler.chain.shape[1]
-		print "Total Time:",(t1-t0)
-		print "Time/Sample:",(t1-t0)/sampler.flatchain.shape[0]/sampler.args[0].size
+		print("Steps: ", sampler.chain.shape[1])
+		print("Total Time:",(t1-t0))
+		print("Time/Sample:",(t1-t0)/sampler.flatchain.shape[0]/sampler.args[0].size)
 	return sampler
 
 def continue_run(sampler,nsteps,timer=True):
@@ -109,8 +109,8 @@ def chain_statistics(sampler,verbose=True):
 	"""
 	# Chain statistics
 	if verbose:
-		print "Mean acceptance fraction:", _np.mean(sampler.acceptance_fraction)
-		print "Autocorrelation time:", sampler.get_autocorr_time()
+		print("Mean acceptance fraction:", _np.mean(sampler.acceptance_fraction))
+		print("Autocorrelation time:", sampler.get_autocorr_time())
 	maxauto = _np.int(sampler.get_autocorr_time().max())+1
 	return maxauto
 
@@ -185,8 +185,8 @@ class mcmc_result(object):
 	"""
 	def __init__(self, mcmc_input):
 		try:
-			if mcmc_input.__dict__.has_key('lnprobfn'):
-				if not mcmc_input.__dict__.has_key('acor'):
+			if 'lnprobfn' in mcmc_input.__dict__:
+				if 'acor' not in mcmc_input.__dict__:
 					mcmc_input.get_autocorr_time()
 				self.acor = mcmc_input.acor
 				self.chain = mcmc_input.chain

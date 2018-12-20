@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import likelihood
-import laplace
-import distributions
+from . import likelihood
+from . import laplace
+from . import distributions
 try:
-	import mcmc
+	from . import mcmc
 except:
-	print "Could not import MCMC - install emcee and corner?"
-import smd
+	print("Could not import MCMC - install emcee and corner?")
+from . import smd
 try:
-	import gui
+	from . import gui
 except:
-	print 'Could not import gui - install PyQt5?'
+	print('Could not import gui - install PyQt5?')
 
 __version__ = "0.1.1"

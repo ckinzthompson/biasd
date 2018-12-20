@@ -139,7 +139,7 @@ def find_map(data,prior,tau,meth='nelder-mead',xx=None,nrestarts=2,threads=1,dev
 		ylist = p.map(_minimizer,[[data,prior,tau,xx[i],meth,device] for i in range(nrestarts)])
 		p.close()
 	else:
-		ylist =   map(_minimizer,[[data,prior,tau,xx[i],meth,device] for i in range(nrestarts)])
+		ylist =   list(map(_minimizer,[[data,prior,tau,xx[i],meth,device] for i in range(nrestarts)]))
 
 	#Select the best MAP estimate
 	ymin = np.inf
@@ -177,7 +177,7 @@ def laplace_approximation(data,prior,tau,nrestarts=2,verbose=False,threads=1,dev
 	mind = find_map(data,prior,tau,nrestarts=nrestarts,threads=threads,device=device)
 	t1 = time.time()
 	if verbose:
-		print t1-t0
+		print(t1-t0)
 
 	if not mind is None:
 		#Calculate the Hessian at MAP estimate
@@ -188,7 +188,7 @@ def laplace_approximation(data,prior,tau,nrestarts=2,verbose=False,threads=1,dev
 			hessian = calc_hessian(lambda theta: log_posterior(theta,data,prior,tau), mu,eps=feps)
 			t1 = time.time()
 			if verbose:
-				print t1-t0
+				print(t1-t0)
 			#Ensure that the hessian is positive semi-definite by checking that all eigenvalues are positive
 			#If not, expand the value of machine error in the hessian calculation and try again
 			try:
@@ -200,7 +200,7 @@ def laplace_approximation(data,prior,tau,nrestarts=2,verbose=False,threads=1,dev
 					hessian = calc_hessian(lambda theta: log_posterior(theta,data,prior,tau), mu,eps=feps)
 					t1 = time.time()
 					if verbose:
-						print t1-t0
+						print(t1-t0)
 				#Invert hessian to get the covariance matrix
 				var = np.linalg.inv(-hessian)
 				#Ensure symmetry of covariance matrix if witin machine error

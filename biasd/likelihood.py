@@ -9,6 +9,7 @@ import ctypes as _ctypes
 from sys import platform as _platform
 import os as _os
 import numpy as _np
+from functools import reduce
 _np.seterr(all="ignore")
 _lib_path = _os.path.dirname(_os.path.abspath(__file__)) + "/lib/"
 
@@ -67,7 +68,7 @@ try:
 #	_lib_cuda.log_likelihood.restype  = _ctypes.POINTER(_ctypes.c_double)
 	_lib_cuda.sum_log_likelihood.restype  = _ctypes.c_double
 
-	print "Loaded CUDA Library:\n"+_sopath+".so"
+	print("Loaded CUDA Library:\n"+_sopath+".so")
 	_flag_cuda = True
 except:
 	_flag_cuda = False
@@ -106,7 +107,7 @@ try:
 		_ctypes.c_double ]
 	_lib_c.sum_log_likelihood.restype  = _ctypes.c_double
 
-	print "Loaded .C Library:\n"+_sopath+".so"
+	print("Loaded .C Library:\n"+_sopath+".so")
 	_flag_c = True
 except:
 	_flag_c = False
@@ -247,8 +248,8 @@ def use_python_ll():
 	global ll_version
 	ll_version = "Python"
 	try:
-		from src import log_likelihood as numba_ll
-		from src import sum_log_likelihood as numba_sum_ll
+		from .src import log_likelihood as numba_ll
+		from .src import sum_log_likelihood as numba_sum_ll
 		log_likelihood = numba_sum_ll
 		nosum_log_likelihood = numba_ll
 		ll_version = 'Python - Numba'
@@ -275,8 +276,8 @@ def test_speed(n,dpoints = 5000,device=0):
 		# quad(integrand,0.,1.,args=(.1,0.,1.,.05,3.,8.,.1))[0]
 		y = log_likelihood(_np.array([0.,1.,.05,3.,8.]),d,.1,device=device)
 	t1 = time()
-	print "Total time for "+str(n)+" runs: ",_np.around(t1-t0,4)," (s)"
-	print 'Average speed: ', _np.around((t1-t0)/n/d.size*1.e6,4),' (usec/datapoint)'
+	print("Total time for "+str(n)+" runs: ",_np.around(t1-t0,4)," (s)")
+	print('Average speed: ', _np.around((t1-t0)/n/d.size*1.e6,4),' (usec/datapoint)')
 	return _np.around((t1-t0)/n/d.size*1.e6,4)
 
 
@@ -284,13 +285,13 @@ def test_speed(n,dpoints = 5000,device=0):
 log_likelihood = _log_likelihood_python
 nosum_log_likelihood = _nosum_log_likelihood_python
 if _flag_cuda:
-	print "Using CUDA log-likelihood"
+	print("Using CUDA log-likelihood")
 	use_cuda_ll()
 elif _flag_c:
-	print "Using C log-likelihood"
+	print("Using C log-likelihood")
 	use_c_ll()
 else:
-	print "Defaulted to native Python log-likelihood"
+	print("Defaulted to native Python log-likelihood")
 
 
 #def mixture_log_likelihood(theta,data,tau):
@@ -417,5 +418,5 @@ def predictive_from_samples(x,samples,tau,device=0):
 		* `y` a `np.ndarray` the same size as `x` containing the marginalized likelihood function evaluated at x
 	'''
 	n = samples.shape[0]
-	y = reduce(lambda x,y: x+y, [_np.exp(nosum_log_likelihood(samples[i],x,tau,device=device)) for i in xrange(n)])/n
+	y = reduce(lambda x,y: x+y, [_np.exp(nosum_log_likelihood(samples[i],x,tau,device=device)) for i in range(n)])/n
 	return y
