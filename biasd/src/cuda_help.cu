@@ -62,7 +62,7 @@ cuda_parallel_sum(double *in, int num_elements, double *sum) {
 				}
 				// Add this block's sum to the total sum
 				if(threadIdx.x == 0) {
-						atomicAdd(sum, temp);
+						atomicAdd(&sum, temp);
 				}
 				// Jump ahead 1024 * #SMs to the next region of numbers to sum
 				globalIdx += blockDim.x * gridDim.x;
