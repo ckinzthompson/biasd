@@ -9,7 +9,7 @@ extern "C" int cuda_errors(int device);
 // __device__ double atomicAdd(double* address, double val);
 // #endif
 
-__global__ void cuda_parallel_sum(void *in, int num_elements, double *sum);
+__global__ void cuda_parallel_sum(double *in, int num_elements, double *sum);
 double parallel_sum(void * a_d, int N, int num_SMs);
 
 int get_padding(int device, int N);
