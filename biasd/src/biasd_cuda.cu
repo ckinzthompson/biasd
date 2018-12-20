@@ -29,56 +29,54 @@ __global__ void kernel_loglikelihood(int N, double * d, double ep1, double ep2, 
 	}
 }
 
-void log_likelihood(int device, int N, double * d, double ep1, double ep2, double sigma1, double sigma2, double k1, double k2, double tau, double epsilon, double * ll) {
+void load_data(int device, int N, double * d, double * ll, double * d_d, double * ll_d){
+	cudaSetDevice(device);
+	int padding = get_padding(device,N);
+
+	cudaMalloc((void**)&d_d,N*sizeof(double));
+	cudaMalloc((void**)&ll_d,(N+padding)*sizeof(double)); // Make this bigger to pad to 1024
+
+	cudaMemcpy(d_d,d,N*sizeof(double),cudaMemcpyHostToDevice);
+	cudaMemset(ll_d, 0.0, (N+padding)*sizeof(double));
+}
+
+void free_data(double *d_d, double *ll_d){
+	cudaFree(d_d);
+	cudaFree(ll_d);
+}
+
+void log_likelihood(int device, int N, double *d_d, double *ll_d, double ep1, double ep2, double sigma1, double sigma2, double k1, double k2, double tau, double epsilon, double * ll) {
 
 	// Sanity checks from the model
 	if ((ep1 < ep2) && (sigma1 > 0.) && (sigma2 > 0.) && (k1 > 0.) && (k2 > 0.) && (tau > 0.) && (epsilon > 0.)) {
 
 		// Initialize CUDA things
-		//get_cuda_errors();
-		cudaSetDevice(device);
-		//cudaDeviceProp deviceProp;
-		//cudaGetDeviceProperties(&deviceProp, device);
 		int threads = 256;//deviceProp.maxThreadsPerBlock/8;
 		int blocks = (N+threads-1)/threads;
-
-		double * d_d;
-		double * ll_d;
-
-		cudaMalloc((void**)&d_d,N*sizeof(double));
-		cudaMalloc((void**)&ll_d,N*sizeof(double));
-
-		cudaMemcpy(d_d,d,N*sizeof(double),cudaMemcpyHostToDevice);
-
-		// Evaluate integrand at f -> store in y.
-
+		// Evaluate integrand at f -> store in ll.
 		kernel_loglikelihood<<<blocks,threads>>>(N,d_d,ep1,ep2,sigma1,sigma2,k1,k2,tau,epsilon,ll_d);
-
 		cudaMemcpy(ll,ll_d,N*sizeof(double),cudaMemcpyDeviceToHost);
 
-		cudaFree(d_d);
-		cudaFree(ll_d);
-
-		//get_cuda_errors();
 	} else {
 		int i;
 		for (i=0;i<N;i++){ ll[i] = -INFINITY;}
 	}
 }
 
-double sum_log_likelihood(int device, int N, double *d, double ep1, double ep2, double sigma1, double sigma2, double k1, double k2, double tau, double epsilon) {
+double sum_log_likelihood(int device, int N, double *d_d, double *ll_d, double ep1, double ep2, double sigma1, double sigma2, double k1, double k2, double tau, double epsilon) {
 
-	int i = 0;
 	double sum = 0.;
 
-	double * ll;
-	ll = (double *) malloc(N*sizeof(double));
+	if ((ep1 < ep2) && (sigma1 > 0.) && (sigma2 > 0.) && (k1 > 0.) && (k2 > 0.) && (tau > 0.) && (epsilon > 0.)) {
+		int padding = get_padding(device,N);
 
-	log_likelihood(device,N,d,ep1,ep2,sigma1,sigma2,k1,k2,tau,epsilon,ll);
+		int threads = 256;//deviceProp.maxThreadsPerBlock/8;
+		int blocks = (N+threads-1)/threads;
 
-	for (i=0;i<N;i++) {
-		sum += ll[i];
+		kernel_loglikelihood<<<blocks,threads>>>(N,d_d,ep1,ep2,sigma1,sigma2,k1,k2,tau,epsilon,ll_d);
+		sum = parallel_sum(ll_d,N+padding);
+	} else {
+		sum = -INFINITY;
 	}
-	free(ll);
 	return sum;
 }
