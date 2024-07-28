@@ -44,7 +44,7 @@ setup(
 	author=find_meta("author"),
 	packages=find_packages(),
 	install_requires=[
-		'numpy>=1.26',
+		'numpy>=1.26,<2.0.0',
 		'numba>=0.59',
 		'matplotlib>=3.9',
 		'h5py>=3.9',
