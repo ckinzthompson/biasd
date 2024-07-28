@@ -1,313 +1,201 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Laplace &mdash; BIASD v0.1.1</title>
-  
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-
-  
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
-
-  
-  
-    
-
-  
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="BIASD v0.1.1" href="index.html"/>
-        <link rel="next" title="Likelihood" href="code_likelihood.html"/>
-        <link rel="prev" title="Distributions" href="code_distributions.html"/> 
-
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
-
+        <script src="_static/documentation_options.js?v=a58bc63e"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Likelihood" href="code_likelihood.html" />
+    <link rel="prev" title="Distributions" href="code_distributions.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
-
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-nav-search">
-        
-          <a href="index.html" class="fa fa-home"> BIASD</a>
-        
-        
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            BIASD
+          </a>
+              <div class="version">
+                0.1
+              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-      </div>
-
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-        
-          
-          
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="getstarted.html">Getting Started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="getstarted.html#software-requirements">Software Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="getstarted.html#adding-biasd-to-the-python-path">Adding BIASD to the Python Path</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="compileguide.html">Compiling the Likelihood</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="compileguide.html#background">Background</a></li>
-<li class="toctree-l2"><a class="reference internal" href="compileguide.html#how-to-compile">How to Compile</a></li>
-<li class="toctree-l2"><a class="reference internal" href="compileguide.html#testing-speed">Testing Speed</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">BIASD Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#creating-a-new-smd-file">Creating a new SMD file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#sample-the-posterior-with-mcmc">Sample the posterior with MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#laplace-approximation-and-computing-the-predictive-posterior">Laplace approximation and computing the predictive posterior</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="gui.html">BIASD GUI</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="gui.html#functionality">Functionality</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="getstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compileguide.html">Compiling the Likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">BIASD Examples</a></li>
 </ul>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="code_distributions.html">Distributions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Some standard probability distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#convert-between-distributions">Convert between distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#distributions-can-be-collected-for-priors-or-posteriors">Distributions can be collected for priors or posteriors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#collections-can-be-visualized">Collections can be visualized</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Finally, you can easily generate a few useful collections using</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="code_distributions.html">Distributions</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Laplace</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#laplace-approximation">Laplace Approximation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#laplace-approximation">Laplace Approximation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#laplace.calc_hessian"><code class="docutils literal notranslate"><span class="pre">calc_hessian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#laplace.find_map"><code class="docutils literal notranslate"><span class="pre">find_map()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#laplace.laplace_approximation"><code class="docutils literal notranslate"><span class="pre">laplace_approximation()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="code_likelihood.html">Likelihood</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#switch-the-log-likelihood-function">Switch the log-likelihood function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#module-likelihood">Inference-related functions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="code_mcmc.html">MCMC</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#markov-chain-monte-carlo">Markov chain Monte Carlo</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Setup and Run MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Analyze MCMC samples</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_smd.html">SMD</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#work-with-smd-data">Work with SMD data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.add">Add BIASD results to an SMD object</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.read">Read BIASD results from an SMD object into a useful format</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#examples">Examples</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="code_likelihood.html">Likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_mcmc.html">MCMC</a></li>
 </ul>
 
-          
-        
+        </div>
       </div>
-      &nbsp;
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">BIASD</a>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BIASD</a>
       </nav>
 
-
-      
       <div class="wy-nav-content">
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Laplace</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Laplace</li>
       <li class="wy-breadcrumbs-aside">
-        
-          <a href="_sources/code_laplace.rst.txt" rel="nofollow"> View page source</a>
-        
+            <a href="_sources/code_laplace.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
 </div>
-          <div role="main" class="document">
-            
-  <div class="section" id="laplace">
-<span id="code-laplace"></span><h1>Laplace<a class="headerlink" href="#laplace" title="Permalink to this headline">¶</a></h1>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="laplace">
+<span id="code-laplace"></span><h1>Laplace<a class="headerlink" href="#laplace" title="Link to this heading">¶</a></h1>
 <p>This page gives the details about the code in biasd.laplace.</p>
-<div class="section" id="laplace-approximation">
-<h2>Laplace Approximation<a class="headerlink" href="#laplace-approximation" title="Permalink to this headline">¶</a></h2>
+<section id="laplace-approximation">
+<h2>Laplace Approximation<a class="headerlink" href="#laplace-approximation" title="Link to this heading">¶</a></h2>
 <p>In order to calculate the Laplace approximation to the posterior probability distribution, you must calculate the second derivative of the log-posterior function at the maximum a posteriori (MAP) estimate. This module contains code to calculate the finite difference Hessian, find the MAP estimate of the BIASD log-posterior using numerical maximization (Nelder-Mead), and apply this analysis to a time series. You should probably only need to use the <cite>biasd.laplace.laplace_approximation()</cite> function.</p>
-<span class="target" id="module-laplace"></span><dl class="function">
-<dt id="laplace.calc_hessian">
-<code class="descclassname">laplace.</code><code class="descname">calc_hessian</code><span class="sig-paren">(</span><em>fxn</em>, <em>x</em>, <em>eps=1.4901161193847656e-08</em><span class="sig-paren">)</span><a class="headerlink" href="#laplace.calc_hessian" title="Permalink to this definition">¶</a></dt>
+<dl class="py function" id="module-laplace">
+<span id="module-0"></span><dt class="sig sig-object py" id="laplace.calc_hessian">
+<span class="sig-prename descclassname"><span class="pre">laplace.</span></span><span class="sig-name descname"><span class="pre">calc_hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fxn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.4901161193847656e-07</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#laplace.calc_hessian" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the Hessian using the finite difference approximation.</p>
 <p>Finite difference formulas given in Abramowitz &amp; Stegun</p>
 <blockquote>
 <div><ul class="simple">
-<li>Eqn. 25.3.23 (on-diagonal)</li>
-<li>Eqn. 25.3.26 (off-diagonal)</li>
+<li><p>Eqn. 25.3.24 (on-diagonal)</p></li>
+<li><p>Eqn. 25.3.27 (off-diagonal)</p></li>
 </ul>
 </div></blockquote>
-<dl class="docutils">
-<dt>Input:</dt>
-<dd><ul class="first last simple">
-<li><cite>fxn</cite> is a function that can be evaluated at x</li>
-<li><cite>x</cite> is a 1D <cite>np.ndarray</cite></li>
+<dl class="simple">
+<dt>Input:</dt><dd><ul class="simple">
+<li><p><cite>fxn</cite> is a function that can be evaluated at x</p></li>
+<li><p><cite>x</cite> is a 1D <cite>np.ndarray</cite></p></li>
 </ul>
 </dd>
-<dt>Returns:</dt>
-<dd><ul class="first last simple">
-<li>an NxN <cite>np.ndarray</cite>, where N is the size of <cite>x</cite></li>
+<dt>Returns:</dt><dd><ul class="simple">
+<li><p>an NxN <cite>np.ndarray</cite>, where N is the size of <cite>x</cite></p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="laplace.find_map">
-<code class="descclassname">laplace.</code><code class="descname">find_map</code><span class="sig-paren">(</span><em>data</em>, <em>prior</em>, <em>tau</em>, <em>meth='nelder-mead'</em>, <em>xx=None</em>, <em>nrestarts=2</em><span class="sig-paren">)</span><a class="headerlink" href="#laplace.find_map" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="laplace.find_map">
+<span class="sig-prename descclassname"><span class="pre">laplace.</span></span><span class="sig-name descname"><span class="pre">find_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nelder-mead'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nrestarts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#laplace.find_map" title="Link to this definition">¶</a></dt>
 <dd><p>Use numerical minimization to find the maximum a posteriori estimate of a BIASD log-posterior distribution.</p>
-<dl class="docutils">
-<dt>Inputs:</dt>
-<dd><ul class="first last simple">
-<li><cite>data</cite> is a 1D <cite>np.ndarray</cite> of the time series</li>
-<li><cite>prior</cite> is a <cite>biasd.distributions.parameter_collection</cite> that contains the prior the BIASD Bayesian inference</li>
-<li><cite>tau</cite> is the measurement period</li>
+<dl class="simple">
+<dt>Inputs:</dt><dd><ul class="simple">
+<li><p><cite>data</cite> is a 1D <cite>np.ndarray</cite> of the time series</p></li>
+<li><p><cite>prior</cite> is a <cite>biasd.distributions.parameter_collection</cite> that contains the prior the BIASD Bayesian inference</p></li>
+<li><p><cite>tau</cite> is the measurement period</p></li>
 </ul>
 </dd>
-<dt>Optional:</dt>
-<dd><ul class="first last simple">
-<li><cite>meth</cite> is the minimizer used to find the minimum of the negative posterior (i.e., the maximum). Defaults to simplex.</li>
-<li><cite>xx</cite> will initialize the minimizer at this theta position. Defaults to mean of the priors.</li>
-<li><cite>nrestarts</cite> is the number of times to try to find the minimum. Restarts initialize at a random variate chosen from prior distributions</li>
+<dt>Optional:</dt><dd><ul class="simple">
+<li><p><cite>meth</cite> is the minimizer used to find the minimum of the negative posterior (i.e., the maximum). Defaults to simplex.</p></li>
+<li><p><cite>xx</cite> will initialize the minimizer at this theta position. Defaults to mean of the priors.</p></li>
 </ul>
 </dd>
-<dt>Returns:</dt>
-<dd><ul class="first last simple">
-<li>the minimizer dictionary</li>
+<dt>Returns:</dt><dd><ul class="simple">
+<li><p>the minimizer dictionary</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="function">
-<dt id="laplace.laplace_approximation">
-<code class="descclassname">laplace.</code><code class="descname">laplace_approximation</code><span class="sig-paren">(</span><em>data</em>, <em>prior</em>, <em>tau</em>, <em>nrestarts=2</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#laplace.laplace_approximation" title="Permalink to this definition">¶</a></dt>
+<dl class="py function">
+<dt class="sig sig-object py" id="laplace.laplace_approximation">
+<span class="sig-prename descclassname"><span class="pre">laplace.</span></span><span class="sig-name descname"><span class="pre">laplace_approximation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">guess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nrestarts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.4901161193847656e-07</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#laplace.laplace_approximation" title="Link to this definition">¶</a></dt>
 <dd><p>Perform the Laplace approximation on the BIASD posterior probability distribution of this trace.</p>
-<dl class="docutils">
-<dt>Inputs:</dt>
-<dd><ul class="first last simple">
-<li><cite>data</cite> is a 1D <cite>np.ndarray</cite> of the time series</li>
-<li><cite>prior</cite> is a <cite>biasd.distributions.parameter_collection</cite> that contains the prior the BIASD Bayesian inference</li>
-<li><cite>tau</cite> is the measurement period</li>
+<dl class="simple">
+<dt>Inputs:</dt><dd><ul class="simple">
+<li><p><cite>data</cite> is a 1D <cite>np.ndarray</cite> of the time series</p></li>
+<li><p><cite>prior</cite> is a <cite>biasd.distributions.parameter_collection</cite> that contains the prior the BIASD Bayesian inference</p></li>
+<li><p><cite>tau</cite> is the measurement period</p></li>
 </ul>
 </dd>
-<dt>Optional:</dt>
-<dd><ul class="first last simple">
-<li><cite>nrestarts</cite> is the number of times to try to find the MAP in <cite>find_map</cite>.</li>
-<li><cite>verbose</cite> is a boolean that determines whether the evaluation time for each Hessian and minimization is printed.</li>
+<dt>Optional:</dt><dd><ul class="simple">
+<li><p><cite>nrestarts</cite> is the number of times to try to find the MAP in <cite>find_map</cite>.</p></li>
 </ul>
 </dd>
-<dt>Returns:</dt>
-<dd><ul class="first last simple">
-<li>a <cite>biasd.laplace._laplace_posterior</cite> object, which has a <cite>.mu</cite> with the means, a <cite>.covar</cite> with the covariances, and a <cite>.posterior</cite> which is a marginalized <cite>biasd.distributions.parameter_collection</cite> of normal distributions.</li>
+<dt>Returns:</dt><dd><ul class="simple">
+<li><p>a <cite>biasd.laplace._laplace_posterior</cite> object, which has a <cite>.mu</cite> with the means, a <cite>.covar</cite> with the covariances, and a <cite>.posterior</cite> which is a marginalized <cite>biasd.distributions.parameter_collection</cite> of normal distributions.</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
+           </div>
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="code_likelihood.html" class="btn btn-neutral float-right" title="Likelihood">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="code_distributions.html" class="btn btn-neutral" title="Distributions"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="code_distributions.html" class="btn btn-neutral float-left" title="Distributions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="code_likelihood.html" class="btn btn-neutral float-right" title="Likelihood" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2013-2017, Colin Kinz-Thompson.
-    </p>
+    <p>&#169; Copyright 2013-2017, Colin Kinz-Thompson.</p>
   </div>
 
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
-  
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'0.1.1',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

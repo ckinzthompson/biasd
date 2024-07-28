@@ -14,7 +14,6 @@ Contents:
 	getstarted
 	compileguide
 	examples
-	gui
 
 Code Documentation:
 ===================
@@ -25,8 +24,6 @@ Code Documentation:
 	code_laplace
 	code_likelihood
 	code_mcmc
-	code_smd
-	code_utils
 	
 
 .. Indices and tables

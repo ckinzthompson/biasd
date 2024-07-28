@@ -1,302 +1,213 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Likelihood &mdash; BIASD v0.1.1</title>
-  
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-
-  
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
-
-  
-  
-    
-
-  
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="BIASD v0.1.1" href="index.html"/>
-        <link rel="next" title="MCMC" href="code_mcmc.html"/>
-        <link rel="prev" title="Laplace" href="code_laplace.html"/> 
-
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
-
+        <script src="_static/documentation_options.js?v=a58bc63e"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="MCMC" href="code_mcmc.html" />
+    <link rel="prev" title="Laplace" href="code_laplace.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
-
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-nav-search">
-        
-          <a href="index.html" class="fa fa-home"> BIASD</a>
-        
-        
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            BIASD
+          </a>
+              <div class="version">
+                0.1
+              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-      </div>
-
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-        
-          
-          
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="getstarted.html">Getting Started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="getstarted.html#software-requirements">Software Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="getstarted.html#adding-biasd-to-the-python-path">Adding BIASD to the Python Path</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="compileguide.html">Compiling the Likelihood</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="compileguide.html#background">Background</a></li>
-<li class="toctree-l2"><a class="reference internal" href="compileguide.html#how-to-compile">How to Compile</a></li>
-<li class="toctree-l2"><a class="reference internal" href="compileguide.html#testing-speed">Testing Speed</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">BIASD Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#creating-a-new-smd-file">Creating a new SMD file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#sample-the-posterior-with-mcmc">Sample the posterior with MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#laplace-approximation-and-computing-the-predictive-posterior">Laplace approximation and computing the predictive posterior</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="gui.html">BIASD GUI</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="gui.html#functionality">Functionality</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="getstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compileguide.html">Compiling the Likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">BIASD Examples</a></li>
 </ul>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="code_distributions.html">Distributions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Some standard probability distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#convert-between-distributions">Convert between distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#distributions-can-be-collected-for-priors-or-posteriors">Distributions can be collected for priors or posteriors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#collections-can-be-visualized">Collections can be visualized</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Finally, you can easily generate a few useful collections using</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_laplace.html">Laplace</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_laplace.html#laplace-approximation">Laplace Approximation</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="code_distributions.html">Distributions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_laplace.html">Laplace</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Likelihood</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#switch-the-log-likelihood-function">Switch the log-likelihood function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-likelihood">Inference-related functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#switch-the-log-likelihood-function">Switch the log-likelihood function</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#likelihood.test_speed"><code class="docutils literal notranslate"><span class="pre">test_speed()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="code_mcmc.html">MCMC</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#markov-chain-monte-carlo">Markov chain Monte Carlo</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Setup and Run MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Analyze MCMC samples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-likelihood">Inference-related functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#likelihood.log_likelihood"><code class="docutils literal notranslate"><span class="pre">log_likelihood()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#likelihood.log_posterior"><code class="docutils literal notranslate"><span class="pre">log_posterior()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="code_smd.html">SMD</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#work-with-smd-data">Work with SMD data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.add">Add BIASD results to an SMD object</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.read">Read BIASD results from an SMD object into a useful format</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#examples">Examples</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="code_mcmc.html">MCMC</a></li>
 </ul>
 
-          
-        
+        </div>
       </div>
-      &nbsp;
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">BIASD</a>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BIASD</a>
       </nav>
 
-
-      
       <div class="wy-nav-content">
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Likelihood</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Likelihood</li>
       <li class="wy-breadcrumbs-aside">
-        
-          <a href="_sources/code_likelihood.rst.txt" rel="nofollow"> View page source</a>
-        
+            <a href="_sources/code_likelihood.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
 </div>
-          <div role="main" class="document">
-            
-  <div class="section" id="likelihood">
-<span id="code-likelihood"></span><h1>Likelihood<a class="headerlink" href="#likelihood" title="Permalink to this headline">¶</a></h1>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="likelihood">
+<span id="code-likelihood"></span><h1>Likelihood<a class="headerlink" href="#likelihood" title="Link to this heading">¶</a></h1>
 <p>This page gives the details about the code in biasd.likelihood.</p>
-<div class="section" id="switch-the-log-likelihood-function">
-<h2>Switch the log-likelihood function<a class="headerlink" href="#switch-the-log-likelihood-function" title="Permalink to this headline">¶</a></h2>
-<p>There are two main functions that you use for BIASD in <cite>biasd.likelihood</cite>. One to calculate the log-likelihood function, and the other to calculate the log-posterior function, which relies on the log-likelihood function. However, in truth, there are several different version of the log-likehood function that all accept the same arguments and return the results. There&#8217;s one written in Python, (two) written in C, and one written in for CUDA. Assuming that they are compiled (i.e., C or CUDA), you can toggle between them to choose which version the log-likelihood function uses. In general, you&#8217;ll want to use the C version if you have only a few data points (&lt; 500), since it is fast and it allows you to use multiple processors when performing MCMC with emcee. If you have a lot of data points, you&#8217;ll probably want to use the CUDA version, where each CUDA-core calculates the log-likelihood of a single data point. Anyway, you can toggle between the versions using</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">biasd</span> <span class="kn">as</span> <span class="nn">b</span>
+<section id="switch-the-log-likelihood-function">
+<h2>Switch the log-likelihood function<a class="headerlink" href="#switch-the-log-likelihood-function" title="Link to this heading">¶</a></h2>
+<p>There are two main functions that you use for BIASD in <cite>biasd.likelihood</cite>. One to calculate the log-likelihood function, and the other to calculate the log-posterior function, which relies on the log-likelihood function. However, in truth, there are several different version of the log-likehood function that all accept the same arguments and return the results. There’s one written in Python, (two) written in C, and one written in for CUDA. Assuming that they are compiled (i.e., C or CUDA), you can toggle between them to choose which version the log-likelihood function uses. In general, you’ll want to use the C version if you have only a few data points (&lt; 500), since it is fast and it allows you to use multiple processors when performing MCMC with emcee. If you have a lot of data points, you’ll probably want to use the CUDA version, where each CUDA-core calculates the log-likelihood of a single data point. Anyway, you can toggle between the versions using</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">biasd</span> <span class="k">as</span> <span class="nn">b</span>
 
-<span class="c"># Switch to the slow, python implementation</span>
+<span class="c1"># Switch to the slow, python implementation</span>
 <span class="n">b</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">use_python_ll</span><span class="p">()</span>
 
-<span class="c"># Switch to the medium, parallelizable C version</span>
+<span class="c1"># Switch to the medium, parallelizable C version</span>
 <span class="n">b</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">use_c_ll</span><span class="p">()</span>
 
-<span class="c"># Switch to the high-throughput CUDA version</span>
+<span class="c1"># Switch to the high-throughput CUDA version</span>
 <span class="n">b</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">use_cuda_ll</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Finally, you can test the speed per datapoint of each of these version with</p>
-<dl class="function">
-<dt id="likelihood.test_speed">
-<code class="descclassname">likelihood.</code><code class="descname">test_speed</code><span class="sig-paren">(</span><em>n</em>, <em>dpoints=5000</em><span class="sig-paren">)</span><a class="headerlink" href="#likelihood.test_speed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Test how fast the BIASD integral runs.</p>
-<dl class="docutils">
-<dt>Input:</dt>
-<dd><ul class="first last simple">
-<li><cite>n</cite> is the number of times to repeat the test</li>
-<li><cite>dpoints</cite> is the number of data points in each test</li>
+<dl class="py function">
+<dt class="sig sig-object py" id="likelihood.test_speed">
+<span class="sig-prename descclassname"><span class="pre">likelihood.</span></span><span class="sig-name descname"><span class="pre">test_speed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#likelihood.test_speed" title="Link to this definition">¶</a></dt>
+<dd><p>Test how fast the BIASD integral runs.
+Input:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>n</cite> is the number of times to repeat the test</p></li>
+<li><p><cite>dpoints</cite> is the number of data points in each test</p></li>
 </ul>
-</dd>
-<dt>Returns:</dt>
-<dd><ul class="first last simple">
-<li>The average amount of time per data point in seconds.</li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<p>If you&#8217;re ever confused about which version you&#8217;re using, you can check the <cite>biasd.likelihood.ll_version</cite> variable.</p>
-<dl class="docutils">
-<dt>Warning:</dt>
-<dd>Changing <cite>biasd.likelihood.ll_version</cite> will not switch which likelihood function is being used.</dd>
-</dl>
-</div>
-<div class="section" id="module-likelihood">
-<span id="inference-related-functions"></span><h2>Inference-related functions<a class="headerlink" href="#module-likelihood" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="likelihood.log_likelihood">
-<code class="descclassname">likelihood.</code><code class="descname">log_likelihood</code><span class="sig-paren">(</span><em>theta</em>, <em>data</em>, <em>tau</em><span class="sig-paren">)</span><a class="headerlink" href="#likelihood.log_likelihood" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the log of the BIASD likelihood function at <cite>theta</cite> using the data <cite>data</cite> given the time period of the data as <cite>tau</cite>.</p>
-<p>CUDA Version</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="likelihood.log_posterior">
-<code class="descclassname">likelihood.</code><code class="descname">log_posterior</code><span class="sig-paren">(</span><em>theta</em>, <em>data</em>, <em>prior_dists</em>, <em>tau</em><span class="sig-paren">)</span><a class="headerlink" href="#likelihood.log_posterior" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate the log-posterior probability distribution at <span class="math">\(\Theta\)</span></p>
-<dl class="docutils">
-<dt>Input:</dt>
-<dd><ul class="first last simple">
-<li><cite>theta</cite> is a vector of the parameters (i.e., <span class="math">\(\theta\)</span>) where to evaluate the log-posterior</li>
-<li><cite>data</cite> is a 1D <cite>np.ndarray</cite> of the time series to analyze</li>
-<li><cite>prior_dists</cite> is a <cite>biasd.distributions.parameter_collection</cite> containing the prior probability distributions for the BIASD calculation</li>
-<li><cite>tau</cite> is the measurement period of <cite>data</cite></li>
-</ul>
-</dd>
-<dt>Returns:</dt>
-<dd><ul class="first last simple">
-<li>The summed log posterior probability distribution, <span class="math">\(p(\Theta \vert data) \propto p(data \vert \Theta) \cdot p(\Theta)\)</span></li>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><ul class="simple">
+<li><p>The average amount of time per data point in seconds.</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
-</div>
-</div>
+<p>If you’re ever confused about which version you’re using, you can check the <cite>biasd.likelihood.ll_version</cite> variable.</p>
+<dl class="simple">
+<dt>Warning:</dt><dd><p>Changing <cite>biasd.likelihood.ll_version</cite> will not switch which likelihood function is being used.</p>
+</dd>
+</dl>
+</section>
+<section id="module-likelihood">
+<span id="inference-related-functions"></span><h2>Inference-related functions<a class="headerlink" href="#module-likelihood" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="likelihood.log_likelihood">
+<span class="sig-prename descclassname"><span class="pre">likelihood.</span></span><span class="sig-name descname"><span class="pre">log_likelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#likelihood.log_likelihood" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the individual values of the log of the BIASD likelihood function at <span class="math notranslate nohighlight">\(\Theta\)</span></p>
+<dl class="simple">
+<dt>Input:</dt><dd><ul class="simple">
+<li><p><cite>theta</cite> is a <cite>np.ndarray</cite> of the parameters to evaluate</p></li>
+<li><p><cite>data is a 1D `np.ndarray</cite> of the time series to analyze</p></li>
+<li><p><cite>tau</cite> is the measurement period of each data point in <cite>data</cite></p></li>
+</ul>
+</dd>
+<dt>Returns:</dt><dd><ul class="simple">
+<li><p>A 1D <cite>np.ndarray</cite> of the log-likelihood for each data point in <cite>data</cite></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="likelihood.log_posterior">
+<span class="sig-prename descclassname"><span class="pre">likelihood.</span></span><span class="sig-name descname"><span class="pre">log_posterior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_dists</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#likelihood.log_posterior" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the log-posterior probability distribution at <span class="math notranslate nohighlight">\(\Theta\)</span></p>
+<dl class="simple">
+<dt>Input:</dt><dd><ul class="simple">
+<li><p><cite>theta</cite> is a vector of the parameters (i.e., <span class="math notranslate nohighlight">\(\theta\)</span>) where to evaluate the log-posterior</p></li>
+<li><p><cite>data</cite> is a 1D <cite>np.ndarray</cite> of the time series to analyze</p></li>
+<li><p><cite>prior_dists</cite> is a <cite>biasd.distributions.parameter_collection</cite> containing the prior probability distributions for the BIASD calculation</p></li>
+<li><p><cite>tau</cite> is the measurement period of <cite>data</cite></p></li>
+</ul>
+</dd>
+<dt>Returns:</dt><dd><ul class="simple">
+<li><p>The summed log posterior probability distribution, <span class="math notranslate nohighlight">\(p(\Theta \vert data) \propto p(data \vert \Theta) \cdot p(\Theta)\)</span></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
 
 
+           </div>
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="code_mcmc.html" class="btn btn-neutral float-right" title="MCMC">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="code_laplace.html" class="btn btn-neutral" title="Laplace"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="code_laplace.html" class="btn btn-neutral float-left" title="Laplace" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="code_mcmc.html" class="btn btn-neutral float-right" title="MCMC" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2013-2017, Colin Kinz-Thompson.
-    </p>
+    <p>&#169; Copyright 2013-2017, Colin Kinz-Thompson.</p>
   </div>
 
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
-  
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'0.1.1',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

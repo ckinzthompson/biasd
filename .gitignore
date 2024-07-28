@@ -3,3 +3,5 @@
 *.png
 *.pdf
 *.smd
+.DS_Store
+*.egg-info

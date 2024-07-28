@@ -1,258 +1,150 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Getting Started &mdash; BIASD v0.1.1</title>
-  
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-
-  
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
-
-  
-  
-    
-
-  
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="BIASD v0.1.1" href="index.html"/>
-        <link rel="next" title="Compiling the Likelihood" href="compileguide.html"/>
-        <link rel="prev" title="Bayesian Inference for the Analysis of Sub-temporal-resolution Data" href="index.html"/> 
-
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
-
+        <script src="_static/documentation_options.js?v=a58bc63e"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Compiling the Likelihood" href="compileguide.html" />
+    <link rel="prev" title="Bayesian Inference for the Analysis of Sub-temporal-resolution Data" href="index.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
-
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-nav-search">
-        
-          <a href="index.html" class="fa fa-home"> BIASD</a>
-        
-        
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            BIASD
+          </a>
+              <div class="version">
+                0.1
+              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-      </div>
-
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-        
-          
-          
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#software-requirements">Software Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#adding-biasd-to-the-python-path">Adding BIASD to the Python Path</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="compileguide.html">Compiling the Likelihood</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="compileguide.html#background">Background</a></li>
-<li class="toctree-l2"><a class="reference internal" href="compileguide.html#how-to-compile">How to Compile</a></li>
-<li class="toctree-l2"><a class="reference internal" href="compileguide.html#testing-speed">Testing Speed</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">BIASD Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#creating-a-new-smd-file">Creating a new SMD file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#sample-the-posterior-with-mcmc">Sample the posterior with MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#laplace-approximation-and-computing-the-predictive-posterior">Laplace approximation and computing the predictive posterior</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="gui.html">BIASD GUI</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="gui.html#functionality">Functionality</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="compileguide.html">Compiling the Likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">BIASD Examples</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="code_distributions.html">Distributions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Some standard probability distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#convert-between-distributions">Convert between distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#distributions-can-be-collected-for-priors-or-posteriors">Distributions can be collected for priors or posteriors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#collections-can-be-visualized">Collections can be visualized</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Finally, you can easily generate a few useful collections using</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_laplace.html">Laplace</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_laplace.html#laplace-approximation">Laplace Approximation</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_likelihood.html">Likelihood</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#switch-the-log-likelihood-function">Switch the log-likelihood function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#module-likelihood">Inference-related functions</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_mcmc.html">MCMC</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#markov-chain-monte-carlo">Markov chain Monte Carlo</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Setup and Run MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Analyze MCMC samples</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_smd.html">SMD</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#work-with-smd-data">Work with SMD data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.add">Add BIASD results to an SMD object</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.read">Read BIASD results from an SMD object into a useful format</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#examples">Examples</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="code_distributions.html">Distributions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_laplace.html">Laplace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_likelihood.html">Likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_mcmc.html">MCMC</a></li>
 </ul>
 
-          
-        
+        </div>
       </div>
-      &nbsp;
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">BIASD</a>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BIASD</a>
       </nav>
 
-
-      
       <div class="wy-nav-content">
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Getting Started</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Getting Started</li>
       <li class="wy-breadcrumbs-aside">
-        
-          <a href="_sources/getstarted.rst.txt" rel="nofollow"> View page source</a>
-        
+            <a href="_sources/getstarted.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
 </div>
-          <div role="main" class="document">
-            
-  <div class="section" id="getting-started">
-<span id="getstarted"></span><h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
-<p>In general, BIASD uses the SMD data format (DOI: 10.1186/s12859-014-0429-4) for data storage, though this is not required. It also uses <cite>emcee</cite> (arXiv:1202.3665) to perform the Markov chain Monte Carlo (MCMC), though the Laplace approximation is also provided, which does not use emcee. To start using BIASD, you will need to first install some Python packages, and maybe compile some libraries if your want reasonable computational performance.</p>
-<div class="section" id="software-requirements">
-<h2>Software Requirements<a class="headerlink" href="#software-requirements" title="Permalink to this headline">¶</a></h2>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="getting-started">
+<span id="getstarted"></span><h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h1>
+<p>BIASD uses <cite>emcee</cite> (arXiv:1202.3665) to perform the Markov chain Monte Carlo (MCMC), though the Laplace approximation is also provided, which does not use emcee. To start using BIASD, you will need to first install some Python packages, and maybe compile some libraries if your want reasonable computational performance.</p>
+<section id="software-requirements">
+<h2>Software Requirements<a class="headerlink" href="#software-requirements" title="Link to this heading">¶</a></h2>
 <p>Most of BIASD is written in Python. In general, you can run a Python script (.py) from a terminal with</p>
-<div class="highlight-bash"><div class="highlight"><pre>python myscript.py
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>myscript.py
 </pre></div>
 </div>
-<p>BIASD depends upon several Python packages, which must be installed. These can easily be obtained with the <cite>conda</cite> package manager, which is most efficiently obtained by installing <a class="reference external" href="http://conda.pydata.org/miniconda.html">Continuum Analytics&#8217; Miniconda</a>. After installing <cite>Miniconda</cite> (the 64 bit, Python 2.7 version), you can then get the Python packages you will need.</p>
-<p>You will need to use <cite>conda</cite> to install <cite>pip</cite> (version 9.0), <cite>numpy</cite> (version 1.11), <cite>scipy</cite> (verison 0.18), and <cite>matplotlib</cite> (version 1.5). For saving in the HDF5 SMD format, you will also need <cite>h5py</cite> (version 2.6) &#8211; these versions are up-to-date as of writing. In a terminal, install these packages with</p>
-<div class="highlight-bash"><div class="highlight"><pre>conda install pip numpy scipy matplotlib h5py
+<p>BIASD depends upon several Python packages, which must be installed. These can easily be obtained with the <cite>conda</cite> package manager, which is most efficiently obtained by installing <a class="reference external" href="http://conda.pydata.org/miniconda.html">Continuum Analytics’ Miniconda</a>. After installing <cite>Miniconda</cite> (the 64 bit, Python 2.7 version), you can then get the Python packages you will need. In general, it is useful to have a separate environment for biasd, and to launch it everytime. To do that you can create the environment with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>biasd<span class="w"> </span><span class="nv">python</span><span class="o">==</span><span class="m">3</span>.9
 </pre></div>
 </div>
-<p>Once you have <cite>pip</cite> installed, you can install <cite>emcee</cite> for MCMC and <cite>corner</cite> for plotting purposes from a terminal window with</p>
-<div class="highlight-bash"><div class="highlight"><pre>pip install emcee corner
+<p>and everytime you want to use the environment, type</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>activate<span class="w"> </span>biasd
 </pre></div>
 </div>
-</div>
-<div class="section" id="adding-biasd-to-the-python-path">
-<h2>Adding BIASD to the Python Path<a class="headerlink" href="#adding-biasd-to-the-python-path" title="Permalink to this headline">¶</a></h2>
-<p>In order for your version of Python to find BIASD, you&#8217;ll need to add the folder containing the BIASD code into your environmental variable PYTHONPATH. To do this, you&#8217;ll need to edit your shell startup script with a text editor. This is located at <cite>/Users/&lt;username&gt;/.profile</cite> for mac, or <cite>/home/&lt;username&gt;/.bashrc</cite> if you&#8217;re using bash for linux/unix; here, you should replace <cite>&lt;username&gt;</cite> with your username. At the end of your file, add the line</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nb">export </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">PYTHONPATH</span><span class="si">}</span><span class="s2">:/path/to/the/biasd/folder/you/downloaded&quot;</span>
+<p>Once you have that prepared, you’ll need to install biasd and all the libraries it needs. Just run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/ckinzthompson/biasd.git
 </pre></div>
 </div>
-<p>which assumes that you downloaded the BIASD package to <cite>/path/to/the/biasd/folder/you/downloaded</cite>. Note, that you need to either restart your terminal window, or source the startup script, e.g.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nb">source</span> ~/.bashrc
+<p>If you want to do any testing, it’s easier to have have a modifiable library and install the testing requirements</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/ckinzthompson/biasd.git
+<span class="nb">cd</span><span class="w"> </span>biasd
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>./
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[test]&quot;</span>
 </pre></div>
 </div>
-<p>After this, you should be able to use BIASD with Python. However, you should compile the likelihood function if you want better performance.</p>
-</div>
-</div>
+<p>Finally, to build the documentation, navigate to the <cite>./biasd/docs</cite>, and run <cite>make html</cite>.</p>
+</section>
+</section>
 
 
+           </div>
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="compileguide.html" class="btn btn-neutral float-right" title="Compiling the Likelihood">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="index.html" class="btn btn-neutral" title="Bayesian Inference for the Analysis of Sub-temporal-resolution Data"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Bayesian Inference for the Analysis of Sub-temporal-resolution Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="compileguide.html" class="btn btn-neutral float-right" title="Compiling the Likelihood" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2013-2017, Colin Kinz-Thompson.
-    </p>
+    <p>&#169; Copyright 2013-2017, Colin Kinz-Thompson.</p>
   </div>
 
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
-  
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'0.1.1',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

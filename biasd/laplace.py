@@ -1,6 +1,5 @@
 """
 .. module:: laplace
-
 	:synopsis: Contains function to calculate the laplace approximation to the BIASD posterior probability distribution.
 
 """
@@ -10,14 +9,16 @@ from scipy.optimize import minimize
 from biasd.likelihood import log_posterior
 from biasd.distributions import parameter_collection,normal,convert_distribution
 
-def calc_hessian(fxn,x,eps = np.sqrt(np.finfo(np.float64).eps)):
+deftol = 10*np.sqrt(np.finfo(np.float64).eps)
+
+def calc_hessian(fxn,x,eps=deftol):
 	"""
 	Calculate the Hessian using the finite difference approximation.
 
 	Finite difference formulas given in Abramowitz & Stegun
 
-		- Eqn. 25.3.23 (on-diagonal)
-		- Eqn. 25.3.26 (off-diagonal)
+		- Eqn. 25.3.24 (on-diagonal)
+		- Eqn. 25.3.27 (off-diagonal)
 
 	Input:
 		* `fxn` is a function that can be evaluated at x
@@ -48,37 +49,47 @@ def calc_hessian(fxn,x,eps = np.sqrt(np.finfo(np.float64).eps)):
 				if i == j:
 					x10 = x.copy()
 					xm10 = x.copy()
+					x20 = x.copy()
+					xm20 = x.copy()
 
 					x10[i] += eps
 					xm10[i] -= eps
+					x20[i] += 2*eps
+					xm20[i] -= 2*eps
 
 					y10 = fxn(x10)
 					ym10 = fxn(xm10)
+					y20 = fxn(x20)
+					ym20 = fxn(xm20)
 
-					h[i,j] = eps**(-2.) * (y10 - 2.*y00 + ym10)
+					h[i,j] = eps**(-2.)/12. * (-y20 + 16.* y10 - 30.*y00 +16.*ym10 - ym20)
 
 				#Off-diagonals above the diagonal
 				elif j > i:
+					x10 = x.copy()
+					xm10 = x.copy()
+					x01 = x.copy()
+					x0m1 = x.copy()
 					x11 = x.copy()
-					x1m1 = x.copy()
 					xm1m1 = x.copy()
-					xm11 = x.copy()
 
+					x10[i] += eps
+					xm10[i] -= eps
+					x01[j] += eps
+					x0m1[j] -= eps
 					x11[i] += eps
 					x11[j] += eps
-					x1m1[i] += eps
-					x1m1[j] -= eps
 					xm1m1[i] -= eps
 					xm1m1[j] -= eps
-					xm11[i] -= eps
-					xm11[j] += eps
 
+					y10 = fxn(x10)
+					ym10 = fxn(xm10)
+					y01 = fxn(x01)
+					y0m1 = fxn(x0m1)
 					y11 = fxn(x11)
-					y1m1 = fxn(x1m1)
 					ym1m1 = fxn(xm1m1)
-					ym11 = fxn(xm11)
 
-					h[i,j] = 1./(4.*eps**2.) * (y11 - y1m1 - ym11 + ym1m1)
+					h[i,j] = -1./(2.*eps**2.) * (y10 + ym10 + y01 + y0m1 - 2.*y00 - y11 - ym1m1)
 	return h
 
 class _laplace_posterior:
@@ -101,13 +112,19 @@ class _laplace_posterior:
 		return np.random.multivariate_normal(self.mu,self.covar,n)
 
 def _min_fxn(theta,data,prior,tau,device):
-	return -1.*log_posterior(theta,data,prior,tau,device)
+	try:
+		return -1.*log_posterior(theta,data,prior,tau,device)
+	except:
+		print(theta)
+		raise Exception('There is an error in the likelihood calculation -- 99 per cent chance it is a numba issue')
+
+
 def _minimizer(inputt):
 	data,prior,tau,x0,meth,device = inputt
-	mind =  minimize(_min_fxn,x0,method=meth,args=(data,prior,tau,device))
+	mind =  minimize(_min_fxn,x0,method=meth,args=(data,prior,tau,device), tol=deftol, options={'maxiter':1000})
 	return mind
 
-def find_map(data,prior,tau,meth='nelder-mead',xx=None,nrestarts=2,threads=1,device=0):
+def find_map(data,prior,tau,meth='nelder-mead',guess=None,nrestarts=1,device=0):
 	'''
 	Use numerical minimization to find the maximum a posteriori estimate of a BIASD log-posterior distribution.
 
@@ -119,41 +136,26 @@ def find_map(data,prior,tau,meth='nelder-mead',xx=None,nrestarts=2,threads=1,dev
 	Optional:
 		* `meth` is the minimizer used to find the minimum of the negative posterior (i.e., the maximum). Defaults to simplex.
 		* `xx` will initialize the minimizer at this theta position. Defaults to mean of the priors.
-		* `nrestarts` is the number of times to try to find the minimum. Restarts initialize at a random variate chosen from prior distributions
-		* `threads` is the number of threads to run the restarts in parallel with (if > 1)
 
 	Returns:
 		* the minimizer dictionary
 	'''
 
 	#If no xx, start at the mean of the priors
-	if not isinstance(xx,np.ndarray):
-		xx = [prior.mean()]
-	else:
-		xx = [xx]
-	xx.extend([prior.rvs(1).flatten() for _ in range(nrestarts-1)])
+	if guess is None:
+		guess = prior.rvs(1).flatten()
+		for _ in range(1000):
+			guess = prior.rvs(1).flatten()
+			_min_fxn(guess,data,prior,tau,device)
 
-	if threads > 1:
-		import multiprocessing as mp
-		p = mp.Pool(threads)
-		ylist = p.map(_minimizer,[[data,prior,tau,xx[i],meth,device] for i in range(nrestarts)])
-		p.close()
-	else:
-		ylist =   list(map(_minimizer,[[data,prior,tau,xx[i],meth,device] for i in range(nrestarts)]))
+	for iteration in range(nrestarts):
+		out = _minimizer([data,prior,tau,guess,meth,device,])
+		guess = out.x
+		# print(f"iteration {iteration}:",xx)
 
-	#Select the best MAP estimate
-	ymin = np.inf
-	for i in ylist:
-		if i['success']:
-			if i['fun'] < ymin:
-				ymin = i['fun']
-				y = i
-	#If no MAP estimates, return None
-	if ymin == np.inf:
-		y = None
-	return y
+	return out.success,out.x
 
-def laplace_approximation(data,prior,tau,nrestarts=2,verbose=False,threads=1,device=0):
+def laplace_approximation(data,prior,tau,guess = None, nrestarts=1,verbose=False,ensure=False,device=0,epsilon=deftol):
 	'''
 	Perform the Laplace approximation on the BIASD posterior probability distribution of this trace.
 
@@ -164,33 +166,30 @@ def laplace_approximation(data,prior,tau,nrestarts=2,verbose=False,threads=1,dev
 
 	Optional:
 		* `nrestarts` is the number of times to try to find the MAP in `find_map`.
-		* `verbose` is a boolean that determines whether the evaluation time for each Hessian and minimization is printed.
-		* `threads` is the number of threads to run the restarts in parallel with (if > 1) - don't do this with the GPU...
 
 	Returns:
 		* a `biasd.laplace._laplace_posterior` object, which has a `.mu` with the means, a `.covar` with the covariances, and a `.posterior` which is a marginalized `biasd.distributions.parameter_collection` of normal distributions.
 	'''
 
+	print('Laplace Approximation')
+
 	#Calculate the best MAP estimate
 	import time
 	t0 = time.time()
-	mind = find_map(data,prior,tau,nrestarts=nrestarts,threads=threads,device=device)
+	success, mapx = find_map(data,prior,tau,guess=guess,device=device)
 	t1 = time.time()
 	if verbose:
-		print(t1-t0)
+		print(f"MAP: {t1-t0} s")
 
-	if not mind is None:
-		#Calculate the Hessian at MAP estimate
-		if mind['success']:
-			mu = mind['x']
-			feps = np.sqrt(np.finfo(np.float).eps)
-			feps *= 8. ## The interval is typically too small
-			t0 = time.time()
-			hessian = calc_hessian(lambda theta: log_posterior(theta,data,prior,tau), mu,eps=feps)
-			t1 = time.time()
-			if verbose:
-				print(t1-t0)
+	#Calculate the Hessian at MAP estimate
+	if success:
+		t0 = time.time()
+		hessian = calc_hessian(lambda theta: log_posterior(theta,data,prior,tau), mapx, eps=epsilon)
+		t1 = time.time()
+		if verbose:
+			print(f"Hessian: {t1-t0} s")
 
+		if ensure:
 			#Ensure that the hessian is positive semi-definite by checking that all eigenvalues are positive
 			#If not, expand the value of machine error in the hessian calculation and try again
 			try:
@@ -198,32 +197,56 @@ def laplace_approximation(data,prior,tau,nrestarts=2,verbose=False,threads=1,dev
 				var = -np.linalg.inv(hessian)
 
 				#Ensuring Hessian(variance) is stable
-				new_feps = feps*2.
-				new_hess = calc_hessian(lambda theta: log_posterior(theta,data,prior,tau), mu,eps= new_feps)
+				epsilon *= 2
+				new_hess = calc_hessian(lambda theta: log_posterior(theta,data,prior,tau), mapx,eps= epsilon)
 				new_var = -np.linalg.inv(new_hess)
-				it = 0
-
+				
+				iter = 0
 				while np.any(np.abs(new_var-var)/var > 1e-2):
-					new_feps *= 2
+					epsilon *= 2
 					var = new_var.copy()
-					new_hess = calc_hessian(lambda theta: log_posterior(theta,data,prior,tau), mu,eps= new_feps)
+					new_hess = calc_hessian(lambda theta: log_posterior(theta,data,prior,tau), mapx,eps= epsilon)
 					new_var = -np.linalg.inv(new_hess)
-					it +=1
+					iter +=1
 					# 2^26 times feps = 1. Arbitrary upper-limit, increase if necessary (probably not for BIASD)
-					if it > 25:
+					if iter > 25:
 						raise ValueError('Whelp, you hit the end there. bud')
-				# print('Hessian iterations')
-				# print(np.log2(new_feps/feps), it)
+				if verbose:
+					print(f'Hessian iterations {iter}: {epsilon}')
 
 				#Ensure symmetry of covariance matrix if witin machine error
 				if np.allclose(var,var.T):
 					n = var.shape[0]
 					var = np.tri(n,n,-1)*var+(np.tri(n,n)*var).T
-					return _laplace_posterior(mu,var)
+					return _laplace_posterior(mapx,var)
 
 			#If this didn't work, return None
-			except np.linalg.LinAlgError:
+			except:
 				raise ValueError("Wasn't able to calculate the Hessian")
+			# raise Exception('Laplace Failure: Not symmetric')
+		
+		var = -np.linalg.inv(hessian)
+		n = var.shape[0]
+		var = np.tri(n,n,-1)*var+(np.tri(n,n)*var).T
+		if not np.allclose(var,var.T):
+			print('Inverse Hessian is not (numerically) positive semi-definite')
+		return _laplace_posterior(mapx,var)
+	
 
-	raise ValueError("No MAP estimate")
-	return _laplace_posterior(None,None)
+# def predictive_from_samples(x,samples,tau,device=0):
+# 	'''
+# 	Returns the posterior predictive distribution calculated from samples -- the average value of the likelihood function evaluated at `x` marginalized from the samples of BIASD parameters given in `samples`.
+
+# 	Samples can be generated from a posterior probability distribution. For instance, after a Laplace approximation, just draw random variates from the multivariate-normal distribution -- i.e., given results in `r`, try `samples = np.random.multivariate_normal(r.mu,r.covar,100)`. Alternatively, some posteriors might already have samples (e.g., from MCMC).
+
+# 	Input:
+# 		* `x` a `np.ndarry` where to evaluate the likelihood at (e.g., [-.2 ... 1.2] for FRET)
+# 		* `samples` is a (N,5) `np.ndarray` containing `N` samples of BIASD parameters (e.g. \Theta)
+# 		* `tau` the time period with which to evaluate the likelihood function
+# 	Returns:
+# 		* `y` a `np.ndarray` the same size as `x` containing the marginalized likelihood function evaluated at x
+# 	'''
+# 	n = samples.shape[0]
+# 	y = np.mean([np.exp(nosum_log_likelihood(samples[i],x,tau,device=device)) for i in range(n)],axis=0)
+# 	return y
+

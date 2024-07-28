@@ -1,17 +1,20 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+"""
+BIASD - Bayesian Inference for the Analysis of Sub-temporal resolution Data
+"""
 
-from . import likelihood
-from . import laplace
-from . import distributions
-try:
-	from . import mcmc
-except:
-	print("Could not import MCMC - install emcee and corner?")
-from . import smd
-try:
-	from . import gui
-except:
-	print('Could not import gui - install PyQt5?')
+__version__ = "0.2.0"
+__description__ = "BIASD - Bayesian Inference for the Analysis of Sub-temporal resolution Data."
+__license__ = "MIT"
+__url__ = "https://github.com/ckinzthompson/biasd"
+__author__ = "Colin Kinz-Thompson"
 
-__version__ = "0.1.1"
+from . import likelihood, distributions, mcmc
+from . import laplace, histogram
+from . import plot
+from . import temperature
+
+# from . import smd
+# try:
+# 	from . import gui
+# except:
+# 	print('Could not import gui - install PyQt5?')

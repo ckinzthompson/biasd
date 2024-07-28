@@ -46,31 +46,35 @@ Example use:
 .. code-block:: python
 
 	import biasd as b
-	
-	# Load data
-	data = b.smd.load('data.smd')
-	tau = 0.1
-	
-	# Get a molecule and priors
-	d = data.data[0].values.FRET
-	priors = b.distributions.guess_priors(d,tau)
-	
-	# Setup the sampler for this molecule
-	# Use 100 walkers, and 4 CPUs
-	sampler, initial_positions = b.mcmc.setup(dy, priors, tau, 100, initialize='rvs', threads=4)
+	import matplotlib.pyplot as plt
+	import numpy as np
 
-	# Burn-in 100 steps and then remove them, but keep the final positions
-	sampler,burned_positions = b.mcmc.burn_in(sampler,initial_positions,nsteps=100)
-	
-	# Run 100 steps starting at the burned-in positions.
-	sampler = b.mcmc.run(sampler,burned_positions,nsteps=100)
-	# Continue on from step 100 for another 900 steps. Don't display timing
-	sampler = b.mcmc.continue_run(sampler,900,timer=False)
-	
-	# Save the sampler data
-	result = b.mcmc.mcmc_result(sampler)
-	data = b.smd.add.mcmc(result)
-	b.smd.save('data.smd',data)
+	b.likelihood.use_python_ll()
+
+	## Simulate data
+	import simulate_singlemolecules as ssm
+	data = ssm.testdata(nmol=5,nt=100).flatten()
+	tau = .1
+
+	## Setup prior
+	e1 = b.distributions.normal(0.,.01)
+	e2 = b.distributions.normal(1.,.01)
+	sigma = b.distributions.loguniform(.01,.1)
+	k12 = b.distributions.loguniform(1.,30.)
+	k21 = b.distributions.loguniform(1.,30.)
+	prior = b.distributions.parameter_collection(e1,e2,sigma,k12,k21)
+
+	## Setup the MCMC sampler to use 20 walkers 
+	nwalkers = 20
+	sampler, initial_positions = b.mcmc.setup(data, prior, tau, nwalkers)
+
+	## Burn-in 500 steps and then remove them form the sampler, but keep the final positions
+	sampler, burned_positions = b.mcmc.burn_in(sampler, initial_positions, nsteps=500, progress=True)
+
+	## Run 2000 fresh steps starting at the burned-in positions.
+	sampler = b.mcmc.run(sampler,burned_positions,nsteps=2000,progress=True)
+	gamples = b.mcmc.get_samples(sampler)
+	b.mcmc.chain_statistics(sampler)
 
 Analyze MCMC samples
 ++++++++++++++++++++
@@ -86,18 +90,12 @@ Example:
 
 	# ...
 	
-	# Calculate auto-correlation times for each variable
-	largest_autocorrelation_time = b.mcmc.chain_statistics(sampler)
+	## Show Histogram + likelihood
+	fig,ax = b.plot.mcmc_hist(data,tau,sampler)
+	fig.savefig('./fig_mcmc.png')
+	plt.show()
 
-	# Collect uncorrelated samples from the sampler
-	samples = b.mcmc.get_samples(sampler)
-	
-	# Plot the joint and marginalized distributions from the samples using corner, and then save the figure
-	f = b.mcmc.plot_corner(samples)
-	plt.savefig('mcmc_test.pdf')
-
-	# Create a collection of the marginalized posterior distributions
-	posterior = b.mcmc.create_posterior_collection(samples,priors)
-
-	# View that collection
-	b.distributions.viewer(posterior)
+	## Show Corner
+	fig = b.plot.mcmc_corner(sampler)
+	plt.savefig('fig_corner.png')
+	plt.show()

@@ -1,14 +1,18 @@
-'''
+"""
 .. module:: mcmc
 	:synopsis: Integrates emcee's MCMC into BIASD
 
-'''
+"""
 
-import numpy as _np
+
+import numpy as np
 import emcee
-from time import time as _time
+import time
 
-def setup(data, priors, tau, nwalkers, initialize='rvs', threads=1,device=0):
+from .likelihood import log_posterior
+from .distributions import parameter_collection
+
+def setup(data, priors, tau, nwalkers, initialize='rvs', device=0):
 	"""
 	Prepare the MCMC sampler
 
@@ -21,36 +25,35 @@ def setup(data, priors, tau, nwalkers, initialize='rvs', threads=1,device=0):
 			- 'rvs' will initialize the walkers at a random spot chosen from the priors
 			- 'mean' will initialize the walkers tightly clustered around the mean of the priors.
 			- an (`nwalkers`,5) `np.ndarray` of whatever spots you want to initialize the walkers at.
-		* `threads` is the number of threads to use for evaluating the log-posterior of the walkers. Be careful when using the CUDA log-likelihood function, because you'll probably be bottle-necked there.
 
 	Results:
 		* An `emcee` sampler object. Please see the `emcee` documentation for more information.
 	"""
 
-	from biasd.likelihood import log_posterior
+
 	ndim = 5
 
-	if isinstance(initialize,_np.ndarray) and initialize.shape == (nwalkers,5):
+	if isinstance(initialize,np.ndarray) and initialize.shape == (nwalkers,ndim):
 		initial_positions = initialize
 	elif initialize == 'rvs':
 		initial_positions = priors.rvs(nwalkers).T
 	elif initialize == 'mean':
-		initial_positions = _np.array([priors.mean()+1e-6*_np.random.rand(5) for _ in range(nwalkers)])
+		initial_positions = np.array([priors.mean()+1e-6*np.random.rand(ndim) for _ in range(nwalkers)])
 	else:
 		raise AttributeError('Could not initialize the walkers. Try calling with initialize=\'rvs\'')
 
-	# Slap-dash hackery
+	## Make sure the first state epsilon is the smaller
 	for i in range(initial_positions.shape[0]):
 		if initial_positions[i,0] > initial_positions[i,1]:
 			temp = initial_positions[i,0]
 			initial_positions[i,0] = initial_positions[i,1]
 			initial_positions[i,1] = temp
 
-	sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=[data,priors,tau,device],threads=threads)
+	sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=[data,priors,tau,device])
 
 	return sampler,initial_positions
 
-def burn_in(sampler,positions,nsteps=100,timer = True):
+def burn_in(sampler,positions,nsteps,progress=True):
 	"""
 	Burn-in will run some MCMC, getting new positions, and then reset the sampler so that nothing has been sampled.
 
@@ -58,19 +61,19 @@ def burn_in(sampler,positions,nsteps=100,timer = True):
 		* `sampler` is an `emcee` sampler
 		* `positions` is the starting walker positions (maybe provided by `biasd.mcmc.setup`?)
 		* `nsteps` is the integer number of MCMC steps to take
-		* `timer` is a boolean for displaying the timing statistics
+		* `progress` is a boolean for displaying the timing statistics
 
 	Results:
 		* `sampler` is now a cleared `emcee` sampler where no steps have been made
 		* `positions` is an array of the final walkers positions for use when starting a more randomized sampling
 
 	"""
-	sampler = run(sampler,positions,nsteps,timer)
-	positions = _np.copy(sampler.chain[:,-1,:])
+	sampler = run(sampler,positions,nsteps,progress)
+	positions = np.copy(sampler.get_last_sample().coords)
 	sampler.reset()
 	return sampler,positions
 
-def run(sampler,positions,nsteps,timer=True):
+def run(sampler,positions,nsteps,progress=True):
 	"""
 	Acquire some MCMC samples, and keep them in the sampler
 
@@ -78,43 +81,43 @@ def run(sampler,positions,nsteps,timer=True):
 		* `sampler` is an `emcee` sampler
 		* `positions` is the starting walker positions (maybe provided by `biasd.mcmc.setup`?)
 		* `nsteps` is the integer number of MCMC steps to take
-		* `timer` is a boolean for displaying the timing statistics
+		* `progress` is a boolean for displaying the timing statistics
 
 	Results:
 		* `sampler` is the updated `emcee` sampler
 
 	"""
 
-	t0 = _time()
-	sampler.run_mcmc(positions,nsteps)
-	t1 = _time()
-	if timer:
-		print("Steps: ", sampler.chain.shape[1])
+	t0 = time.time()
+	sampler.run_mcmc(positions,nsteps,progress=progress)
+	t1 = time.time()
+	if progress:
+		print("Steps: ", sampler.get_chain().shape[0])
 		print("Total Time:",(t1-t0))
-		print("Time/Sample:",(t1-t0)/sampler.flatchain.shape[0]/sampler.args[0].size)
+		print("Time/Sample:",(t1-t0)/sampler.nwalkers/nsteps)
 	return sampler
 
-def continue_run(sampler,nsteps,timer=True):
+def continue_run(sampler,nsteps,progress=True):
 	"""
 	Similar to `biasd.mcmc.run`, but you do not need to specify the initial positions, because they will be the last sampled positions in `sampler`
 	"""
-	positions = sampler.chain[:,-1,:]
-	sampler = run(sampler,positions,nsteps,timer=timer)
+	positions = np.copy(sampler.get_last_sample().coords)
+	sampler = run(sampler,positions,nsteps,progress=progress)
 	return sampler
 
-
-def chain_statistics(sampler,verbose=True):
+def chain_statistics(sampler,verbose=False):
 	"""
 	Calculate the acceptance fraction and autocorrelation times of the samples in `sampler`
 	"""
 	# Chain statistics
+	act = sampler.get_autocorr_time(quiet=True)
 	if verbose:
-		print("Mean acceptance fraction:", _np.mean(sampler.acceptance_fraction))
-		print("Autocorrelation time:", sampler.get_autocorr_time())
-	maxauto = _np.int(sampler.get_autocorr_time().max())+1
+		print("Mean Acceptance fraction:", np.mean(sampler.acceptance_fraction))
+		print("Autocorrelation time:", act)
+	maxauto = act.astype('int').max()+1
 	return maxauto
 
-def get_samples(sampler,uncorrelated=True,culled=False):
+def get_samples(sampler,uncorrelated=True,culled=False,verbose=False):
 	"""
 	Get the samples from `sampler`
 
@@ -128,30 +131,27 @@ def get_samples(sampler,uncorrelated=True,culled=False):
 	"""
 
 	if uncorrelated:
-		maxauto = chain_statistics(sampler,verbose=False)
+		maxauto = chain_statistics(sampler,verbose=verbose)
 	else:
 		maxauto = 1
 	if culled:
-		cut = sampler.lnprobability.mean(1) < 0.
+		keep = sampler.get_log_prob().mean(0) > 0.
 	else:
-		cut = sampler.lnprobability.mean(1) < -_np.inf
-	samples = sampler.chain[~cut,::maxauto,:].reshape((-1,5))
+		keep = np.isfinite(sampler.get_log_prob().mean(0))
+	samples = sampler.get_chain()[::maxauto,keep,:]
+	samples = samples.reshape((samples.size//sampler.ndim,sampler.ndim))
 	return samples
 
-def plot_corner(samples):
-	"""
-	Use the python package called corner <https://github.com/dfm/corner.py> to make some very nice corner plots (joints and marginalized) of posterior in the 5-dimensions used by the two-state BIASD posterior.
+def get_stats(sampler):
+	ss = get_samples(sampler,uncorrelated=True)
+	mu = ss.mean(0)
+	std = ss.std(0)
 
-	Input:
-		* `samples` is a (N,5) `np.ndarray`
-	Returns:
-		* `fig` which is the handle to the figure containing the corner plot
-	"""
-
-	import corner
-	labels = [r'$\epsilon_1$', r'$\epsilon_2$', r'$\sigma$', r'$k_1$', r'$k_2$']
-	fig = corner.corner(samples, labels=labels, quantiles=[.025,.50,.975],levels=(1-_np.exp(-0.5),))
-	return fig
+	print(f'No. Samples: {ss.shape[0]}')
+	labels = ['e1 ','e2 ','sig','k1 ','k2 ']
+	for i in range(len(labels)):
+		print(f"{labels[i]}: {mu[i]:.4f} +/- {std[i]:.4f}")
+	return mu,std
 
 def create_posterior_collection(samples,priors):
 	"""
@@ -164,16 +164,15 @@ def create_posterior_collection(samples,priors):
 		* A `biasd.distributions.parameter_collection` containing the marginalized, moment-matched posteriors
 	"""
 
-	from biasd.distributions import parameter_collection
 	#Moment-match, marginalized posteriors
 	first = samples.mean(0)
-	second = _np.var(samples,axis=0)+first**2
+	second = np.var(samples,axis=0)+first**2
 
-	e1 = priors.e1.new(_np.around(priors.e1._moment2param_fxn(first[0], second[0]),4))
-	e2 = priors.e2.new(_np.around(priors.e2._moment2param_fxn(first[1], second[1]),4))
-	sigma = priors.sigma.new(_np.around(priors.sigma._moment2param_fxn(first[2], second[2]),4))
-	k1 = priors.k1.new(_np.around(priors.k1._moment2param_fxn(first[3], second[3]),4))
-	k2 = priors.k2.new(_np.around(priors.k2._moment2param_fxn(first[4], second[4]),4))
+	e1 = priors.e1.new(np.around(priors.e1._moment2param_fxn(first[0], second[0]),4))
+	e2 = priors.e2.new(np.around(priors.e2._moment2param_fxn(first[1], second[1]),4))
+	sigma = priors.sigma.new(np.around(priors.sigma._moment2param_fxn(first[2], second[2]),4))
+	k1 = priors.k1.new(np.around(priors.k1._moment2param_fxn(first[3], second[3]),4))
+	k2 = priors.k2.new(np.around(priors.k2._moment2param_fxn(first[4], second[4]),4))
 
 	return parameter_collection(e1,e2,sigma,k1,k2)
 
@@ -188,9 +187,9 @@ class mcmc_result(object):
 			if 'lnprobfn' in mcmc_input.__dict__:
 				if 'acor' not in mcmc_input.__dict__:
 					mcmc_input.get_autocorr_time()
-				self.acor = mcmc_input.acor
-				self.chain = mcmc_input.chain
-				self.lnprobability = mcmc_input.lnprobability
+				self.acor = mcmc_input.get_autocorr_time()
+				self.chain = mcmc_input.get_chain()
+				self.lnprobability = mcmc_input.get_log_prob()
 				self.iterations = mcmc_input.iterations
 				self.naccepted = mcmc_input.naccepted
 				self.nwalkers = mcmc_input.k

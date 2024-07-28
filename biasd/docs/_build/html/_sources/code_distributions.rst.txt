@@ -9,7 +9,7 @@ Some standard probability distributions
 +++++++++++++++++++++++++++++++++++++++
 
 .. automodule:: distributions
-	:members: beta, gamma, normal, uniform
+	:members: beta, gamma, normal, uniform, loguniform
 
 Convert between distributions
 +++++++++++++++++++++++++++++

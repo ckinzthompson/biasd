@@ -1,273 +1,162 @@
-
-
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Compiling the Likelihood &mdash; BIASD v0.1.1</title>
-  
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
-
-  
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic|Roboto+Slab:400,700|Inconsolata:400,700&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
-
-  
-  
-    
-
-  
-
-  
-  
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="BIASD v0.1.1" href="index.html"/>
-        <link rel="next" title="BIASD Examples" href="examples.html"/>
-        <link rel="prev" title="Getting Started" href="getstarted.html"/> 
-
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
-
+        <script src="_static/documentation_options.js?v=a58bc63e"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="BIASD Examples" href="examples.html" />
+    <link rel="prev" title="Getting Started" href="getstarted.html" /> 
 </head>
 
-<body class="wy-body-for-nav" role="document">
-
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-nav-search">
-        
-          <a href="index.html" class="fa fa-home"> BIASD</a>
-        
-        
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            BIASD
+          </a>
+              <div class="version">
+                0.1
+              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-      </div>
-
-      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-        
-          
-          
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="getstarted.html">Getting Started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="getstarted.html#software-requirements">Software Requirements</a></li>
-<li class="toctree-l2"><a class="reference internal" href="getstarted.html#adding-biasd-to-the-python-path">Adding BIASD to the Python Path</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="getstarted.html">Getting Started</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Compiling the Likelihood</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#background">Background</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-to-compile">How to Compile</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing-speed">Testing Speed</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">BIASD Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#creating-a-new-smd-file">Creating a new SMD file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#sample-the-posterior-with-mcmc">Sample the posterior with MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples.html#laplace-approximation-and-computing-the-predictive-posterior">Laplace approximation and computing the predictive posterior</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="gui.html">BIASD GUI</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="gui.html#functionality">Functionality</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">BIASD Examples</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="code_distributions.html">Distributions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Some standard probability distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#convert-between-distributions">Convert between distributions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#distributions-can-be-collected-for-priors-or-posteriors">Distributions can be collected for priors or posteriors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#collections-can-be-visualized">Collections can be visualized</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_distributions.html#module-distributions">Finally, you can easily generate a few useful collections using</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_laplace.html">Laplace</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_laplace.html#laplace-approximation">Laplace Approximation</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_likelihood.html">Likelihood</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#switch-the-log-likelihood-function">Switch the log-likelihood function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_likelihood.html#module-likelihood">Inference-related functions</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_mcmc.html">MCMC</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#markov-chain-monte-carlo">Markov chain Monte Carlo</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Setup and Run MCMC</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_mcmc.html#module-mcmc">Analyze MCMC samples</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="code_smd.html">SMD</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#work-with-smd-data">Work with SMD data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.add">Add BIASD results to an SMD object</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#module-smd.read">Read BIASD results from an SMD object into a useful format</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_smd.html#examples">Examples</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="code_distributions.html">Distributions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_laplace.html">Laplace</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_likelihood.html">Likelihood</a></li>
+<li class="toctree-l1"><a class="reference internal" href="code_mcmc.html">MCMC</a></li>
 </ul>
 
-          
-        
+        </div>
       </div>
-      &nbsp;
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">BIASD</a>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BIASD</a>
       </nav>
 
-
-      
       <div class="wy-nav-content">
         <div class="rst-content">
-          <div role="navigation" aria-label="breadcrumbs navigation">
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>Compiling the Likelihood</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Compiling the Likelihood</li>
       <li class="wy-breadcrumbs-aside">
-        
-          <a href="_sources/compileguide.rst.txt" rel="nofollow"> View page source</a>
-        
+            <a href="_sources/compileguide.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
 </div>
-          <div role="main" class="document">
-            
-  <div class="section" id="compiling-the-likelihood">
-<span id="compileguide"></span><h1>Compiling the Likelihood<a class="headerlink" href="#compiling-the-likelihood" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="background">
-<h2>Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="compiling-the-likelihood">
+<span id="compileguide"></span><h1>Compiling the Likelihood<a class="headerlink" href="#compiling-the-likelihood" title="Link to this heading">¶</a></h1>
+<section id="background">
+<h2>Background<a class="headerlink" href="#background" title="Link to this heading">¶</a></h2>
 <p>The BIASD log-likelihood function is something like</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[ln(\mathcal{L}) \sim \sum\limits_t ln \left( \delta(f) + \delta(1-f) + \int\limits_0^1 df \cdot \rm{blurring} \right)\]</div>
-<p>Unfortunately, the integral in the logarithm makes it difficult to compute. It is the rate limiting step for this calculation, which is quite slow in Python. Therefore, this package comes with the log-likelihood function written in  C, and also in CUDA. There are three versions in the <code class="docutils literal"><span class="pre">./biasd/src</span></code> directory. One is in pure C &#8211; it should be fairly straight forward to compile. The second is written in C with the <a class="reference external" href="https://www.gnu.org/software/gsl/">GNU Science Library (GSL)</a> &#8211; it&#8217;s slightly faster, but requires having installed GSL. The third is in CUDA, which allows the calculations to be performed on NVIDIA GPUs. You can use any of the above if compiled, or a version written in Python if you don&#8217;t want to compile anything.</p>
-</div>
-<div class="section" id="how-to-compile">
-<h2>How to Compile<a class="headerlink" href="#how-to-compile" title="Permalink to this headline">¶</a></h2>
-<p>There&#8217;s a Makefile included in the package that will allow you to easily compile all of the libraries necessary to calculate BIASD likelihoods. First, to download GSL, go to their <a class="reference external" href="ftp://ftp.gnu.org/gnu/gsl/">FTP site</a> and download the latest version. Un-pack it, then in the terminal, navigate to the directory using <code class="docutils literal"><span class="pre">cd</span></code> and type</p>
-<div class="highlight-bash"><div class="highlight"><pre>./configure
-make
-make install
+<p>Unfortunately, the integral in the logarithm makes it difficult to compute. It is the rate limiting step for this calculation. Therefore, this package comes with the log-likelihood function written in python, JIT-compiled python, C, and also in CUDA. There are four versions in the <code class="docutils literal notranslate"><span class="pre">./biasd/likelihood</span></code> directory. You can use any of the above if compiled, or a version written in Python if you don’t want to compile anything.</p>
+</section>
+<section id="how-to-compile">
+<h2>How to Compile<a class="headerlink" href="#how-to-compile" title="Link to this heading">¶</a></h2>
+<p>There’s a Makefile included in the package that will allow you to easily compile all of the libraries necessary to calculate BIASD likelihoods. In the terminal, move to the <code class="docutils literal notranslate"><span class="pre">./biasd/likelihood</span></code> directory using <code class="docutils literal notranslate"><span class="pre">cd</span></code>, and make them with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make
 </pre></div>
 </div>
-<p>Now, even if you didn&#8217;t install GSL, you can compile the BIASD likelihood functions. In the terminal, move to the BIASD directory using <code class="docutils literal"><span class="pre">cd</span></code>, and make them with</p>
-<div class="highlight-bash"><div class="highlight"><pre>make
-</pre></div>
-</div>
-<p>Some might fail, for instance if you don&#8217;t have a CUDA-enabled GPU, but you&#8217;ll compile as many as possible into the <code class="docutils literal"><span class="pre">./biasd/lib</span></code> directory.</p>
-</div>
-<div class="section" id="testing-speed">
-<h2>Testing Speed<a class="headerlink" href="#testing-speed" title="Permalink to this headline">¶</a></h2>
+<p>Some might fail, for instance if you don’t have a CUDA-enabled GPU, but you’ll compile as many as possible into the <code class="docutils literal notranslate"><span class="pre">./biasd/likelihood</span></code> directory.</p>
+</section>
+<section id="testing-speed">
+<h2>Testing Speed<a class="headerlink" href="#testing-speed" title="Link to this heading">¶</a></h2>
 <p>To get a feeling for how long it takes the various versions of the BIASD likelihood function to execute, you can use the test function in the likelihood module. For instance, try</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">biasd</span> <span class="kn">as</span> <span class="nn">b</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">biasd</span> <span class="k">as</span> <span class="nn">b</span>
 
-<span class="c"># Switch to the Python version</span>
+<span class="c1"># Switch to the Python version</span>
 <span class="n">b</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">use_python_ll</span><span class="p">()</span>
 
-<span class="c"># Run the test 10 times, for 5000 datapoints</span>
+<span class="c1"># Run the test 10 times, for 5000 datapoints</span>
 <span class="n">b</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">test_speed</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5000</span><span class="p">)</span>
 
-<span class="c"># Switch to the C version and test</span>
-<span class="c"># Note: will default to GSL over pure C</span>
+<span class="c1"># Switch to the C version and test</span>
 <span class="n">b</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">use_C_ll</span><span class="p">()</span>
 <span class="n">b</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">test_speed</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5000</span><span class="p">)</span>
 
-<span class="c"># Switch to the CUDA version and test</span>
+<span class="c1"># Switch to the CUDA version and test</span>
 <span class="n">b</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">use_CUDA_ll</span><span class="p">()</span>
 <span class="n">b</span><span class="o">.</span><span class="n">likelihood</span><span class="o">.</span><span class="n">test_speed</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5000</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The actual execution time depends upon the rate constants, but Python is ~ 1 ms, C with GSL is around ~ 50 us, and CUDA (when you have many datapoints) is ~ 1 us.</p>
-</div>
-</div>
+<p>The actual execution time depends upon the rate constants.</p>
+</section>
+</section>
 
 
+           </div>
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="examples.html" class="btn btn-neutral float-right" title="BIASD Examples">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="getstarted.html" class="btn btn-neutral" title="Getting Started"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="getstarted.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="examples.html" class="btn btn-neutral float-right" title="BIASD Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &copy; Copyright 2013-2017, Colin Kinz-Thompson.
-    </p>
+    <p>&#169; Copyright 2013-2017, Colin Kinz-Thompson.</p>
   </div>
 
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
-  
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'0.1.1',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-  
-
-  
-  
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-  
-
-  
-  
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>
