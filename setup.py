@@ -4,6 +4,7 @@ import re
 import subprocess
 from setuptools import setup, find_packages
 from setuptools.command.install import install
+from setuptools.command.develop import develop
 
 def read(*parts):
 	"""
@@ -29,11 +30,24 @@ def find_meta(meta):
 
 class CustomInstallCommand(install):
 	def run(self):
+		print("Running CustomInstallCommand")
 		# Change the working directory and run the make command
 		make_dir = os.path.join(os.getcwd(), 'biasd/likelihood')
+		print(f"Changing directory to: {make_dir}")
 		subprocess.check_call(['make'], cwd=make_dir)
 		# Proceed with the normal installation
 		install.run(self)
+
+class CustomDevelopCommand(develop):
+	def run(self):
+		print("Running CustomDevelopCommand")
+		# Change the working directory and run the make command
+		make_dir = os.path.join(os.getcwd(), 'biasd/likelihood')
+		print(f"Changing directory to: {make_dir}")
+		subprocess.check_call(['make'], cwd=make_dir)
+		# Proceed with the normal develop installation
+		develop.run(self)
+
 
 setup(
 	name='biasd',
@@ -66,5 +80,6 @@ setup(
 	},
 	cmdclass={
 		'install': CustomInstallCommand,
+		'develop': CustomDevelopCommand,
 	},
 )
