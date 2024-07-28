@@ -45,6 +45,11 @@ setup(
 	version=find_meta("version"),
 	author=find_meta("author"),
 	packages=find_packages(),
+	include_package_data=True,
+	package_data={
+		# Include all .so files in the biasd/likelihood directory
+		'biasd.likelihood': ['*.so'],
+	},
 	install_requires=[
 		'numpy>=1.26,<2.0.0',
 		'numba>=0.59',
