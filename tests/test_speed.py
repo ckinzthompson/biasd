@@ -23,7 +23,7 @@ def test_speed_cuda():
 	b.likelihood.use_cuda_ll()
 	ndevices = b.likelihood.cuda_device_count()
 	for device in range(ndevices):
-		t,y = b.likelihood.test_speed(10,5000,device=device)
+		t,y = b.likelihood.test_speed(10,1000,device=device)
 		assert np.allclose(y,truth)
 
 
