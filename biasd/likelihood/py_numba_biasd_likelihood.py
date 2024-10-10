@@ -183,3 +183,13 @@ def nosum_log_likelihood_numba(theta,data,tau,device=None):
 	ep1,ep2,sigma1,k1,k2 = theta
 	sigma2 = sigma1
 	return _log_likelihood(data,ep1,ep2,sigma1,sigma2,k1,k2,tau,epsilon)
+
+def log_likelihood_numba_2sigma(theta,data,tau,device=None):
+	epsilon=1e-16
+	ep1,ep2,sigma1,sigma2,k1,k2 = theta
+	return np.nansum(_log_likelihood(data,ep1,ep2,sigma1,sigma2,k1,k2,tau,epsilon))
+
+def nosum_log_likelihood_numba_2sigma(theta,data,tau,device=None):
+	epsilon=1e-16
+	ep1,ep2,sigma1,sigma2,k1,k2 = theta
+	return _log_likelihood(data,ep1,ep2,sigma1,sigma2,k1,k2,tau,epsilon)

@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import corner
 
-from .likelihood import nosum_log_likelihood
-from .mcmc import get_samples
+from . import likelihood
+from . import mcmc
 
 def trace_likelihood(theta,tau,nsamples=1000,range=None):
 	if range is None:
@@ -14,7 +14,7 @@ def trace_likelihood(theta,tau,nsamples=1000,range=None):
 		xmax = range[1]
 
 	x = np.linspace(xmin,xmax,nsamples)
-	y = np.exp(nosum_log_likelihood(theta,x,tau))
+	y = np.exp(likelihood.nosum_log_likelihood(theta,x,tau))
 	return x,y
 
 def _sample_hist(data,tau,theta,samples=None,nbins=101,range=None,nsamples=100):
@@ -39,7 +39,7 @@ def _sample_hist(data,tau,theta,samples=None,nbins=101,range=None,nsamples=100):
 		x,m = trace_likelihood(theta,tau)
 
 	fig,ax = plt.subplots(1)
-	ax.hist(data,bins=nbins,range=(xmin,xmax),density=True,alpha=.8,histtype='step',color='tab:blue')
+	ax.hist(data.flatten(),bins=nbins,range=(xmin,xmax),density=True,alpha=.8,histtype='step',color='tab:blue')
 	if not samples is None:
 		ax.fill_between(x,l,h,color='tab:orange',alpha=.6)
 	ax.plot(x,m,color='tab:orange',alpha=.8)
@@ -64,7 +64,7 @@ def laplace_hist(data,tau,posterior,nbins=101,range=None,nsamples=100):
 	return fig,ax
 
 def mcmc_hist(data,tau,sampler,nbins=101,range=None,nsamples=100):
-	samples = get_samples(sampler,uncorrelated=True)
+	samples = mcmc.get_samples(sampler,uncorrelated=True)
 	theta = samples.mean(0)
 	fig,ax = _sample_hist(data,tau,theta,samples,nbins,range,nsamples)
 	return fig,ax
@@ -78,7 +78,7 @@ def mcmc_corner(sampler):
 	Returns:
 		* `fig` which is the handle to the figure containing the corner plot
 	"""
-	samples = get_samples(sampler,uncorrelated=True,verbose=False)
+	samples = mcmc.get_samples(sampler,uncorrelated=True,verbose=False)
 	samples[:,2:] = np.log10(samples[:,2:])
 	labels = [r'$\epsilon_1$', r'$\epsilon_2$', r'$\log_{10}\left(\sigma\right)$', r'$\log_{10}\left(k_1\right)$', r'$\log_{10}\left(k_2\right)$']
 	fig = corner.corner(samples, labels=labels,quantiles=[.025,.50,.975],show_titles=True,)#,levels=(1-np.exp(-0.5),))

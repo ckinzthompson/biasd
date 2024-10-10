@@ -6,8 +6,8 @@
 
 import numpy as np
 from scipy.optimize import minimize
-from biasd.likelihood import log_posterior
-from biasd.distributions import parameter_collection,normal,convert_distribution
+from .likelihood import log_posterior
+from .distributions import parameter_collection,normal,convert_distribution
 
 deftol = 10*np.sqrt(np.finfo(np.float64).eps)
 
@@ -171,7 +171,7 @@ def laplace_approximation(data,prior,tau,guess = None, nrestarts=1,verbose=False
 		* a `biasd.laplace._laplace_posterior` object, which has a `.mu` with the means, a `.covar` with the covariances, and a `.posterior` which is a marginalized `biasd.distributions.parameter_collection` of normal distributions.
 	'''
 
-	print('Laplace Approximation')
+	if verbose:	print('Laplace Approximation')
 
 	#Calculate the best MAP estimate
 	import time
@@ -180,6 +180,7 @@ def laplace_approximation(data,prior,tau,guess = None, nrestarts=1,verbose=False
 	t1 = time.time()
 	if verbose:
 		print(f"MAP: {t1-t0} s")
+	print(mapx,success)
 
 	#Calculate the Hessian at MAP estimate
 	if success:
