@@ -32,7 +32,8 @@ pytest
 ```
 
 ## Updates
-* Version 0.2.1 (October 2024): Bug fixes likelihood switches, adds titration
+* Version 0.2.2 (October 2024): Adds speciality modes, updates prior collections.
+* Version 0.2.1 (October 2024): Bug fixes likelihood switches, adds titration.
 * Version 0.2 (July 2024): Updates fix broken libraries and improve clarity.
 * Version 0.1 (2017): Original used in paper
 
