@@ -7,8 +7,8 @@ import os
 
 fdir = os.path.dirname(os.path.abspath(__file__))
 
-def test_mcmc():
-	b.likelihood.use_python_ll()
+def test_mcmc_2sigma():
+	b.likelihood.use_python_numba_ll_2sigma()
 
 	## Simulate data
 	import simulate_singlemolecules as ssm
@@ -18,10 +18,11 @@ def test_mcmc():
 	## Setup prior
 	e1 = b.distributions.normal(0.,.01)
 	e2 = b.distributions.normal(1.,.01)
-	sigma = b.distributions.loguniform(.01,.1)
+	sigma1 = b.distributions.loguniform(.01,.1)
+	sigma2 = b.distributions.loguniform(.01,.1)
 	k12 = b.distributions.loguniform(1.,30.)
 	k21 = b.distributions.loguniform(1.,30.)
-	prior = b.distributions.collection_standard_1sigma(e1,e2,sigma,k12,k21)
+	prior = b.distributions.collection_standard_2sigma(e1,e2,sigma1,sigma2,k12,k21)
 
 	## Setup the MCMC sampler to use 100 walkers and 2 CPUs
 	nwalkers = 20
@@ -37,20 +38,20 @@ def test_mcmc():
 
 	## Show Histogram + likelihood
 	fig,ax = b.plot.mcmc_hist(data,tau,sampler)
-	fig.savefig(os.path.join(fdir,'fig_mcmc.png'))
+	fig.savefig(os.path.join(fdir,'fig_mcmc_2sigma.png'))
 	plt.close()
 
 	## Show Corner
 	fig = b.plot.mcmc_corner(sampler)
-	fig.savefig(os.path.join(fdir,'fig_corner.png'))
+	fig.savefig(os.path.join(fdir,'fig_corner_2sigma.png'))
 	plt.close()
 
 	## Check stats
 	mu,std = b.mcmc.get_stats(sampler)
-	truth = np.array((0.,1.,.05,3.,8.))
+	truth = np.array((0.,1.,.05,.05,3.,8.))
 	delta = np.abs(mu-truth)
-	target = np.array((.1,.1,.02,2.,2.))
+	target = np.array((.1,.1,.02,.02,2.,2.))
 	assert np.all(delta < target)
 
 if __name__ == '__main__':
-	test_mcmc()
+	test_mcmc_2sigma()

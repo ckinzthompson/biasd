@@ -40,7 +40,7 @@ def test_temperature():
 		temp = temperatures[i]
 		rates = np.array(((0.,k1[i]),(k2[i],0.)))
 		data = ssm.simulate_ensemble(rates,emissions,noise,nframes,tau,nmol)
-		datasets.append(data)
+		datasets.append(data.flatten())
 	# 	plt.hist(data.flatten(),bins=201,range=(0,1),density=True,alpha=.3)
 	# plt.show()
 
@@ -52,27 +52,21 @@ def test_temperature():
 	p_ep2 = b.distributions.normal(ep2,.01)
 	p_sigma = b.distributions.loguniform(noise/2.,2.*noise)
 
-	## The following two priors are not used but included for the completeness of the
-	## parameter collection used in normal BIASD. They do not appear in the calculations here though
-	p_k1 = b.distributions.uniform(0., 1.)
-	p_k2 = b.distributions.uniform(0., 1.)
-
-	## Instead we use these... Units are joules/mol, joules/mol/K
+	## Units are joules/mol, joules/mol/K
 	p_H1 = b.distributions.uniform(-500000., 500000.)
 	p_S1 = b.distributions.uniform(-1000., 1000.)
 	p_H2 = b.distributions.uniform(-500000., 500000.)
 	p_S2 = b.distributions.uniform(-1000., 1000.)
 
-	priors = b.distributions.parameter_collection(p_ep1,p_ep2,p_sigma,p_k1,p_k2)
-	E_priors = [p_H1, p_S1, p_H2, p_S2]
+	priors = b.temperature.collection_temperature(p_ep1,p_ep2,p_sigma,p_H1, p_S1, p_H2, p_S2)
 
 	######## Temperature MCMC
 	#### Note: The samples are in SI units.
 	#### Setup with twice as many
 	nwalkers = 100
 	nsteps = 100
-	sampler, initial_positions = b.temperature.setup(datasets, temperatures, priors, E_priors, tau, nwalkers)
-	sampler = b.temperature.run(sampler, initial_positions, nsteps, progress=True)
+	sampler, initial_positions = b.temperature.setup(datasets, temperatures, priors, tau, nwalkers)
+	sampler = b.mcmc.run(sampler, initial_positions, nsteps, progress=True)
 
 	## Selecting the best half of the walkers to remove issues with initialisations
 	last = sampler.get_last_sample()
@@ -81,19 +75,19 @@ def test_temperature():
 
 	#### Setting up the MCMC run with the better initialisations
 	nwalkers = nwalkers // 2 
-	sampler, _ = b.temperature.setup(datasets, temperatures, priors, E_priors, tau, nwalkers,)
+	sampler, _ = b.temperature.setup(datasets, temperatures, priors, tau, nwalkers,)
 
 	## Burn in for the production run
 	nburn = 500
-	sampler, burned_positions = b.temperature.burn_in(sampler, better_positions, nburn, progress=True)
+	sampler, burned_positions = b.mcmc.burn_in(sampler, better_positions, nburn, progress=True)
 
 	## Production run
 	nprod = 2000
-	sampler = b.temperature.run(sampler, burned_positions, nprod, progress=True)
+	sampler = b.mcmc.run(sampler, burned_positions, nprod, progress=True)
 
 	## Make Corner plot
-	b.temperature.chain_statistics(sampler)
-	samples = b.temperature.get_samples(sampler, uncorrelated=True, verbose=False)
+	b.mcmc.chain_statistics(sampler)
+	samples = b.mcmc.get_samples(sampler, uncorrelated=True, verbose=False)
 	samples[:,3:] /= 4184. ## convert from joules to kcal
 	fig = corner.corner(samples)
 	fig.savefig(os.path.join(fdir,'fig_temperature.png'))
