@@ -7,7 +7,7 @@
 import numpy as np
 from scipy.optimize import minimize
 from .likelihood import log_posterior
-from .distributions import parameter_collection,normal,convert_distribution
+from . import distributions
 
 deftol = 10*np.sqrt(np.finfo(np.float64).eps)
 
@@ -99,14 +99,17 @@ class _laplace_posterior:
 	def __init__(self,mean,covar,prior=None):
 		self.mu = mean
 		self.covar = covar
-		self.posterior = parameter_collection(*[normal(m,s) for m,s in zip(self.mu,self.covar.diagonal()**.5)])
+		if mean.size == 5:
+			parameter_collection = distributions.collection_standard_1sigma
+		elif mean.size == 6:
+			parameter_collection = distributions.collection_standard_2sigma
+		else:
+			raise Exception('Not implemented')
+		self.posterior = parameter_collection(*[distributions.normal(m,s) for m,s in zip(self.mu,self.covar.diagonal()**.5)])
 
 	def transform(self,prior):
-		self.posterior.e1 = convert_distribution(self.posterior.e1,prior.e1.name)
-		self.posterior.e2 = convert_distribution(self.posterior.e2,prior.e2.name)
-		self.posterior.sigma = convert_distribution(self.posterior.sigma,prior.sigma.name)
-		self.posterior.k1 = convert_distribution(self.posterior.k1,prior.k1.name)
-		self.posterior.k2 = convert_distribution(self.posterior.k2,prior.k2.name)
+		for label in self.posterior.labels:
+			self.posterior.parameters[label] = distributions.convert_distribution(self.posterior[label],prior[label].name)
 
 	def samples(self,n):
 		return np.random.multivariate_normal(self.mu,self.covar,n)

@@ -608,8 +608,67 @@ def convert_distribution(this,to_this_type_string):
 	params = to_this_type._moment2param_fxn(this.mean(), this.variance()+this.mean()**2.)
 	
 	return to_this_type(*params)
+
+class collection(object):
+	def __init__(self, **kwargs):
+		self.parameters = {}
+		for key, value in kwargs.items():
+			setattr(self, key, value)
+			self.parameters[key] = value
+		self.labels = list(self.parameters.keys())
+		self.num = len(self.labels)
+		self.okay = self.check_dists()
+
+	def check_dists(self):
+		self.okay = True
+		for i in range(self.num):
+			label = self.labels[i]
+			pd = self.parameters[label]
+			if isinstance(pd,_distribution):
+				if not pd.okay:
+					self.okay = False
+					raise ValueError(f'The prior for {label} is malformed. Check the parameter values.')
+			else:
+				self.okay = False
+				raise ValueError(f'The prior for {label} is not a _distribution.')
+
+	def rvs(self,n=1):
+		if self.okay:
+			rout = np.zeros((self.num,n))
+			for i in range(self.num):
+				label = self.labels[i]
+				pd = self.parameters[label]
+				rout[i] = pd.rvs(n)
+			return rout
+		else:
+			print('Distributions are not OK!')
+			for label in self.labels:
+				print(label,self.parameters[label].okay)
+			raise Exception('Failed')
+
 	
-class parameter_collection(object):
+	def lnpdf(self,theta):
+		lnp = 0
+		for i in range(self.num):
+			label = self.labels[i]
+			lnp += self.parameters[label].lnpdf(theta[i])
+		return lnp
+		
+	def mean(self):
+		return np.array([p.mean() for p in self.parameters])
+		
+	def mode(self):
+		return np.array([p.mode() for p in self.parameters])
+	
+	def variance(self):
+		return np.array([p.variance() for p in self.parameters])
+		
+	def format(self):
+		names = [self.parameters[label].name for label in self.labels]
+		params = [self.parameters[label].parameters.tolist() for label in self.labels]
+		return names,params
+
+class collection_standard_1sigma(collection):
 	"""
 	A collection of distribution functions that are used for the BIASD two-state model as parameters for Bayesian inference. parameter_collection's are used as priors for BIASD.
 	
@@ -619,189 +678,33 @@ class parameter_collection(object):
 		* sigma is the probability distribution for :math:`\\sigma`
 		* k1 is the probability distribution for :math:`k_1`
 		* k2 is the probability distribution for :math:`k_2`
-	
-	
 	"""
 	
 	def __init__(self,e1,e2,sigma,k1,k2):
-		self.e1 = e1
-		self.e2 = e2
-		self.sigma = sigma
-		self.k1 = k1
-		self.k2 = k2
-		self.labels = [r'$\epsilon_1$', r'$\epsilon_2$', r'$\sigma$', r'$k_1$', r'$k_2$']
-		
-		self.okay = self.check_dists()
-	
-	def check_dists(self):
-		self.okay = True
-		for d,dname in zip([self.e1,self.e2,self.sigma,self.k1,self.k2], ('e1','e2','sigma','k1','k2')):
-			if isinstance(d,_distribution):
-				if not d.okay:
-					self.okay = False
-					raise ValueError('The prior for '+dname+' is malformed. Check the parameters values.')
-			else:
-				self.okay = False
-				raise ValueError('The prior for '+dname+' is not a _distribution.')
-		
-	def rvs(self,n=1):
-		# if self.okay and isinstance(n,int):
-			rout = np.zeros((5,n))
-			rout[0] = self.e1.rvs(n)
-			rout[1] = self.e2.rvs(n)
-			rout[2] = self.sigma.rvs(n)
-			rout[3] = self.k1.rvs(n)
-			rout[4] = self.k2.rvs(n)
-			return rout
-	
-	def lnpdf(self,theta):
-		e1,e2,sigma,k1,k2 = theta
-		# if self.okay:
-		return self.e1.lnpdf(e1) + self.e2.lnpdf(e2) + self.sigma.lnpdf(sigma) + self.k1.lnpdf(k1) + self.k2.lnpdf(k2)
-		
-	def mean(self):
-		return np.array((self.e1.mean(),self.e2.mean(),self.sigma.mean(),self.k1.mean(),self.k2.mean()))
-		
-	def mode(self):
-		return np.array((self.e1.mode(),self.e2.mode(),self.sigma.mode(),self.k1.mode(),self.k2.mode()))
-	def variance(self):
-		return np.array((self.e1.variance(),self.e2.variance(),self.sigma.variance(),self.k1.variance(),self.k2.variance()))
-		
-	def format(self):
-		names = [d.name for d in [self.e1,self.e2,self.sigma,self.k1,self.k2]]
-		params = [d.parameters.tolist() for d in [self.e1,self.e2,self.sigma,self.k1,self.k2]]
-		return names,params
-	#
-	# @staticmethod
-	# def new_from_smd(names,parameters):
-	# 	dist_dict = {'beta':beta, 'dirichlet':dirichlet, 'empty':empty,'gamma':gamma, 'normal':normal, 'uniform':uniform}
-	# 	p = [dist_dict[name](*params) for name,params in zip(names,parameters)]
-	# 	return parameter_collection(*p)
-		
-class empty_parameter_collection(parameter_collection):
-	'''A fake collection of distribution functions for facilitating use of BIASD without any priors.'''
-	def __init__(self):
-		super(empty_parameter_collection,self).__init__(*[empty() for _ in range(5)])
-		self.okay = True
-		
-	# Overload to separate e1 and e2 s.t. e1 < e2....
-	def rvs(self,n=1):
-		# if self.okay and isinstance(n,int):
-			rout = np.zeros((5,n))
-			rout[0] = self.e1.rvs(n) - 1.
-			rout[1] = self.e2.rvs(n) + 1.
-			rout[2] = self.sigma.rvs(n)
-			rout[3] = self.k1.rvs(n)
-			rout[4] = self.k2.rvs(n)
-			return rout
-	def lnpdf(self,theta):
-		if theta.ndim == 1:
-			return 0.
-		else:
-			return np.zeros((theta.shape[1]))
+		super().__init__(e1=e1, e2=e2, sigma=sigma, k1=k1, k2=k2)
+		self.fancy_labels = [r'$\epsilon_1$', r'$\epsilon_2$', r'$\sigma$', r'$k_1$', r'$k_2$']
+		self.check_dists()
 
-class viewer(object):
+class collection_standard_2sigma(collection):
 	"""
-	Allows you to view BIASD parameter probability distributions
+	A collection of distribution functions that are used for the BIASD two-state model as parameters for Bayesian inference. parameter_collection's are used as priors for BIASD.
 	
 	Input:
-		* parameter_collection is a biasd.distributions.parameter_collection
-
-	Example:
-	
-	.. code-block:: python
-	
-		from biasd import distributions as bd
-		
-		# Make the parameter_collection
-		e1 = bd.normal(5.,1.)
-		e2 = bd.beta(95.,5.)
-		sigma = bd.gamma(5.,100.)
-		k1 = bd.gamma(1.,1.)
-		k2 = bd.uniform(-1,1.)
-		d = bd.parameter_collection(e1,e2,sigma,k1,k2)
-	
-		# Start the viewer
-		v = bd.viewer(d)
+		* e1 is the probability distribution for :math:`\\epsilon_1`
+		* e2 is the probability distribution for :math:`\\epsilon_2`
+		* sigma1 is the probability distribution for :math:`\\sigma_1`
+		* sigma2 is the probability distribution for :math:`\\sigma_2`
+		* k1 is the probability distribution for :math:`k_1`
+		* k2 is the probability distribution for :math:`k_2`
 	"""
-	import matplotlib.pyplot as plt
 	
-	class mpl_button(object):
-		from matplotlib.widgets import Button
-		
-		def __init__(self,identity,name,x_loc,y_loc,viewer):
-			self.height = .1
-			self.width = .2
-			self.ax = viewer.plt.axes([x_loc,y_loc,self.width,self.height])
-			self.identity = identity
-			self.name = name
-			self.button = self.Button(self.ax,name)
-			self.viewer = viewer
-			self.button.on_clicked(self.clicked)
-		def clicked(self,event):
-			if self.identity != self.viewer.selected:
-				self.viewer.deselect()
-				self.viewer.select(self.identity)
+	def __init__(self,e1,e2,sigma1,sigma2,k1,k2):
+		super().__init__(e1=e1, e2=e2, sigma1=sigma1, sigma2=sigma2, k1=k1, k2=k2)
+		self.fancy_labels = [r'$\epsilon_1$', r'$\epsilon_2$', r'$\sigma_1$', r'$\sigma_2$', r'$k_1$', r'$k_2$']
+		self.check_dists()
 
-	def __init__(self,data):
-		if not isinstance(data,parameter_collection):
-			raise ValueError('This is not a valid parameter collection')
-		else:
-			self.data = data
-			self.f = viewer.plt.figure("Parameter Probability Distribution Function Viewer", 				figsize=(8,6))
-			
-			self.e1 = self.mpl_button("e1",r"$\varepsilon_1$",0.0,0.9,self)
-			self.e2 = self.mpl_button("e2",r"$\varepsilon_2$",0.2,0.9,self)
-			self.sigma = self.mpl_button("sigma",r"$\sigma$",0.4,0.9,self)
-			self.k1 = self.mpl_button("k1",r"$k_1$",0.6,0.9,self)
-			self.k2 = self.mpl_button("k2",r"$k_2$",0.8,0.9,self)
-			
-			self.colors = dict(list(zip(['e1','e2','sigma','k1','k2'], 				['purple','yellow','green','cyan','orange'])))
-			self.xlabels = dict(list(zip(['e1','e2','sigma','k1','k2'], 				['Signal','Signal','Signal Noise',r'Rate Constant (s$^{-1}$)',r'Rate Constant (s$^{-1}$)'])))
-			
-			self.ax = viewer.plt.axes([.1,.1,.8,.7])
-			self.ax.set_yticks((),())
-			self.ax.set_ylabel('Probability',fontsize=18,labelpad=15)
-			self.line = self.ax.plot((0,0),(0,0),color=self.colors['e1'],lw=1.5)[0]
-			self.fill = self.ax.fill_between((0,0),(0,0),color='white')
-			self.select("e1")
-			viewer.plt.show()
-			
-	def deselect(self):
-		self.__dict__[self.selected].ax.set_axis_bgcolor('lightgrey')
-		viewer.plt.draw()
-		self.selected = None
 
-	def select(self,identity):
-		self.__dict__[identity].ax.set_axis_bgcolor('lightblue')
-		self.selected = identity
-		self.update_plot()
-		
-	def update_plot(self):
-		dist = self.data.__dict__[self.selected]
-		distx = dist.get_ranged_x(1001)
-		disty = dist.pdf(distx)
-		
-		self.line.set_xdata(distx)
-		self.line.set_ydata(disty)
-		self.line.set_color('k')
-		# self.line.set_color(self.colors[self.selected])
-		
-		for collection in (self.ax.collections):
-			self.ax.collections.remove(collection)
-		self.ax.fill_between(distx,disty,color=self.colors[self.selected], 			alpha=0.75)
-		
-		if isinstance(dist,beta):
-			self.ax.set_xlim(0,1)
-		elif isinstance(dist,gamma):
-			self.ax.set_xlim(0,distx[-1])
-		else:
-			self.ax.set_xlim(distx[0],distx[-1])
-		self.ax.set_ylim(0.,disty.max()*1.2)
-		self.ax.set_xlabel(self.xlabels[self.selected],fontsize=18)
-		self.ax.set_title(dist.label_parameters[0]+": "+str(dist.parameters[0])+", "+dist.label_parameters[1]+": "+str(dist.parameters[1])+r", $E[x] = $"+str(dist.mean()))
-		self.f.canvas.draw_idle()
-		
+## defaults
 def uninformative_prior(data_range,timescale):
 	"""
 	Generate an uninformative prior probability distribution for BIASD.
@@ -819,9 +722,7 @@ def uninformative_prior(data_range,timescale):
 	sigma = gamma(1,1./((upper-lower)/10.))
 	k1 = gamma(1.,timescale)
 	k2 = gamma(1.,timescale)
-	return parameter_collection(e1,e2,sigma,k1,k2)
-
-#### Guess Priors
+	return collection_standard_1sigma(e1,e2,sigma,k1,k2)
 
 def guess_prior(y,tau=1.):
 	"""
@@ -856,6 +757,6 @@ def guess_prior(y,tau=1.):
 	sigma = gamma(a,b)
 	k1 = gamma(a1,b1)
 	k2 = gamma(a2,b2)
-	return parameter_collection(e1,e2,sigma,k1,k2)
+	return collection_standard_1sigma(e1,e2,sigma,k1,k2)
 
 

@@ -9,8 +9,8 @@ import numpy as np
 import emcee
 import time
 
-from .likelihood import log_posterior
-from .distributions import parameter_collection
+from . import likelihood
+from . import distributions
 
 def setup(data, priors, tau, nwalkers, initialize='rvs', device=0):
 	"""
@@ -31,7 +31,7 @@ def setup(data, priors, tau, nwalkers, initialize='rvs', device=0):
 	"""
 
 
-	ndim = 5
+	ndim = priors.num
 
 	if isinstance(initialize,np.ndarray) and initialize.shape == (nwalkers,ndim):
 		initial_positions = initialize
@@ -49,7 +49,7 @@ def setup(data, priors, tau, nwalkers, initialize='rvs', device=0):
 			initial_positions[i,0] = initial_positions[i,1]
 			initial_positions[i,1] = temp
 
-	sampler = emcee.EnsembleSampler(nwalkers, ndim, log_posterior, args=[data,priors,tau,device])
+	sampler = emcee.EnsembleSampler(nwalkers, ndim, likelihood.log_posterior, args=[data,priors,tau,device])
 
 	return sampler,initial_positions
 
@@ -148,9 +148,10 @@ def get_stats(sampler):
 	std = ss.std(0)
 
 	print(f'No. Samples: {ss.shape[0]}')
-	labels = ['e1 ','e2 ','sig','k1 ','k2 ']
-	for i in range(len(labels)):
-		print(f"{labels[i]}: {mu[i]:.4f} +/- {std[i]:.4f}")
+	# labels = ['e1 ','e2 ','sig','k1 ','k2 ']
+	for i in range(mu.size):
+		# print(f"{labels[i]}: {mu[i]:.4f} +/- {std[i]:.4f}")
+		print(f"Parameter {i}: {mu[i]:.4f} +/- {std[i]:.4f}")
 	return mu,std
 
 def create_posterior_collection(samples,priors):
@@ -170,11 +171,19 @@ def create_posterior_collection(samples,priors):
 
 	e1 = priors.e1.new(np.around(priors.e1._moment2param_fxn(first[0], second[0]),4))
 	e2 = priors.e2.new(np.around(priors.e2._moment2param_fxn(first[1], second[1]),4))
-	sigma = priors.sigma.new(np.around(priors.sigma._moment2param_fxn(first[2], second[2]),4))
-	k1 = priors.k1.new(np.around(priors.k1._moment2param_fxn(first[3], second[3]),4))
-	k2 = priors.k2.new(np.around(priors.k2._moment2param_fxn(first[4], second[4]),4))
-
-	return parameter_collection(e1,e2,sigma,k1,k2)
+	if first.size == 5:
+		sigma = priors.sigma.new(np.around(priors.sigma._moment2param_fxn(first[2], second[2]),4))
+		k1 = priors.k1.new(np.around(priors.k1._moment2param_fxn(first[3], second[3]),4))
+		k2 = priors.k2.new(np.around(priors.k2._moment2param_fxn(first[4], second[4]),4))
+		return distributions.collection_standard_1sigma(e1,e2,sigma,k1,k2)
+	elif first.size==6:
+		sigma1 = priors.sigma.new(np.around(priors.sigma._moment2param_fxn(first[2], second[2]),4))
+		sigma2 = priors.sigma.new(np.around(priors.sigma._moment2param_fxn(first[3], second[3]),4))
+		k1 = priors.k1.new(np.around(priors.k1._moment2param_fxn(first[4], second[4]),4))
+		k2 = priors.k2.new(np.around(priors.k2._moment2param_fxn(first[5], second[5]),4))
+		return distributions.collection_standard_2sigma(e1,e2,sigma1,sigma2,k1,k2)
+	else:
+		raise Exception("Not Implemented")
 
 class mcmc_result(object):
 	"""

@@ -80,7 +80,10 @@ def mcmc_corner(sampler):
 	"""
 	samples = mcmc.get_samples(sampler,uncorrelated=True,verbose=False)
 	samples[:,2:] = np.log10(samples[:,2:])
-	labels = [r'$\epsilon_1$', r'$\epsilon_2$', r'$\log_{10}\left(\sigma\right)$', r'$\log_{10}\left(k_1\right)$', r'$\log_{10}\left(k_2\right)$']
+	if sampler.ndim == 5:
+		labels = [r'$\epsilon_1$', r'$\epsilon_2$', r'$\log_{10}\left(\sigma\right)$', r'$\log_{10}\left(k_1\right)$', r'$\log_{10}\left(k_2\right)$']
+	elif sampler.ndim == 6:
+		labels = [r'$\epsilon_1$', r'$\epsilon_2$', r'$\log_{10}\left(\sigma_1\right)$', r'$\log_{10}\left(\sigma_2\right)$', r'$\log_{10}\left(k_1\right)$', r'$\log_{10}\left(k_2\right)$']
 	fig = corner.corner(samples, labels=labels,quantiles=[.025,.50,.975],show_titles=True,)#,levels=(1-np.exp(-0.5),))
 	return fig
 
