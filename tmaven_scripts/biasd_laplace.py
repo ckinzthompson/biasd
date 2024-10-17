@@ -10,6 +10,7 @@ success,keep,y = maven.modeler.get_fret_traces()
 tau = maven.prefs['plot.time_dt']
 
 ## clip data
+print(len(y))
 data = np.concatenate([y[i] for i in range(len(y)) if keep[i]])
 dclip = .5
 keepclip = np.bitwise_and(data>-dclip,data<1.+dclip)
@@ -32,7 +33,7 @@ e2 = b.distributions.uniform(.5,1.5)
 sigma = b.distributions.loguniform(.01,.2)
 k12 = b.distributions.loguniform(1e-2/tau,1e2/tau)
 k21 = b.distributions.loguniform(1e-2/tau,1e2/tau)
-prior = b.distributions.parameter_collection(e1,e2,sigma,k12,k21)
+prior = b.distributions.collection_standard_1sigma(e1,e2,sigma,k12,k21)
 
 ## Laplace
 posterior = b.laplace.laplace_approximation(data,prior,tau,guess=guess,verbose=True,ensure=True)

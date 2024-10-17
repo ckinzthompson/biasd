@@ -32,7 +32,7 @@ e2 = b.distributions.uniform(.5,1)
 sigma = b.distributions.loguniform(.01,.1)
 k12 = b.distributions.loguniform(1e-2/tau,1e2/tau)
 k21 = b.distributions.loguniform(1e-2/tau,1e2/tau)
-prior = b.distributions.parameter_collection(e1,e2,sigma,k12,k21)
+prior = b.distributions.collection_standard_1sigma(e1,e2,sigma,k12,k21)
 
 
 
