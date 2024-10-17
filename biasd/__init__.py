@@ -14,6 +14,7 @@ from . import plot
 from . import temperature
 from . import titration
 from . import constantepsilon
+from . import constantepsilonsigma
 
 # from . import smd
 # try:

@@ -9,32 +9,31 @@ import numpy as np
 import emcee
 from . import likelihood,distributions
 
-class collection_constantepsilon(distributions.collection):	
+class collection_constantepsilonsigma(distributions.collection):	
 	'''
-	skk_list is [(sigma_1,k1_1,k2_1),(sigma_2,k1_2,k2_2),...]
+	kk_list is [(k1_1,k2_1),(k1_2,k2_2),...]
 	'''
-	def __init__(self, e1, e2, skk_list):
-		super().__init__(e1=e1, e2=e2)
+	def __init__(self, e1, e2, sigma, kk_list):
+		super().__init__(e1=e1, e2=e2, sigma=sigma)
 
-		nskk = len(skk_list)
-		for i in range(nskk):
-			labeli = [f'sigma_{i}',f'k1_{i}',f'k2_{i}']
-			for label,param in zip(labeli,skk_list[i]):
+		nkk = len(kk_list)
+		for i in range(nkk):
+			labeli = [f'k1_{i}',f'k2_{i}']
+			for label,param in zip(labeli,kk_list[i]):
 				setattr(self,label,param)
 				self.parameters[label] = param
 			self.labels += labeli
 			self.num = len(self.labels)
-		self.ndim = nskk
+		self.ndim = nkk
 		self.check_dists()
 
-def log_constantepsilon_posterior(theta, data, prior, tau, device=0):
+def log_constantepsilonsigma_posterior(theta, data, prior, tau, device=0):
 	"""
 	Calculate the global log-posterior probability distribution at :math:`\\Theta`
 	If using CUDA, you should have pre-loaded the data onto the GPU using `load_cuda`
 
 	Input:
 		* `theta` is a vector of the parameters (i.e., :math:`\\theta`) where to evaluate the log-posterior
-		  in the order: e1, e2, sigma1, sigma2, ka, kd. this assumes k12 from 1 to 2 is the concentration dependent rate constant
 		* `data` is a list of N 1D `np.ndarray`s of the time series at N temperature points to analyze
 		* `prior` is a `collect_constantepsilon`
 		* `tau` is the measurement period of `data`
@@ -47,7 +46,7 @@ def log_constantepsilon_posterior(theta, data, prior, tau, device=0):
 	if theta[0] > theta[1]:
 		return -np.inf
 
-	if ((theta.size-2)//3) != prior.ndim:
+	if ((theta.size-3)//2) != prior.ndim:
 		raise Exception('Malformed prior or theta')
 
 	lnprior = prior.lnpdf(theta)
@@ -58,7 +57,7 @@ def log_constantepsilon_posterior(theta, data, prior, tau, device=0):
 
 	y = lnprior
 	for i in range(prior.ndim):
-		params = np.concatenate((theta[:2],theta[2+3*i:2+3*(i+1)]))
+		params = np.concatenate((theta[:3],theta[3+2*i:3+2*(i+1)]))
 		y += likelihood.log_likelihood(params,data[i],tau,device=device)
 	
 	if np.isnan(y):
@@ -85,7 +84,7 @@ def setup(data, prior, tau, nwalkers, initialize='rvs', device=0):
 		* An `emcee` sampler object. Please see the `emcee` documentation for more information.
 	"""
 
-	ndim = prior.ndim*3+2		#corresponding to e1, e2, sigma1, sigma2, ka, kd
+	ndim = prior.ndim*2+3		#corresponding to e1, e2, sigma, {k1,k2}_i,...
 
 	if isinstance(initialize,np.ndarray) and initialize.shape == (nwalkers,ndim):
 		initial_positions = initialize
@@ -106,6 +105,6 @@ def setup(data, prior, tau, nwalkers, initialize='rvs', device=0):
 			initial_positions[i,0] = initial_positions[i,1]
 			initial_positions[i,1] = temp
 
-	sampler = emcee.EnsembleSampler(nwalkers, ndim, log_constantepsilon_posterior, args=[data,prior,tau,device])
+	sampler = emcee.EnsembleSampler(nwalkers, ndim, log_constantepsilonsigma_posterior, args=[data,prior,tau,device])
 
 	return sampler,initial_positions

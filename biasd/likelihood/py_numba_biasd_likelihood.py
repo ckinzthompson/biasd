@@ -88,8 +88,9 @@ def adaptive_integrate(a0,b0,epsilon,d,ep1,ep2,sig1,sig2,k1,k2,tau):
 	b = b0
 	out = np.array((0.,0.))
 
+	iters = 0
 	# // This loops from the bottom to the top, subdividing and trying again on the lower half, then moving up once converged to epsilon
-	while (a < b0):
+	while (a < b0 and iters < 10000):
 		# // Evaluate quadrature on current interval
 
 		# // Perform the quadrature
@@ -150,6 +151,8 @@ def adaptive_integrate(a0,b0,epsilon,d,ep1,ep2,sig1,sig2,k1,k2,tau):
 		else:
 			# // sub-divide the interval
 			b -= 0.5*(b-a)
+		
+		iters += 1
 
 	return out
 

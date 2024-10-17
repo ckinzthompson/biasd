@@ -655,13 +655,13 @@ class collection(object):
 		return lnp
 		
 	def mean(self):
-		return np.array([p.mean() for p in self.parameters])
+		return np.array([self.parameters[label].mean() for label in self.labels])
 		
 	def mode(self):
-		return np.array([p.mode() for p in self.parameters])
+		return np.array([self.parameters[label].mode() for label in self.labels])
 	
 	def variance(self):
-		return np.array([p.variance() for p in self.parameters])
+		return np.array([self.parameters[label].variance() for label in self.labels])
 		
 	def format(self):
 		names = [self.parameters[label].name for label in self.labels]
