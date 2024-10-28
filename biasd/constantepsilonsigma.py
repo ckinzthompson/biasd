@@ -66,7 +66,7 @@ def log_constantepsilonsigma_posterior(theta, data, prior, tau, device=0):
 		return y
 
 
-def setup(data, prior, tau, nwalkers, initialize='rvs', device=0):
+def setup(data, prior, tau, nwalkers, initialize='rvs', device=0, backend=None):
 	"""
 	Prepare the MCMC sampler
 
@@ -105,6 +105,6 @@ def setup(data, prior, tau, nwalkers, initialize='rvs', device=0):
 			initial_positions[i,0] = initial_positions[i,1]
 			initial_positions[i,1] = temp
 
-	sampler = emcee.EnsembleSampler(nwalkers, ndim, log_constantepsilonsigma_posterior, args=[data,prior,tau,device])
+	sampler = emcee.EnsembleSampler(nwalkers, ndim, log_constantepsilonsigma_posterior, args=[data,prior,tau,device],backend=backend)
 
 	return sampler,initial_positions
