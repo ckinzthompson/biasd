@@ -35,7 +35,7 @@ def fit_histogram(data,tau,guess=None,device=0):
 
 	def fxn(x,*args):
 		theta = np.array([ai for ai in args])
-		if theta[0] > theta[1] or theta[0]<-.1 or theta[1] > 1.1:
+		if theta[0] > theta[1]: #or theta[0]<-.1 or theta[1] > 1.1:
 			return np.inf+x
 		return np.exp(likelihood.nosum_log_likelihood(theta,x,tau,device=device))
 
