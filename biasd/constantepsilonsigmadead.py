@@ -9,12 +9,12 @@ import numpy as np
 import emcee
 from . import likelihood,distributions
 
-class collection_constantepsilonsigma(distributions.collection):	
+class collection_constantepsilonsigmadead(distributions.collection):	
 	'''
 	kk_list is [(k1_1,k2_1),(k1_2,k2_2),...]
 	'''
-	def __init__(self, e1, e2, sigma, kk_list):
-		super().__init__(e1=e1, e2=e2, sigma=sigma)
+	def __init__(self, e1, e2, sigma, f1dead, f2dead, kk_list):
+		super().__init__(e1=e1, e2=e2, sigma=sigma, f1dead=f1dead, f2dead=f2dead)
 
 		nkk = len(kk_list)
 		for i in range(nkk):
@@ -27,7 +27,7 @@ class collection_constantepsilonsigma(distributions.collection):
 		self.ndim = nkk
 		self.check_dists()
 
-def log_constantepsilonsigma_posterior(theta, data, prior, tau, device=0):
+def log_constantepsilonsigmadead_posterior(theta, data, prior, tau, device=0):
 	"""
 	Calculate the global log-posterior probability distribution at :math:`\\Theta`
 	If using CUDA, you should have pre-loaded the data onto the GPU using `load_cuda`
@@ -46,12 +46,14 @@ def log_constantepsilonsigma_posterior(theta, data, prior, tau, device=0):
 	if theta[0] > theta[1]:
 		return -np.inf
 
-	if ((theta.size-3)//2) != prior.ndim:
+	if ((theta.size-5)//2) != prior.ndim:
 		raise Exception('Malformed prior or theta')
 	
-	if np.any(theta[3:]*tau) < 1e-16: ## it's numerically zero (or negative!)
+	if np.any(theta[5:]*tau) < 1e-16: ## it's numerically zero (or negative!)
 		return -np.inf 
 
+	if theta[3]+theta[4] > .5 or theta[3] < 0 or theta[4] < 0:  ## fraction dead limitations
+		return -np.inf
 
 	lnprior = prior.lnpdf(theta)
 	if np.isnan(lnprior):
@@ -59,10 +61,17 @@ def log_constantepsilonsigma_posterior(theta, data, prior, tau, device=0):
 	elif not np.isfinite(lnprior):
 		return -np.inf
 
+	e1,e2,sigma,f1,f2 = theta[:5]
+	f3 = 1.-f1-f2
+
 	y = lnprior
 	for i in range(prior.ndim):
-		params = np.concatenate((theta[:3],theta[3+2*i:3+2*(i+1)]))
-		y += likelihood.log_likelihood(params,data[i],tau,device=device)
+		lny1 = -.5*np.log(2.*np.pi*sigma**2.) - .5/sigma/sigma*(data[i]-e1)**2.
+		lny2 = -.5*np.log(2.*np.pi*sigma**2.) - .5/sigma/sigma*(data[i]-e2)**2.
+		params = np.concatenate((theta[:3],theta[5+2*i:5+2*(i+1)]))
+		lny3 = likelihood.nosum_log_likelihood(params,data[i],tau,device=device)
+		yi = np.log(f3) + lny3 + np.log(f1/f3*np.exp(lny1-lny3)+f2/f3*np.exp(lny2-lny3)+1.)
+		y += np.nansum(yi)
 	
 	if np.isnan(y):
 		return -np.inf
@@ -88,7 +97,7 @@ def setup(data, prior, tau, nwalkers, initialize='rvs', device=0, backend=None):
 		* An `emcee` sampler object. Please see the `emcee` documentation for more information.
 	"""
 
-	ndim = prior.ndim*2+3		#corresponding to e1, e2, sigma, {k1,k2}_i,...
+	ndim = prior.ndim*2+5		#corresponding to e1, e2, sigma, f1dead, f2dead, {k1,k2}_i,...
 
 	if isinstance(initialize,np.ndarray) and initialize.shape == (nwalkers,ndim):
 		initial_positions = initialize
@@ -109,6 +118,6 @@ def setup(data, prior, tau, nwalkers, initialize='rvs', device=0, backend=None):
 			initial_positions[i,0] = initial_positions[i,1]
 			initial_positions[i,1] = temp
 
-	sampler = emcee.EnsembleSampler(nwalkers, ndim, log_constantepsilonsigma_posterior, args=[data,prior,tau,device],backend=backend)
+	sampler = emcee.EnsembleSampler(nwalkers, ndim, log_constantepsilonsigmadead_posterior, args=[data,prior,tau,device],backend=backend)
 
 	return sampler,initial_positions

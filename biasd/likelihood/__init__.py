@@ -131,12 +131,16 @@ def log_posterior(theta,data,prior_dists,tau,device=0):
 	Returns:
 		* The summed log posterior probability distribution, :math:`p(\\Theta \\vert data) \\propto p(data \\vert \\Theta) \cdot p(\\Theta)`
 	"""
+	# keep e1 < e2...
+	if np.any(np.isnan(data)) or theta[0] >= theta[1]:
+		return -np.inf
+	if np.any(theta[2:]*tau) < 1e-16: ## it's numerically zero (or negative!)
+		return -np.inf 
+
 	lprior = prior_dists.lnpdf(theta)
 	ll = log_likelihood(theta,data,tau,device=device)
 	y = lprior + ll
-
-	# keep e1 < e2...
-	if np.isnan(y) or theta[0] >= theta[1]:
+	if np.isnan(y):
 		return -np.inf
 	else:
 		return y

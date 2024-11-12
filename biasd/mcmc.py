@@ -12,7 +12,7 @@ import time
 from . import likelihood
 from . import distributions
 
-def setup(data, priors, tau, nwalkers, initialize='rvs', device=0):
+def setup(data, priors, tau, nwalkers, initialize='rvs', device=0, backend=None):
 	"""
 	Prepare the MCMC sampler
 
@@ -38,7 +38,7 @@ def setup(data, priors, tau, nwalkers, initialize='rvs', device=0):
 	elif initialize == 'rvs':
 		initial_positions = priors.rvs(nwalkers).T
 	elif initialize == 'mean':
-		initial_positions = np.array([priors.mean()+1e-6*np.random.rand(ndim) for _ in range(nwalkers)])
+		initial_positions = priors.mean()[None,:] + np.random.normal(size=(nwalkers,ndim))*1e-8
 	else:
 		raise AttributeError('Could not initialize the walkers. Try calling with initialize=\'rvs\'')
 
@@ -49,7 +49,7 @@ def setup(data, priors, tau, nwalkers, initialize='rvs', device=0):
 			initial_positions[i,0] = initial_positions[i,1]
 			initial_positions[i,1] = temp
 
-	sampler = emcee.EnsembleSampler(nwalkers, ndim, likelihood.log_posterior, args=[data,priors,tau,device])
+	sampler = emcee.EnsembleSampler(nwalkers, ndim, likelihood.log_posterior, args=[data,priors,tau,device],backend=backend)
 
 	return sampler,initial_positions
 
