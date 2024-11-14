@@ -39,7 +39,8 @@ class CustomBuildPyCommand(build_py):
 			# Proceed with the normal build_py
 			build_py.run(self)
 		else:
-			print('Skipping b/c on windows')
+			print('Skipping make b/c on windows')
+			build_py.run(self)
 
 
 setup(
